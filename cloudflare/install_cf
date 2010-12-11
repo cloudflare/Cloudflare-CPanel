@@ -11,3 +11,11 @@ cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
 
 ## Lastly register the plugin with Cpanel
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
+
+## And write the config file
+cp etc/cloudflare.json /usr/local/cpanel/etc/
+
+echo "
+
+CloudFlare module installed successfully.
+==> You must now edit /usr/local/cpanel/etc/cloudflare.json and add your CloudFlare host API key before continuing."
