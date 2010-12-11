@@ -1,0 +1,13 @@
+#!/bin/bash
+
+## First install the CF files
+cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
+
+## Now the JS
+cp -r base/frontend/default/js2/cloudflare /usr/local/cpanel/base/frontend/default/js2/
+
+## And the HTML files
+cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
+
+## Lastly register the plugin with Cpanel
+/usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin

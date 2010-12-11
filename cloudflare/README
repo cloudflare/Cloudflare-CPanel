@@ -1,0 +1,18 @@
+CloudFlare plugin for CPanel.
+
+Requires: Net::SSLeay
+
+Provides access to the CloudFlare service. Learn more about CloudFlare at cloudflare.com.
+
+Install (as root):
+
+./install_cf
+
+This works for the default theme and locale. Other themes or locales may require custom work. 
+
+Uninstall 
+
+/usr/local/cpanel/bin/unregister_cpanelplugin <full path to install file cloudflare.cpanelplugin>
+
+Copyright (c) 2010 by CloudFlare, Inc.
+All Rights Reserved.

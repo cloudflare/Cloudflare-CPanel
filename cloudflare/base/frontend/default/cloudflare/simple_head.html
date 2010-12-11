@@ -1,0 +1,50 @@
+<!-- YUI -->
+<script src="http://yui.yahooapis.com/2.8.2r1/build/yahoo/yahoo-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/dom/dom-min.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/event/event-min.js" ></script>
+
+<!-- Tooltips -->
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.8.2r1/build/container/assets/container.css">
+<script src="http://yui.yahooapis.com/2.8.2r1/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script src="http://yui.yahooapis.com/2.8.2r1/build/container/container-min.js"></script>
+
+<!-- Our own -->
+<SCRIPT language="JavaScript" SRC="../js2/cloudflare/cloudflare.js"></SCRIPT>
+
+<style type="text/css">
+td.col1 {
+    text-align: right;
+    width: 80px;
+}
+td.col2 {
+	text-align: left;
+    width: 400;
+}
+input.input_text {
+	width: 150px;
+}
+
+.cf_description {
+    font-style:normal;
+}
+
+ul {
+    list-style-type: square;
+}
+
+#A_record_description, 
+#CNAME_record_description {
+margin: 0 0 0 10px;
+}
+
+#A_ip_resolve, 
+#CNAME_ip_resolve {
+padding: 5px 0 0 10px;
+}
+
+#A_ip_resolve_result, 
+#CNAME_ip_resolve_result {
+padding: 8px 0 0 1px;
+}
+<?cp Branding::spritelist(.spriteicon_img_mini {float:left;margin-right:5px;background: url\{leftparenthesis}%\{rightparenthesis};} %,spriteurl,images::#icon-${img}_mini {background-position\{colon}0 -${cssposition}px;width\{colon}${width}px;height\{colon}${height}px; }:) imgtype=icon,subtype=img,method=scale_60percent,format=png,img=cloudflare ?>
+</style>
