@@ -1,6 +1,8 @@
 
 var VALID = [];
 var CF_RECS = {};
+var NUM_RECS = 0;
+var REC_TEXT = [];
 
 var signup_to_cf = function() {
 
@@ -9,8 +11,6 @@ var signup_to_cf = function() {
 		CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
         return false;
     }
-
-
 
     // build the call
 	var email = YAHOO.util.Dom.get("USER_email").value;
@@ -93,35 +93,29 @@ var toggle_domain = function() {
             try {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
-                    YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML 
-                        = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud' 
-                        + orig_state + '-55x25.png" />';
-                    CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
-                                              CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
-                } else if (data.cpanelresult.data[0].result == "error") {            
-                    YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML 
-                        = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud' 
-                        + orig_state + '-55x25.png" />';
-                    CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
-                                              CPANEL.lang.json_error, 
-                                              data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                    update_user_records_table(function() {
+                        CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                                                  CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+                    });
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    update_user_records_table(function() {
+                        CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                                                  CPANEL.lang.json_error, 
+                                                  data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                    });
 				}
 				else {
                     update_user_records_table();
 			    }
 			}
 			catch (e) {
-                YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML 
-                    = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud' 
-                    + orig_state + '-55x25.png" />';
-                CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
-                                          CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
-			}
+                update_user_records_table(function() {
+                    CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                                              CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+			    });
+            }
         },
         failure : function(o) {            
-            YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML 
-                = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud' 
-                + orig_state + '-55x25.png" />';
             YAHOO.util.Dom.get("status_bar_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
         }
     };
@@ -147,7 +141,7 @@ var toggle_domain = function() {
     if (old_rec) {
         api2_call["old_rec"] = old_rec;
         api2_call["old_line"] = old_line;
-    }   
+    }
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
     YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
@@ -179,6 +173,8 @@ var build_dnszone_table_markup = function(records) {
         html += 	'<th>CloudFlare Status</th>';
         html += '</tr>';
 
+    // Reset these
+    NUM_RECS = records.length;
 	for (var i=0; i<records.length; i++) {
          
         // A, MX, CNAME, TXT records
@@ -200,19 +196,20 @@ var build_dnszone_table_markup = function(records) {
 		    // action links
             html += '<td>';
 
-            if (records[i]['cloudflare'] == 1) {
-                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i 
+            if (records[i]['cloudflare'] == 1) {                
+                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
                     + '" onclick="toggle_record_off(' + i + ', \'' + records[i]['name'] + '\', '
-                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" /></span>';
+                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" class="cf_enabled" /></span>';
                 // And add the zone to our list of CF zones.
                 CF_RECS[records[i]['name']] = records[i]['line'];
+                REC_TEXT[i] = "CloudFlare is currently on. Click to disable";
 		    } else {
-                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i 
+                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
                     + '" onclick="toggle_record_on(' + i + ', \'' + records[i]['name'] + '\', '
-                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" /></span>';
+                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" class="cf_disabled'+i+'"/></span>';
+                REC_TEXT[i] = "CloudFlare is currently off. Click to enable";
             }
             html += '</td>';
-		    
             html += '</tr>';
 
             html += '<tr id="module_row_' + i + '" class="dt_module_row ' + row_toggle + '"><td colspan="7">';
@@ -229,7 +226,7 @@ var build_dnszone_table_markup = function(records) {
 	return html;
 };
 
-var update_user_records_table = function() {
+var update_user_records_table = function(cb_lambda) {
     var callback = {
         success : function(o) {
             try {
@@ -240,6 +237,20 @@ var update_user_records_table = function() {
 				else if (data.cpanelresult.data) {                    
                     var html = build_dnszone_table_markup(data.cpanelresult.data);
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
+
+                    // Now add in tool tips
+	                for (var i=0; i<NUM_RECS; i++) {
+                        new YAHOO.widget.Tooltip("tt_cf_enabled_"+i, { 
+                            context: "cloudflare_table_edit_"+i, 
+                            text: REC_TEXT[i],
+                            showDelay: 300
+                        });
+                    }
+
+                    // Call the cb, if it is set.
+                    if (cb_lambda) {
+                        cb_lambda();
+                    }
 				}
 				else {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";

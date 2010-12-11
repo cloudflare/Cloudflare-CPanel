@@ -23,18 +23,29 @@ SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS
 SET base_domains_result = Api2.exec('DomainLookup','getbasedomains');
 SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
 
-SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER}).0.response;
+SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER}).0;
 
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 -%]
 <div class="body-content">
+<div class="yui-skin-sam">
 
-[% IF cf_user.user_key -%]
+[% IF cf_user.result == "error" -%]
+
+<div class="h1Title">[% cf_user.msg %]</div>
+
+[% ELSE %]
+
+[% IF cf_user.response.user_key -%]
 
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-simplezoneedit_mini"></div>CloudFlare Integration</div>
 
-<p class="description">[% locale.maketext('CloudFlare protects and accelerates any website online. Once your website is a part of the CloudFlare community, its web traffic is routed through our intelligent global network. Learn more at <a href="[_1]">CloudFlare.com</a>.', "https://www.cloudflare.com") %]</p>
+<p class="cf_description">
+CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you can choose which subdomains you want to be accelerated and protected by CloudFlare.  Subdomains are designated as “on” or “off” CloudFlare by using an orange or gray cloud. Click on the cloud next to a subdomain below to enable or disable CloudFlare for this subdomain. 
+</p><p class="cf_description">
+If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F">here</a>.
+</p>
 
 [% IF base_domains_result.size == 1 -%]
 <input type="hidden" id="domain" value="[% base_domains_result.0.domain FILTER html %]" />
@@ -57,7 +68,6 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 </div>
 [% END -%]
 
-<h4>CloudFlare Powerable Records</h4>
 <div id="user_records_div"></div>
 
 </div><!-- end add_record_and_zone_table -->
@@ -68,7 +78,7 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 //<![CDATA[
 var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
 var LANG = [% js_lang.json() %];
-var USER_ID = [% cf_user.user_key.json() %];
+var USER_ID = [% cf_user.response.user_key.json() %];
 
 //]]>
 </script>
@@ -77,20 +87,20 @@ var USER_ID = [% cf_user.user_key.json() %];
 
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-simplezoneedit_mini"></div>CloudFlare</div>
 
-<p class="description">
-CloudFlare is a service that makes your website faster and safer. 
+<p class="cf_description">
+CloudFlare is a service that makes your website load faster and more secure. 
 </p>
 
 <b>Advantages of the CloudFlare system:</b>
 
 <ul>
-<li>Site Performance Improvement: CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
-<li>Bot and Threat Protection: CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html">here</a>.
-<li>Spam Comments Protection: CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
-<li>Alerting Visitors of Infected Computers: CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
-<li>Always Online Mode: In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
-<li>Lower CPU Usage: As fewer requests hit our server, this lowers the overall CPU usage of your account.
-<li>New Site Stats: CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
+<li><b>Site Performance Improvement:</b> CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
+<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html">here</a>.
+<li><b>Spam Comments Protection:</b> CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
+<li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
+<li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
+<li><b>Lower CPU Usage:</b> As fewer requests hit our server, this lowers the overall CPU usage of your account.
+<li><b>New Site Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
 </ul>
 
 <b>Limitations of the CloudFlare system:</b>
@@ -109,7 +119,7 @@ CloudFlare is a service that makes your website faster and safer.
 <input type="hidden" id="USER_email" name="USER_email" value="[% CPANEL.CPDATA.CONTACTEMAIL %]" />
 <input type="hidden" id="USER_user" name="USER_user" value="[% CPANEL.CPDATA.USER %]" />
 
-<h4>Sign up CloudFlare now</h4>
+<h4>Sign up for CloudFlare now</h4>
 <div class="highlight">
 <table cellspacing="0" cellpadding="3" style="margin-bottom: 5px">
 
@@ -137,5 +147,8 @@ CloudFlare is a service that makes your website faster and safer.
 
 <div id="add_USER_status_bar" style="margin:0 -5px" class="cjt_status_bar"></div>
 </div>
+</div>
+
+[% END -%]
 
 [% END -%]

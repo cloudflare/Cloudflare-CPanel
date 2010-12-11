@@ -12,9 +12,10 @@ use Cpanel::Logger               ();
 use Cpanel::UrlTools             ();
 use Cpanel::SocketIP             ();
 use Cpanel::Encoder::URI         ();
-use Cpanel::CustInfo ();
-use Cpanel::AcctUtils ();
+use Cpanel::CustInfo             ();
+use Cpanel::AcctUtils            ();
 
+use Socket                       ();
 use JSON::Syck                   ();
 
 my $logger = Cpanel::Logger->new();
@@ -25,7 +26,7 @@ my $cf_host_name;
 my $cf_host_uri;
 my $cf_host_port;
 my $cf_host_prefix;
-
+my $has_ssl;
 
 ## Initialize vars here.
 sub CloudFlare_init { 
@@ -35,6 +36,11 @@ sub CloudFlare_init {
     $cf_host_uri = $data->{"host_uri"};
     $cf_host_port = $data->{"host_port"};
     $cf_host_prefix = $data->{"host_prefix"};
+
+    eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
+    if ( !$has_ssl ) {
+        $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
+    }
 }
 
 
@@ -79,6 +85,13 @@ sub api2_user_lookup {
         $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
         return [];
     }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
 
     ## Otherwise, try to log this user in.
     my $login_args = {
@@ -130,10 +143,6 @@ sub api2_zone_set {
 
     if (!$subs) {
         $login_args->{"query"}->{"act"} = "zone_delete";
-        $logger->info("Deleteing " . $domain);
-    } else {   
-        $logger->info("For " . $domain);
-        $logger->info("Updating " . $subs);
     }
 
     my $result = JSON::Syck::Load(__https_post_req->($login_args));
@@ -149,7 +158,7 @@ sub api2_zone_set {
 
     ## If we get an error, do nothing and return the error to the user.
     if ($result->{"result"} eq "error") {
-        $logger->info("ERROR: " . $result->{"msg"});
+        $logger->info("CloudFlare Error: " . $result->{"msg"});
     } else {
         ## Otherwise, update the dns for this zone.
         my $dom = ".".$OPTS{"zone_name"};
@@ -168,9 +177,7 @@ sub api2_zone_set {
                                                         __serialize_request( \%zone_args ) );
         }
         
-        ## Now, go ahead and update all of the CF enabled recs.
-        $logger->info(JSON::Syck::Dump($result));
-   
+        ## Now, go ahead and update all of the CF enabled recs.   
         foreach $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
             $zone_args{"line"} = $recs2lines->{$ft."."};
             $zone_args{"name"} = $ft;
@@ -248,7 +255,20 @@ sub __fetchzone {
 
 sub __https_post_req {
     my ( $args_hr ) = @_;
+    if ($args_hr->{'port'} ne "443") {
+        ## Downgrade to http
+        return __http_post_req($args_hr);
+    } else {
+        my ( $args_hr ) = @_;
+        my ($page, $response, %reply_headers)
+            = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '', 
+                         make_form($args_hr->{'query'}));
+        return $page;
+    }
+}
 
+sub __http_post_req {
+    my ( $args_hr ) = @_;
     my $query = $args_hr->{'query'};
     if ( ref $args_hr->{'query'} eq 'HASH' ) {
         $query = '';
@@ -256,22 +276,22 @@ sub __https_post_req {
             if ( ref $args_hr->{'query'}{$key} eq 'ARRAY' ) {
                 for my $val ( @{ $args_hr->{'query'}{$key} } ) {
                     $query .=
-                      $query
-                      ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str($val)
-                      : "$key=" . Cpanel::Encoder::URI::uri_encode_str($val);
+                        $query
+                        ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str($val)
+                        : "$key=" . Cpanel::Encoder::URI::uri_encode_str($val);
                 }
             }
             else {
                 $query .=
-                  $query
-                  ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} )
-                  : "$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} );
+                    $query
+                    ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} )
+                    : "$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} );
             }
         }
     }
-
+    
     my $postdata_len = length($query);
-
+    
     my $proto = getprotobyname('tcp');
     return unless defined $proto;
 
@@ -288,9 +308,8 @@ sub __https_post_req {
     
     my $result = "";
     if ( connect( $socket_fh, $sin ) ) {
-
         send $socket_fh, "POST /$args_hr->{'uri'} HTTP/1.0\nContent-Length: $postdata_len\nContent-Type: application/x-www-form-urlencoded\nHost: $args_hr->{'host'}\n\n$query", 0;
-
+        
         my $in_header = 1;
         while (<$socket_fh>) {
             if ( /^\n$/ || /^\r\n$/ || /^$/ ) {
