@@ -1,0 +1,29 @@
+<table cellspacing="0" cellpadding="0" class="dynamic_table" id="user_records_table">
+    <tr class="dt_header_row">
+        <th><cptext 'Name'></th>
+        <th><cptext 'Type'></th>
+        <th><cptext 'Record'></th>
+        <th><cptext 'Action'></th>
+    </tr>
+    <?cp CloudFlare::fetchzone(
+    [tr id="info_row_%" class="dt_info_row info-%"]
+        [td][span class="zone_records_name"]%[/span][/td]
+        [td][span class="zone_records_type"]%[/span][/td]
+        [td]%[/td]
+        [td][span class="action_link" onclick="toggle_confirm_delete[[%]];"]maketext('Delete')[/span][/td]
+    [/tr]
+    [tr id="module_row_%" class="dt_module_row"]
+        [td colspan="6"]
+            [div class="dt_module" id="delete_confirm_%" style="text-align: center"]
+                Delete this record?[br /]
+                [div id="delete_input_%" style="margin-top:5px;"]
+                     [input type="button" class="input-button dt_confirm_but" value="maketext('Delete')" onclick="delete_line[[%]];" /][span class="action_link" onclick="toggle_confirm_delete[[%]];"]maketext('cancel')[/span]
+                [/div]
+                [div id="delete_status_%"][/div]
+                [div style="height: 5px"][/div]
+                [div class="cjt_status_bar" id="delete_status_bar_%"][/div]
+            [/div]
+        [/td]
+    [/tr]
+    ,Line,*num,name,type,record,Line,Line,Line,Line,Line,Line,Line,Line) customonly=1,domain=$FORM{'domain'},type=A|CNAME || '[tr class="info-even"][td colspan="6"][div style="padding: 10px; text-align: center"]maketext('There are no CloudFlare accelerated domains for “[_1]”.',$FORM{'domain'})[/div][/td][/tr]' ?>  
+</table>
