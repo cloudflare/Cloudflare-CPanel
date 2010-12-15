@@ -20,7 +20,7 @@ FOR pair = js_lang;
 END;
 
 SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS});
-SET base_domains_result = Api2.exec('DomainLookup','getbasedomains');
+SET base_domains_result = Api2.exec('CloudFlare','getbasedomains');
 SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
 
 SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER}).0;
@@ -33,7 +33,11 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 [% IF cf_user.result == "error" -%]
 
+[% IF !CPANEL.CPDATA.CONTACTEMAIL -%]
+<div class="h1Title">You must add your email address before continuing.</div>
+[% ELSE %]
 <div class="h1Title">[% cf_user.msg %]</div>
+[% END %]
 
 [% ELSE %]
 
@@ -44,7 +48,7 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 <p class="cf_description">
 CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you can choose which subdomains you want to be accelerated and protected by CloudFlare.  Subdomains are designated as “on” or “off” CloudFlare by using an orange or gray cloud. Click on the cloud next to a subdomain below to enable or disable CloudFlare for this subdomain. 
 </p><p class="cf_description">
-If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F">here</a>.
+If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
 </p>
 
 [% IF base_domains_result.size == 1 -%]
@@ -88,9 +92,22 @@ var USER_ID = [% cf_user.response.user_key.json() %];
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare</div>
 
 <p class="cf_description">
-CloudFlare is a service that makes your website load faster and more secure. 
+CloudFlare accelerates and protects any website online. On average, a website on CloudFlare:
 </p>
 
+<ul>
+<li>Loads 30% faster
+<li>Uses 60% less bandwidth
+<li>Has 65% fewer requests
+<li>And, is way more secure.
+</ul>
+
+<p>
+<div id="cf_def_show"><a href="#" onclick="return handleLearnMore(true);">Learn More ...</a></div>
+<br />
+</p>
+
+<div id="cf_def_noshow">
 <b>Advantages of the CloudFlare system:</b>
 
 <ul>
@@ -111,6 +128,12 @@ CloudFlare is a service that makes your website load faster and more secure.
 <li>CloudFlare caches static content from your site. While this reduces the load on your server, it means that if you make a change to an existing static file, like an image, there may be a delay before the change appears. While you are updating your site, you can put CloudFlare in ‘Development Mode’ so changes appear immediately.
 </ul>
 
+<p>
+<a href="#" onclick="return handleLearnMore(false);">[hide]</a>
+</p>
+
+</div>
+
 <b>Who can use CloudFlare:</b>
 <ul>
 <li>CloudFlare is suitable for all websites, including dynamic websites. Signing up takes less than two minutes. If you do not like the service, it takes even less time to un-signup.
@@ -130,7 +153,7 @@ CloudFlare is a service that makes your website load faster and more secure.
 	</tr>
 	<tr>
           <td class="col1">&nbsp;</td>
-          <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html">Terms of Service</a>.</td>
+          <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>.</td>
 		  <td class="col3"><input class="input_checkbox" type="checkbox" id="USER_tos"></td>
 		  
           <td><div id="USER_tops_error"></div></td>

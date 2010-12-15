@@ -12,11 +12,12 @@ use Cpanel::Logger               ();
 use Cpanel::UrlTools             ();
 use Cpanel::SocketIP             ();
 use Cpanel::Encoder::URI         ();
-use Cpanel::CustInfo             ();
 use Cpanel::AcctUtils            ();
+use Cpanel::DomainLookup         ();
 
 use Socket                       ();
 use JSON::Syck                   ();
+use strict;
 
 my $logger = Cpanel::Logger->new();
 my $locale;
@@ -27,6 +28,10 @@ my $cf_host_uri;
 my $cf_host_port;
 my $cf_host_prefix;
 my $has_ssl;
+my $cf_debug_mode;
+my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name', 
+               'class' => 'class', 'address' => 'address', 'type' => 'type', 
+               'txtdata' => 'txtdata', 'preference' => 'preference', 'exchange' => 'exchange' );
 
 ## Initialize vars here.
 sub CloudFlare_init { 
@@ -36,6 +41,7 @@ sub CloudFlare_init {
     $cf_host_uri = $data->{"host_uri"};
     $cf_host_port = $data->{"host_port"};
     $cf_host_prefix = $data->{"host_prefix"};
+    $cf_debug_mode = $data->{"debug"};
 
     eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
     if ( !$has_ssl ) {
@@ -67,8 +73,7 @@ sub api2_user_create {
             "act" => "user_create",
             "host_key" => $cf_host_key,
             "cloudflare_email" => $OPTS{"email"},
-            "cloudflare_pass" => $password,
-            "cloudflare_username" => $OPTS{"user"}
+            "cloudflare_pass" => $password
         },
     };
 
@@ -165,7 +170,7 @@ sub api2_zone_set {
              
         ## First Make sure that the resolve to is set.
         my $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'ADD', 'storable', $OPTS{"zone_name"},
-                                                    __serialize_request( \%zone_args ) ); 
+                                                       __serialize_request( \%zone_args ) ); 
         
         ## If there's a delete, remove this record from being CF.
         if ($OPTS{"old_line"}) {
@@ -178,15 +183,27 @@ sub api2_zone_set {
         }
         
         ## Now, go ahead and update all of the CF enabled recs.   
-        foreach $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
+        foreach my $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
             $zone_args{"line"} = $recs2lines->{$ft."."};
             $zone_args{"name"} = $ft;
             $zone_args{"name"} =~ s/$dom//g;
             $zone_args{"cname"} = $result->{"response"}->{"forward_tos"}->{$ft};
+
             $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
                                                         __serialize_request( \%zone_args ) );
+            if (!$res->{"status"}) {
+                ## Try again, bumping up the line by 1. -- no idea why this works.
+                $zone_args{"line"}++;
+                $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                                                            __serialize_request( \%zone_args ) );
+            }
+
+            if (!$res->{"status"}) {
+                $logger->info("Failed to set DNS for CloudFlare record $ft!");
+            }
         }
     }
+
     return $result;
 }
 
@@ -213,6 +230,14 @@ sub api2_fetchzone {
     return $results;
 }
 
+sub api2_getbasedomains {        
+    my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
+    foreach my $dom (@$res) {
+        #$logger->info($dom->{"domain"});
+    }
+    return $res;
+}
+
 sub api2 {
     my $func = shift;
 
@@ -226,6 +251,8 @@ sub api2 {
     $API{'zone_set'}{'engine'}                         = 'hasharray';
     $API{'fetchzone'}{'func'}                          = 'api2_fetchzone';
     $API{'fetchzone'}{'engine'}                        = 'hasharray';
+    $API{'getbasedomains'}{'func'}                     = 'api2_getbasedomains';
+    $API{'getbasedomains'}{'engine'}                   = 'hasharray';
 
     return ( \%{ $API{$func} } );
 }
@@ -263,6 +290,9 @@ sub __https_post_req {
         my ($page, $response, %reply_headers)
             = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '', 
                          make_form($args_hr->{'query'}));
+        if ($cf_debug_mode) {
+            $logger->info($page);
+        }
         return $page;
     }
 }
@@ -291,7 +321,11 @@ sub __http_post_req {
     }
     
     my $postdata_len = length($query);
-    
+
+    if ($cf_debug_mode) {
+        $logger->info($query);
+    }    
+
     my $proto = getprotobyname('tcp');
     return unless defined $proto;
 
@@ -324,6 +358,11 @@ sub __http_post_req {
     }
 
     close $socket_fh;
+
+    if ($cf_debug_mode) {
+        $logger->info($result);
+    }
+
     return $result;
 }
 
@@ -336,4 +375,4 @@ sub __serialize_request {
     return join( '&', @KEYLIST );
 }
 
-1;
+1; # Ah, perl.

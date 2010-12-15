@@ -63,17 +63,26 @@ var signup_to_cf = function() {
 };
 
 var reset_form = function(type) {
-    YAHOO.util.Dom.setStyle("add_" + type + "_record_button", "display", "block");
-    YAHOO.util.Dom.get("add_" + type + "_record_status").innerHTML = '';
-    
-	YAHOO.util.Dom.get(type + "_name").value = "";
-    
-    VALID[type + "_name"].clear_messages();
+    VALID = [];
+    CF_RECS = {};
+    NUM_RECS = 0;
+    REC_TEXT = [];
 };
 
 var add_validation = function() {
      
 };
+
+var handleLearnMore = function (show) {
+    if (show) {
+        YAHOO.util.Dom.setStyle('cf_def_show', 'display', "none"); 
+        YAHOO.util.Dom.setStyle('cf_def_noshow', 'display', "block"); 
+    } else {
+        YAHOO.util.Dom.setStyle('cf_def_show', 'display', "block"); 
+        YAHOO.util.Dom.setStyle('cf_def_noshow', 'display', "none"); 
+    }
+    return false;
+}
 
 var toggle_domain = function() {
 	var domain = YAHOO.util.Dom.get("domain").value;
