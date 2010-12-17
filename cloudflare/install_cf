@@ -15,6 +15,11 @@ cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
 ## And write the config file
 cp etc/cloudflare.json /usr/local/cpanel/etc/
 
+## Also data file -- world readible, for the web server.
+## @TODO -- figure out what user this users.
+touch /usr/local/cpanel/etc/cloudflare_data.yaml
+chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
+
 echo "
 
 CloudFlare module installed successfully.
