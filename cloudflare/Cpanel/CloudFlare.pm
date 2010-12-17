@@ -14,6 +14,7 @@ use Cpanel::SocketIP             ();
 use Cpanel::Encoder::URI         ();
 use Cpanel::AcctUtils            ();
 use Cpanel::DomainLookup         ();
+use Cpanel::DataStore            ();
 
 use Socket                       ();
 use JSON::Syck                   ();
@@ -22,6 +23,7 @@ use strict;
 my $logger = Cpanel::Logger->new();
 my $locale;
 my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json";
+my $cf_data_file = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_host_key;
 my $cf_host_name;
 my $cf_host_uri;
@@ -29,6 +31,8 @@ my $cf_host_port;
 my $cf_host_prefix;
 my $has_ssl;
 my $cf_debug_mode;
+my $cf_global_data = {};
+
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name', 
                'class' => 'class', 'address' => 'address', 'type' => 'type', 
                'txtdata' => 'txtdata', 'preference' => 'preference', 'exchange' => 'exchange' );
@@ -42,6 +46,15 @@ sub CloudFlare_init {
     $cf_host_port = $data->{"host_port"};
     $cf_host_prefix = $data->{"host_prefix"};
     $cf_debug_mode = $data->{"debug"};
+
+    ## Load the global statshot of who is on CF.
+    if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
+        $logger->info("Successfully loaded cf data");
+    } else {
+        $cf_global_data = {"cf_zones" => {}};
+        $logger->warn( "Failed to load cf data -- storing blank data");
+        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+    }
 
     eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
     if ( !$has_ssl ) {
@@ -148,6 +161,7 @@ sub api2_zone_set {
 
     if (!$subs) {
         $login_args->{"query"}->{"act"} = "zone_delete";
+        $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0
     }
 
     my $result = JSON::Syck::Load(__https_post_req->($login_args));
@@ -160,6 +174,8 @@ sub api2_zone_set {
                      "ttl" => 1400,
                      "cname" => $OPTS{"zone_name"},
         );
+
+    my $is_cf = 0;
 
     ## If we get an error, do nothing and return the error to the user.
     if ($result->{"result"} eq "error") {
@@ -182,7 +198,7 @@ sub api2_zone_set {
                                                         __serialize_request( \%zone_args ) );
         }
         
-        ## Now, go ahead and update all of the CF enabled recs.   
+        ## Now, go ahead and update all of the CF enabled recs.
         foreach my $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
             $zone_args{"line"} = $recs2lines->{$ft."."};
             $zone_args{"name"} = $ft;
@@ -201,8 +217,84 @@ sub api2_zone_set {
             if (!$res->{"status"}) {
                 $logger->info("Failed to set DNS for CloudFlare record $ft!");
             }
+
+            ## Note that if at least one rec is on, this zone is on CF.
+            $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 1;
+            $is_cf = 1;   
         }
     }
+
+    if (!$is_cf) {
+       $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0;
+    }
+
+    ## Save the updated global data arg.
+    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+
+    return $result;
+}
+
+sub api2_zone_delete {
+    my %OPTS = @_;
+
+    if (!$cf_host_key || !$cf_host_prefix) {
+        $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_config_file.");
+        return [];
+    }
+
+    my $domain = ".".$OPTS{"zone_name"}.".";
+
+    ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
+    my $recs2lines = JSON::Syck::Load($OPTS{"cf_recs"});
+    
+    ## Set up the zone_set args.
+    my $login_args = {
+        "host" => $cf_host_name,
+        "uri" => $cf_host_uri,
+        "port" => $cf_host_port,
+        "query" => {
+            "act" => "zone_delete",
+            "host_key" => $cf_host_key,
+            "user_key" => $OPTS{"user_key"},
+            "zone_name" => $OPTS{"zone_name"}
+        },
+    };
+
+    $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0;
+
+    my $result = JSON::Syck::Load(__https_post_req->($login_args));
+    
+    ## Args for updating local DNS.
+    my %zone_args = ("domain" => $OPTS{"zone_name"},
+                     "class" => "IN",
+                     "type" => "CNAME",
+                     "name" => $cf_host_prefix,
+                     "ttl" => 1400,
+                     "cname" => $OPTS{"zone_name"},
+        );
+
+    ## If we get an error, do nothing and return the error to the user.
+    if ($result->{"result"} eq "error") {
+        $logger->info("CloudFlare Error: " . $result->{"msg"});
+    } else {
+        ## Otherwise, update the dns for this zone.
+        my $dom = ".".$OPTS{"zone_name"};
+             
+        ## Loop over list of subs, removing from CF.
+        my $res;
+        foreach my $linecom (split(/,/, $OPTS{"subdomains"})) {
+            my @line = split(':', $linecom);
+            $zone_args{"line"} = $line[1];
+            $zone_args{"name"} = $line[0];
+            $zone_args{"name"} =~ s/$domain//g;
+            $zone_args{"cname"} = $OPTS{"zone_name"};
+            $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                                                        __serialize_request( \%zone_args ) );
+        }
+    }
+
+    ## Save the updated global data arg.
+    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
 
     return $result;
 }
@@ -233,7 +325,11 @@ sub api2_fetchzone {
 sub api2_getbasedomains {        
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     foreach my $dom (@$res) {
-        #$logger->info($dom->{"domain"});
+        if ($cf_global_data->{"cf_zones"}->{$dom->{"domain"}}) {
+            $dom->{"cloudflare"} = 1;
+        } else {
+            $dom->{"cloudflare"} = 0;
+        }
     }
     return $res;
 }
@@ -249,6 +345,8 @@ sub api2 {
     $API{'user_lookup'}{'engine'}                      = 'hasharray';
     $API{'zone_set'}{'func'}                           = 'api2_zone_set';
     $API{'zone_set'}{'engine'}                         = 'hasharray';
+    $API{'zone_delete'}{'func'}                        = 'api2_zone_delete';
+    $API{'zone_delete'}{'engine'}                      = 'hasharray';
     $API{'fetchzone'}{'func'}                          = 'api2_fetchzone';
     $API{'fetchzone'}{'engine'}                        = 'hasharray';
     $API{'getbasedomains'}{'func'}                     = 'api2_getbasedomains';

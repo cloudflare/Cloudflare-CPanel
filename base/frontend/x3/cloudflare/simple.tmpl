@@ -43,12 +43,20 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 [% IF cf_user.response.user_key -%]
 
-<div class="h1Title"><div class="spriteicon_img_mini" id="icon-simplezoneedit_mini"></div>CloudFlare Integration</div>
+<div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>Activate CloudFlare</div>
 
 <p class="cf_description">
-CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you can choose which subdomains you want to be accelerated and protected by CloudFlare.  Subdomains are designated as “on” or “off” CloudFlare by using an orange or gray cloud. Click on the cloud next to a subdomain below to enable or disable CloudFlare for this subdomain. 
+Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate.
 </p><p class="cf_description">
+CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designed as "on" or "off" CloudFlare by using an orange and gray cloud. 
+</p>
+<p class="cf_description" id="cf_def_show">
+Have SSL on your website? You have two options. <a href="#" onclick="return handleLearnMore(true);">Read more ...</a>
+</p>
+<p id="cf_def_noshow">
 If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
+<br />
+<a href="#" onclick="return handleLearnMore(false);">[hide]</a>
 </p>
 
 <input type="hidden" id="domain" />
@@ -61,10 +69,10 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
     <td>[% domain_data.domain %]</td>
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
-    <td align="left" id="cf_powered_check[% domain_data.domain %]"><input type="checkbox" value="[% domain_data.domain %]" checked onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+    <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 [% ELSE -%]
-    <td id="cf_powered_[% domain_data.domain %]">Not Currently CloudFlare Enabled</td>
-    <td align="left" id="cf_powered_check[% domain_data.domain %]"><input type="checkbox" value="[% domain_data.domain %]" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+    <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
+    <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 [% END -%]
 </tr>
 [% END -%]

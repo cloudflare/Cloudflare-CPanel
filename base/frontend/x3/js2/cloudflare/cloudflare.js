@@ -186,6 +186,7 @@ var build_dnszone_table_markup = function(records) {
         html += '</tr>';
 
     // Reset these
+    var is_cf_powered = false;
     NUM_RECS = records.length;
 	for (var i=0; i<records.length; i++) {
          
@@ -215,11 +216,10 @@ var build_dnszone_table_markup = function(records) {
                 // And add the zone to our list of CF zones.
                 CF_RECS[records[i]['name']] = records[i]['line'];
                 REC_TEXT[i] = "CloudFlare is currently on. Click to disable";
+                is_cf_powered = true;
 
                 if (records[i]['name'].match(/^(www\.)/)) {
-                    YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
-                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
-                    YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<input type="checkbox" value="'+domain+'" onclick="toggle_all_off(\''+domain+'\') checked />';
+                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];                  
                 }
 		    } else {
                 html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
@@ -228,9 +228,7 @@ var build_dnszone_table_markup = function(records) {
                 REC_TEXT[i] = "CloudFlare is currently off. Click to enable";
 
                 if (records[i]['name'].match(/^(www\.)/)) {
-                    YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Currently CloudFlare Enabled";   
                     WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
-                    YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<input type="checkbox" value="'+domain+'" onclick="toggle_www_on(\''+domain+'\') />';
                 }
             }
             html += '</td>';
@@ -247,6 +245,18 @@ var build_dnszone_table_markup = function(records) {
 		row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
 	}
 	html += '</table>';
+
+    // Set the global is CF powered text.
+    if (NUM_RECS > 0) {
+        if (is_cf_powered) { 
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\') checked />';
+        } else {
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\') />';
+        }
+    }
+
 	return html;
 };
 

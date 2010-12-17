@@ -175,6 +175,8 @@ sub api2_zone_set {
                      "cname" => $OPTS{"zone_name"},
         );
 
+    my $is_cf = 0;
+
     ## If we get an error, do nothing and return the error to the user.
     if ($result->{"result"} eq "error") {
         $logger->info("CloudFlare Error: " . $result->{"msg"});
@@ -196,7 +198,7 @@ sub api2_zone_set {
                                                         __serialize_request( \%zone_args ) );
         }
         
-        ## Now, go ahead and update all of the CF enabled recs.   
+        ## Now, go ahead and update all of the CF enabled recs.
         foreach my $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
             $zone_args{"line"} = $recs2lines->{$ft."."};
             $zone_args{"name"} = $ft;
@@ -216,11 +218,14 @@ sub api2_zone_set {
                 $logger->info("Failed to set DNS for CloudFlare record $ft!");
             }
 
-            ## If the record is www, and on CF, then we set this zone to be on CF.
-            if ($zone_args{"name"} eq "www") {
-                $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 1   
-            }
+            ## Note that if at least one rec is on, this zone is on CF.
+            $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 1;
+            $is_cf = 1;   
         }
+    }
+
+    if (!$is_cf) {
+       $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0;
     }
 
     ## Save the updated global data arg.

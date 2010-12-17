@@ -3,6 +3,7 @@ var VALID = [];
 var CF_RECS = {};
 var NUM_RECS = 0;
 var REC_TEXT = [];
+var WWW_DOM_INFO = [];
 
 var signup_to_cf = function() {
 
@@ -67,6 +68,7 @@ var reset_form = function(type) {
     CF_RECS = {};
     NUM_RECS = 0;
     REC_TEXT = [];
+    WWW_DOM_INFO = [];
 };
 
 var add_validation = function() {
@@ -96,7 +98,7 @@ var toggle_domain = function() {
 	reset_form("CNAME");
 };
 
-    var update_zones = function(rec_num, orig_state, old_rec, old_line) {
+var update_zones = function(rec_num, orig_state, old_rec, old_line) {
     var callback = {
         success : function(o) {
             try {
@@ -172,6 +174,7 @@ var toggle_record_on = function(rec_num, new_rec, line) {
 var build_dnszone_table_markup = function(records) {
 	// set the initial row stripe
 	var row_toggle = 'rowA';
+    var domain = YAHOO.util.Dom.get("domain").value;
 
 	// loop through the dnszone accounts and build the table
 	var html  = '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
@@ -183,6 +186,7 @@ var build_dnszone_table_markup = function(records) {
         html += '</tr>';
 
     // Reset these
+    var is_cf_powered = false;
     NUM_RECS = records.length;
 	for (var i=0; i<records.length; i++) {
          
@@ -212,11 +216,20 @@ var build_dnszone_table_markup = function(records) {
                 // And add the zone to our list of CF zones.
                 CF_RECS[records[i]['name']] = records[i]['line'];
                 REC_TEXT[i] = "CloudFlare is currently on. Click to disable";
+                is_cf_powered = true;
+
+                if (records[i]['name'].match(/^(www\.)/)) {
+                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];                  
+                }
 		    } else {
                 html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
                     + '" onclick="toggle_record_on(' + i + ', \'' + records[i]['name'] + '\', '
                     + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" class="cf_disabled'+i+'"/></span>';
                 REC_TEXT[i] = "CloudFlare is currently off. Click to enable";
+
+                if (records[i]['name'].match(/^(www\.)/)) {
+                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
+                }
             }
             html += '</td>';
             html += '</tr>';
@@ -232,6 +245,18 @@ var build_dnszone_table_markup = function(records) {
 		row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
 	}
 	html += '</table>';
+
+    // Set the global is CF powered text.
+    if (NUM_RECS > 0) {
+        if (is_cf_powered) { 
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\') checked />';
+        } else {
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\') />';
+        }
+    }
+
 	return html;
 };
 
@@ -286,6 +311,83 @@ var update_user_records_table = function(cb_lambda) {
     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
 };
 
+var push_all_off = function () {
+
+    var callback = {
+        success : function(o) {
+            try {
+                var data = YAHOO.lang.JSON.parse(o.responseText);
+                if (data.cpanelresult.error) {
+                    update_user_records_table(function() {
+                        CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                                                  CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+                    });
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    update_user_records_table(function() {
+                        CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                                                  CPANEL.lang.json_error, 
+                                                  data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                    });
+				}
+				else {
+                    update_user_records_table();
+			    }
+			}
+			catch (e) {
+                update_user_records_table(function() {
+                    CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                                              CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+			    });
+            }
+        },
+        failure : function(o) {            
+            YAHOO.util.Dom.get("status_bar_" + 0).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+    
+    var cf_zones = [];
+    for (key in CF_RECS) {
+        if (CF_RECS[key]) {
+            cf_zones.push(key+":"+CF_RECS[key]);
+        }
+    }
+
+    // send the AJAX request
+    var api2_call = {
+		"cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "zone_delete",
+		"zone_name" : YAHOO.util.Dom.get("domain").value,
+        "user_key" : USER_ID,
+        "subdomains" : cf_zones.join(","),
+	};
+
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+};
+
+var toggle_www_on = function(domain) {
+	YAHOO.util.Dom.get("domain").value = domain;
+    var lambda = function() {
+        if (WWW_DOM_INFO[2]) {
+            toggle_record_on(WWW_DOM_INFO[0], WWW_DOM_INFO[1], WWW_DOM_INFO[2]);
+        }
+    }
+    update_user_records_table(lambda);
+    return false;
+}
+
+var toggle_all_off = function(domain) {
+	YAHOO.util.Dom.get("domain").value = domain;
+    update_user_records_table(push_all_off);
+    return false;
+}
+
+var enable_domain = function(domain) {
+	YAHOO.util.Dom.get("domain").value = domain;
+    toggle_domain();
+    return false;
+}
+
 var init_page = function() {
 
     // New signups
@@ -293,15 +395,14 @@ var init_page = function() {
     YAHOO.util.Event.addListener(oUserSub, "click", signup_to_cf);
 
     // change domain
-	YAHOO.util.Event.on("domain", "change", toggle_domain);
+    YAHOO.util.Event.on("domain", "change", toggle_domain);
     
     add_validation();
-  
-    // load the table
-	if (YAHOO.util.Dom.get("domain").value != "_select_") {
-		update_user_records_table();
-	} 
     
+    // load the table
+    if (YAHOO.util.Dom.get("domain").value != "_select_") {
+        update_user_records_table();
+    }
 };
 
 YAHOO.util.Event.onDOMReady(init_page);
