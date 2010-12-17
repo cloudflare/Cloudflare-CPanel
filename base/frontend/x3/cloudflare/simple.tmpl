@@ -51,26 +51,25 @@ CloudFlare works differently than other site acceleration services (i.e. CDNs). 
 If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
 </p>
 
-[% IF base_domains_result.size == 1 -%]
-<input type="hidden" id="domain" value="[% base_domains_result.0.domain FILTER html %]" />
+<input type="hidden" id="domain" />
 
-[% ELSIF base_domains_result.size > 1 -%]
-<h4>[% locale.maketext('SLSelectDomain') %]</h4>
 <div class="highlight">
-	<div id="domain_select_exists" style="display: none"></div>
-	<table cellspacing="0" cellpadding="3"><tr>
-		<td class="col1">[% locale.maketext('SLDomain') %]:</td>
-		<td class="col2">
-			<select id="domain">
-				<option value="_select_">[% locale.maketext('MXSelectDomain') %]...</option>
+<table cellspacing="0" cellpadding="3" width="700" border="0">
 [% FOR domain_data = base_domains_result -%]
-                <option value="[% domain_data.domain %]">[% domain_data.domain %]</option>
+<tr>
+    <td><a href="#" onclick="return enable_domain('[% domain_data.domain %]');">[Edit]</a></td>
+    <td>[% domain_data.domain %]</td>
+[% IF domain_data.cloudflare -%]        
+    <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
+    <td align="left" id="cf_powered_check[% domain_data.domain %]"><input type="checkbox" value="[% domain_data.domain %]" checked onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+[% ELSE -%]
+    <td id="cf_powered_[% domain_data.domain %]">Not Currently CloudFlare Enabled</td>
+    <td align="left" id="cf_powered_check[% domain_data.domain %]"><input type="checkbox" value="[% domain_data.domain %]" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 [% END -%]
-			</select>
-		</td>
-	</tr></table>
+</tr>
+[% END -%]
+</table>
 </div>
-[% END -%]
 
 <div id="user_records_div"></div>
 
