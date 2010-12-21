@@ -9,6 +9,10 @@ cp -r base/frontend/default/js2/cloudflare /usr/local/cpanel/base/frontend/defau
 ## And the HTML files
 cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
 
+## Update Net/SSLeay.pm so that cpanel will work.
+cp /usr/local/cpanel/perl/Net/SSLeay.pm /usr/local/cpanel/perl/Net/SSLeay.pm.backup
+sed -i -e '62,1d' /usr/local/cpanel/perl/Net/SSLeay.pm
+
 ## Lastly register the plugin with Cpanel
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
 
