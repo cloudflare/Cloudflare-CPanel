@@ -1,5 +1,14 @@
 #!/bin/bash
 
+DEFAULT_HOST_KEY="DEFAULT_KEY_REPLACE_ME"
+host_key=$1
+if [ "$host_key" == "" ]; then
+    echo "Usage: ./install_cf HOST_KEY."
+    echo ""
+    echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
+    exit 0
+fi
+
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
@@ -15,6 +24,10 @@ sed -i -e '62,1d' /usr/local/cpanel/perl/Net/SSLeay.pm
 
 ## Lastly register the plugin with Cpanel
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
+
+## Updating to swap out the default key for an actual one.
+cp etc/cloudflare.json.back etc/cloudflare.json
+sed -i -e "s/$DEFAULT_HOST_KEY/$host_key/" etc/cloudflare.json 
 
 ## And write the config file
 cp etc/cloudflare.json /usr/local/cpanel/etc/

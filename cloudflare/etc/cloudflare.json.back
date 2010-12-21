@@ -1,5 +1,5 @@
 { 
-  "host_key":"testi111",
+  "host_key":"DEFAULT_KEY_REPLACE_ME",
   "host_name":"api.cloudflare.com",
   "host_uri":"/host-gw.html",
   "host_port":"443",
