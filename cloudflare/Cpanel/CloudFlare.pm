@@ -49,7 +49,7 @@ sub CloudFlare_init {
 
     ## Load the global statshot of who is on CF.
     if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
-        $logger->info("Successfully loaded cf data");
+        #$logger->info("Successfully loaded cf data");
     } else {
         $cf_global_data = {"cf_zones" => {}};
         $logger->warn( "Failed to load cf data -- storing blank data");
@@ -216,6 +216,9 @@ sub api2_zone_set {
 
             if (!$res->{"status"}) {
                 $logger->info("Failed to set DNS for CloudFlare record $ft!");
+                $logger->info(JSON::Syck::Dump($res));
+                $result->{"result"} = "error";
+                $result->{"msg"} = $res->{"statusmsg"};
             }
 
             ## Note that if at least one rec is on, this zone is on CF.
@@ -387,7 +390,7 @@ sub __https_post_req {
         my ( $args_hr ) = @_;
         my ($page, $response, %reply_headers)
             = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '', 
-                         make_form($args_hr->{'query'}));
+                         make_form(%{$args_hr->{'query'}}));
         if ($cf_debug_mode) {
             $logger->info($page);
         }

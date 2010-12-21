@@ -1,6 +1,9 @@
 CloudFlare plugin for CPanel.
 
-Requires: Net::SSLeay
+Requires: 
+
+ * Net::SSLeay
+ * Simplezoneedit or Zoneedit features
 
 Provides access to the CloudFlare service. Learn more about CloudFlare at cloudflare.com.
 
