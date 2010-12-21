@@ -387,7 +387,7 @@ sub __https_post_req {
         my ( $args_hr ) = @_;
         my ($page, $response, %reply_headers)
             = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '', 
-                         make_form($args_hr->{'query'}));
+                         make_form(%{$args_hr->{'query'}}));
         if ($cf_debug_mode) {
             $logger->info($page);
         }
