@@ -312,7 +312,8 @@ sub api2_fetchzone {
     foreach my $res (@{$raw->{"record"}}) {   
         if (($res->{"type"} eq "CNAME") && 
             ($res->{"name"} !~ /(mail)|(cpanel)|(whm)|(ftp)|(localhost)|($cf_host_prefix)/) &&
-            ($res->{"name"} ne $domain)){
+            ($res->{"name"} ne $domain) &&
+            ($res->{"cname"} !~ /google.com/)){
 
             if ($res->{"cname"} =~ /cdn.cloudflare.net$/) {
                 $res->{"cloudflare"} = 1;
