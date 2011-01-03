@@ -2,7 +2,8 @@ package Cpanel::CloudFlare;
 
 # cpanel - Cpanel/CloudFlare.pm                   Copyright(c) 2010 CloudFlare, Inc.
 #                                                               All rights Reserved.
-# copyright@cloudflare.com                                     http://cloudflare.com
+# copyright@cloudflare.com                                      http://cloudflare.com
+# @author ian@cloudflare.com
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
 
 use Cpanel::DnsUtils::UsercPanel ();
@@ -308,12 +309,11 @@ sub api2_fetchzone {
     my %OPTS    = @_;
     my $domain = $OPTS{'domain'}.".";
 
-    # @TODO -- Add support for A recs here
-    foreach my $res (@{$raw->{"record"}}) {   
+    foreach my $res (@{$raw->{"record"}}) {
         if (($res->{"type"} eq "CNAME") && 
-            ($res->{"name"} !~ /(mail)|(cpanel)|(whm)|(ftp)|(localhost)|($cf_host_prefix)/) &&
-            ($res->{"name"} ne $domain)){
-
+            ($res->{"name"} !~ /(^direct|^ssh|^ftp|ssl|mx|ns[^.]*|imap[^.]*|pop[^.]*|smtp[^.]*|mail[^.]*|mx[^.]*|exchange[^.]*|smtp[^.]*|google[^.]*|secure|sftp|svn|git|irc|email|mobilemail|pda|webmail|^e\.|video|vid|vids|sites|calendar|svn|cvs|git|cpanel|panel|repo|webstats|local|localhost|$cf_host_prefix)/) &&
+            ($res->{"name"} ne $domain) &&
+            ($res->{"cname"} !~ /google.com/)){
             if ($res->{"cname"} =~ /cdn.cloudflare.net$/) {
                 $res->{"cloudflare"} = 1;
             } else {
