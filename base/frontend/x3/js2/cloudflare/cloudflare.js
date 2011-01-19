@@ -388,6 +388,169 @@ var enable_domain = function(domain) {
     return false;
 }
 
+var enable_dev_mode = function (domain, enable) {
+    var callback = {
+        success : function(o) {
+            try {
+                var data = YAHOO.lang.JSON.parse(o.responseText);
+                if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + data.cpanelresult.data[0].msg + "</div>";
+			    } else {
+                    get_stats(domain);
+			    }
+			}
+            catch (e) {
+                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
+            }
+        },
+        failure : function(o) {            
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+    
+    // send the AJAX request
+    var api2_call = {
+	    "cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "zone_enable_dev_mode",
+		"zone_name" : YAHOO.util.Dom.get("domain").value,
+        "user_email" : USER_EMAIL,
+        "user_api_key" : USER_API_KEY,
+        "v" : enable,
+	};
+
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    return false;
+}
+
+var get_stats = function(domain) {
+	YAHOO.util.Dom.get("domain").value = domain;
+
+    var callback = {
+        success : function(o) {
+            try {
+                var data = YAHOO.lang.JSON.parse(o.responseText);
+                if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + data.cpanelresult.data[0].msg + "</div>";
+			    } else {
+                    // Display stats here.
+                    var result = data.cpanelresult.data[0].response.result;
+                    var stats = result.objs[0];
+                    console.debug(result.timeZero);
+                    var start = new Date(parseInt(result.timeZero));
+                    var end = new Date(parseInt(result.timeZero) +  604800000);
+                    var html = "<b>Analytics for " + YAHOO.util.Dom.get("domain").value +
+                        " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
+                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b>";
+
+	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
+                    html += '<tr class="dt_header_row">';
+                    html += 	'<th>&nbsp;</th>';
+                    html += 	'<th>regular traffic</th>';
+                    html += 	'<th>crawlers/bots</th>';
+                    html += 	'<th>threats</th>';
+                    html += '</tr>';
+
+                    html += '<tr class="dt_module_row rowA">';
+                    html += 	'<td>Page Views</td>';
+                    html += 	'<td>'+stats.trafficBreakdown.pageviews.regular+'</t>';
+                    html += 	'<td>'+stats.trafficBreakdown.pageviews.crawler+'</td>';
+                    html += 	'<td>'+stats.trafficBreakdown.pageviews.threat+'</td>';
+                    html += '</tr>';
+
+                    html += '<tr class="dt_module_row rowB">';
+                    html += 	'<td>Unique Visitors</td>';
+                    html += 	'<td>'+stats.trafficBreakdown.uniques.regular+'</t>';
+                    html += 	'<td>'+stats.trafficBreakdown.uniques.crawler+'</td>';
+                    html += 	'<td>'+stats.trafficBreakdown.uniques.threat+'</td>';
+                    html += '</tr>';
+                    html += '</table>';
+
+                    
+                    html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
+                    
+                    var total = stats.requestsServed.cloudflare + stats.requestsServed.user;
+                    var saved = stats.requestsServed.cloudflare;
+                    
+                    html += '<tr class="dt_module_row rowA">';
+                    html += 	'<td>' + saved + ' requests saved by CloudFlare</td>';
+                    html += 	'<td>' + total + ' total requests</td>';
+                    html += '</tr>';
+
+                    var total = stats.bandwidthServed.cloudflare + stats.requestsServed.user;
+                    var saved = stats.bandwidthServed.cloudflare;
+
+                    html += '<tr class="dt_module_row rowB">';
+                    html += 	'<td>' + saved + 'KB bandwidth saved by CloudFlare</td>';
+                    html += 	'<td>' + total + 'KB total bandwidth</td>';
+                    html += '</tr>';
+                    html += '</table></p>';
+
+                    html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
+                    
+                    var security = stats.userSecuritySetting;
+                    var dev_mode = stats.dev_mode * 1000;
+                    var server_time = stats.currentServerTime;
+			        var local_time = new Date();
+			        var timeOffset = local_time.getTimezoneOffset() * 60 * 1000;                    
+
+                    html += '<tr class="dt_module_row rowA">';
+                    html += 	'<td>Your CloudFlare security setting: ' + security + '</td>';
+                    html += 	'<td>&nbsp;</td>';
+                    html += '</tr>';
+                    html += '<tr class="dt_module_row rowB">';
+                    if (dev_mode > server_time) {
+                        html += 	'<td>Development Mode will end at: ' 
+                            + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
+                            '</td><td>Click <a href="#" onclick="enable_dev_mode(\''+domain+'\', 0)">here</a> to disable</td>';
+                    } else {
+                        html += 	'<td>Development Mode is currently off.'
+                            + '</td><td>Click <a href="#" onclick="enable_dev_mode(\''+domain+'\', 1)">here</a> to enable</td>';
+                    }
+                    html += '</tr>';
+                    html += '</table></p>';
+                    
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = html;
+			    }
+		    }
+		    catch (e) {
+                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
+            }
+        },
+        failure : function(o) {            
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+    
+    var cf_zones = [];
+    for (key in CF_RECS) {
+        if (CF_RECS[key]) {
+            cf_zones.push(key);
+        }
+    }
+
+    // send the AJAX request
+    var api2_call = {
+		"cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "zone_get_stats",
+		"zone_name" : YAHOO.util.Dom.get("domain").value,
+        "user_email" : USER_EMAIL,
+        "user_api_key" : USER_API_KEY
+	};
+
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+
+    return false;
+}
+
 var init_page = function() {
 
     // New signups

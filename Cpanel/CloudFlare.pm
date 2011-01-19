@@ -28,6 +28,8 @@ my $cf_data_file = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_host_key;
 my $cf_host_name;
 my $cf_host_uri;
+my $cf_user_name;
+my $cf_user_uri;
 my $cf_host_port;
 my $cf_host_prefix;
 my $has_ssl;
@@ -47,6 +49,8 @@ sub CloudFlare_init {
     $cf_host_port = $data->{"host_port"};
     $cf_host_prefix = $data->{"host_prefix"};
     $cf_debug_mode = $data->{"debug"};
+    $cf_user_name = $data->{"user_name"};
+    $cf_user_uri = $data->{"user_uri"};
 
     ## Load the global statshot of who is on CF.
     if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
@@ -125,6 +129,71 @@ sub api2_user_lookup {
     };
 
     my $result = __https_post_req->($login_args);
+    return JSON::Syck::Load($result);
+}
+
+## Pulls certain stats for the passed in zone.
+sub api2_get_stats {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    ## Otherwise, pull this users stats.
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => $cf_user_uri,
+        "port" => $cf_host_port,
+        "query" => {
+            "a" => "stats",
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "u" => $OPTS{"user_email"},
+            "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
+    return JSON::Syck::Load($result);
+}
+
+sub api2_enable_dev_mode {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    ## Otherwise, pull this users stats.
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => $cf_user_uri,
+        "port" => $cf_host_port,
+        "query" => {
+            "a" => "devmode",
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "u" => $OPTS{"user_email"},
+            "v" => $OPTS{"v"},
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
     return JSON::Syck::Load($result);
 }
 
@@ -354,6 +423,10 @@ sub api2 {
     $API{'fetchzone'}{'engine'}                        = 'hasharray';
     $API{'getbasedomains'}{'func'}                     = 'api2_getbasedomains';
     $API{'getbasedomains'}{'engine'}                   = 'hasharray';
+    $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
+    $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
+    $API{'zone_enable_dev_mode'}{'func'}               = 'api2_enable_dev_mode';
+    $API{'zone_enable_dev_mode'}{'engine'}             = 'hasharray';
 
     return ( \%{ $API{$func} } );
 }
@@ -392,6 +465,7 @@ sub __https_post_req {
             = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '', 
                          make_form(%{$args_hr->{'query'}}));
         if ($cf_debug_mode) {
+            $logger->info($response);
             $logger->info($page);
         }
         return $page;
