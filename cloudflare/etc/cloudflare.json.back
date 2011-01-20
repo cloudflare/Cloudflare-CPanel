@@ -2,6 +2,8 @@
   "host_key":"DEFAULT_KEY_REPLACE_ME",
   "host_name":"api.cloudflare.com",
   "host_uri":"/host-gw.html",
+  "user_name":"www.cloudflare.com",
+  "user_uri":"/api_json.html",
   "host_port":"443",
   "host_prefix":"cloudflare-resolve-to"
 }

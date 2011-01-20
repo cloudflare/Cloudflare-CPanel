@@ -69,11 +69,11 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
     <td>[% domain_data.domain %]</td>
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
-    <td><a href="#" onclick="return get_stats('[% domain_data.domain %]');">[Analytics]</a></td>
+    <td id="cf_powered_stats[% domain_data.domain %]"><a href="#" onclick="return get_stats('[% domain_data.domain %]');">[Analytics]</a></td>
     <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 [% ELSE -%]
     <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
-    <td>&nbsp;</td>
+    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
     <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 [% END -%]
 </tr>

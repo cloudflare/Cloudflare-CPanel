@@ -165,7 +165,7 @@ sub api2_get_stats {
     return JSON::Syck::Load($result);
 }
 
-sub api2_enable_dev_mode {
+sub api2_edit_cf_setting {
     my %OPTS = @_;
 
     if (!$OPTS{"user_api_key"}) {
@@ -185,7 +185,7 @@ sub api2_enable_dev_mode {
         "uri" => $cf_user_uri,
         "port" => $cf_host_port,
         "query" => {
-            "a" => "devmode",
+            "a" => $OPTS{"a"},
             "z" => $OPTS{"zone_name"},
             "tkn" => $OPTS{"user_api_key"},
             "u" => $OPTS{"user_email"},
@@ -425,8 +425,8 @@ sub api2 {
     $API{'getbasedomains'}{'engine'}                   = 'hasharray';
     $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
     $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
-    $API{'zone_enable_dev_mode'}{'func'}               = 'api2_enable_dev_mode';
-    $API{'zone_enable_dev_mode'}{'engine'}             = 'hasharray';
+    $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
+    $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
 
     return ( \%{ $API{$func} } );
 }

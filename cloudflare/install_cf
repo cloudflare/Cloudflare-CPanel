@@ -2,10 +2,12 @@
 
 DEFAULT_HOST_KEY="DEFAULT_KEY_REPLACE_ME"
 host_key=$1
+mod_cf=$2
 if [ "$host_key" == "" ]; then
-    echo "Usage: ./install_cf HOST_KEY."
+    echo "Usage: ./install_cf HOST_KEY [mod_cf]."
     echo ""
     echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
+    echo "mod_cf is optional. If set, the installer will try to also install mod_cloudflare."
     exit 0
 fi
 
@@ -41,7 +43,20 @@ cp etc/cloudflare.json /usr/local/cpanel/etc/
 touch /usr/local/cpanel/etc/cloudflare_data.yaml
 chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
 
+## mod_cloudflare?
+if [ "$mod_cf" == "mod_cf" ]; then
+    wget --no-check-certificate http://www.github.com/cloudflare/CloudFlare-Tools/raw/master/mod_cloudflare.c 
+    apxs -i -a -c mod_cloudflare.c
+    /usr/local/cpanel/bin/apache_conf_distiller --update 
+    /scripts/restartsrv_httpd
+    echo "
+
+==> mod_cloudflare installed.
+"
+
+fi
+
 echo "
 
 CloudFlare module installed successfully.
-==> You must now edit /usr/local/cpanel/etc/cloudflare.json and add your CloudFlare host API key before continuing."
+"

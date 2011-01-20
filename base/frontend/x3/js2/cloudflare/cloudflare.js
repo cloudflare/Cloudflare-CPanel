@@ -250,9 +250,11 @@ var build_dnszone_table_markup = function(records) {
     if (NUM_RECS > 0) {
         if (is_cf_powered) { 
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
+            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="#" onclick="return get_stats(\''+domain+'\');">[Analytics]</a>';
             YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\') checked />';
         } else {
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
             YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\') />';
         }
     }
@@ -366,6 +368,7 @@ var push_all_off = function () {
 };
 
 var toggle_www_on = function(domain) {
+    reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
     var lambda = function() {
         if (WWW_DOM_INFO[2]) {
@@ -377,29 +380,34 @@ var toggle_www_on = function(domain) {
 }
 
 var toggle_all_off = function(domain) {
+    reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
     update_user_records_table(push_all_off);
     return false;
 }
 
 var enable_domain = function(domain) {
+    reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
     toggle_domain();
     return false;
 }
 
-var enable_dev_mode = function (domain, enable) {
+var change_cf_setting = function (domain, action, value) {
+    YAHOO.util.Dom.get("domain").value = domain;
     var callback = {
         success : function(o) {
             try {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
-                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                 } else if (data.cpanelresult.data[0].result == "error") {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                         + " " + data.cpanelresult.data[0].msg + "</div>";
 			    } else {
                     get_stats(domain);
+                    return false;
 			    }
 			}
             catch (e) {
@@ -407,19 +415,25 @@ var enable_dev_mode = function (domain, enable) {
             }
         },
         failure : function(o) {            
-            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error 
+                + ": " + CPANEL.lang.ajax_try_again + "</div>";
         }
     };
+
+    if (value == "SecurityLevelSetting") {
+        value = YAHOO.util.Dom.get(value).value;
+    }
     
     // send the AJAX request
     var api2_call = {
 	    "cpanel_jsonapi_version" : 2,
 		"cpanel_jsonapi_module" : "CloudFlare",
-		"cpanel_jsonapi_func" : "zone_enable_dev_mode",
+		"cpanel_jsonapi_func" : "zone_edit_cf_setting",
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_email" : USER_EMAIL,
         "user_api_key" : USER_API_KEY,
-        "v" : enable,
+        "v" : value,
+        "a" : action,
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -427,6 +441,7 @@ var enable_dev_mode = function (domain, enable) {
 }
 
 var get_stats = function(domain) {
+    reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
 
     var callback = {
@@ -501,17 +516,21 @@ var get_stats = function(domain) {
 			        var timeOffset = local_time.getTimezoneOffset() * 60 * 1000;                    
 
                     html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td>Your CloudFlare security setting: ' + security + '</td>';
-                    html += 	'<td>&nbsp;</td>';
-                    html += '</tr>';
+                    html += 	'<td>CloudFlare security setting: '+security+'</td>';
+                    html += 	'<td><select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="change_cf_setting(\''
+                        + domain+'\', \'sec_lvl\', \'' + 'SecurityLevelSetting' + '\')">';
+                    html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
+                    html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
+                    html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
+                    html += '</select></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
                     if (dev_mode > server_time) {
                         html += 	'<td>Development Mode will end at: ' 
                             + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
-                            '</td><td>Click <a href="#" onclick="enable_dev_mode(\''+domain+'\', 0)">here</a> to disable</td>';
+                            '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td>';
                     } else {
                         html += 	'<td>Development Mode is currently off.'
-                            + '</td><td>Click <a href="#" onclick="enable_dev_mode(\''+domain+'\', 1)">here</a> to enable</td>';
+                            + '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td>';
                     }
                     html += '</tr>';
                     html += '</table></p>';
