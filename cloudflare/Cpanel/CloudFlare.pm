@@ -396,14 +396,16 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {        
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
+    my $has_cf = 0;
     foreach my $dom (@$res) {
         if ($cf_global_data->{"cf_zones"}->{$dom->{"domain"}}) {
             $dom->{"cloudflare"} = 1;
+            $has_cf = 1;
         } else {
             $dom->{"cloudflare"} = 0;
         }
     }
-    return $res;
+    return {"has_cf" => $has_cf, "res" => $res};
 }
 
 sub api2 {

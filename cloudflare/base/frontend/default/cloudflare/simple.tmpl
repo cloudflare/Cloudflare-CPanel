@@ -43,6 +43,21 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 [% IF cf_user.response.user_key -%]
 
+
+[% IF base_domains_result.0.has_cf.json -%]
+
+<div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare Account</div>
+
+<p class="cf_description">
+Now that CloudFlare is activated, you can see quick stats for your website and manage the basic CloudFlare settings right here from your control panel. Stats take 24 hours to first appear and subsequently update once per day.  
+</p><p class="cf_description">
+To access all of your reports and manage all the CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
+</p><p class="cf_description">
+Remember: You can easily activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
+</p>
+
+[% ELSE %]
+
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>Activate CloudFlare</div>
 
 <p class="cf_description">
@@ -59,17 +74,30 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 <a href="#" onclick="return handleLearnMore(false);">[hide]</a>
 </p>
 
+[% END %]
+
+[% INCLUDE /usr/local/cpanel/etc/cloudflare_local.tmpl %]
+
 <input type="hidden" id="domain" />
 
 <div class="highlight">
 <table cellspacing="0" cellpadding="3" width="700" border="0">
-[% FOR domain_data = base_domains_result -%]
+
+<tr style="text-align:left;">
+        <th>&nbsp;</th>
+        <th>Site</th>
+        <th>Status</th>
+        <th>&nbsp;</th>
+        <th>CloudFlare Status</th>
+</tr>
+
+[% FOR domain_data = base_domains_result.0.res -%]
 <tr>
     <td><a href="#" onclick="return enable_domain('[% domain_data.domain %]');">[Edit]</a></td>
     <td>[% domain_data.domain %]</td>
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
-    <td id="cf_powered_stats[% domain_data.domain %]"><a href="#" onclick="return get_stats('[% domain_data.domain %]');">[Analytics]</a></td>
+    <td id="cf_powered_stats[% domain_data.domain %]"><a href="#" onclick="return get_stats('[% domain_data.domain %]');">Stats and Settings</a></td>
     <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 [% ELSE -%]
     <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
@@ -82,6 +110,8 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 </div>
 
 <div id="user_records_div"></div>
+
+<div id="help_div"></div>
 
 </div><!-- end add_record_and_zone_table -->
 
@@ -123,7 +153,7 @@ CloudFlare accelerates and protects any website online. On average, a website on
 
 <ul>
 <li><b>Site Performance Improvement:</b> CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
-<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html">here</a>.
+<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html" target="_blank">here</a>.
 <li><b>Spam Comments Protection:</b> CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
 <li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
 <li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.

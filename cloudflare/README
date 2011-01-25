@@ -38,3 +38,7 @@ Uninstall:
 
 Copyright (c) 2010 by CloudFlare, Inc.
 All Rights Reserved.
+
+Customize:
+
+Edit the file /usr/local/cpanel/etc/cloudflare_local.tmpl. This file is included in CloudFlare's HTML template.
