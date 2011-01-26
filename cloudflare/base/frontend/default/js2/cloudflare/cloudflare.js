@@ -1,3 +1,8 @@
+/**
+* Copywrite 2011 CloudFlare, Inc.
+*
+* @author ian@cloudflare.com
+*/
 
 var OPEN_HELP = -1;
 var VALID = [];
@@ -518,7 +523,7 @@ var get_stats = function(domain) {
                         " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
                         + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b><br />"
                         + "For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.<br />"
-                        + "Note: Basic stats only update once per day. For fifteen minute stat updates, upgrade to to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a> service.";
+                        + "Note: Basic stats only update once per day. For fifteen minute stat updates, upgrade to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a> service.";
                      
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     html += '<tr class="dt_header_row">';
