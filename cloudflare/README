@@ -36,7 +36,7 @@ Uninstall:
 
 /usr/local/cpanel/bin/unregister_cpanelplugin <full path to install file cloudflare.cpanelplugin>
 
-Copyright (c) 2010 by CloudFlare, Inc.
+Copyright (c) 2011 by CloudFlare, Inc.
 All Rights Reserved.
 
 Customize:
