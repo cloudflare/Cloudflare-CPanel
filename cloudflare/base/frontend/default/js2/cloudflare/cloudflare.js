@@ -1,4 +1,5 @@
 
+var OPEN_HELP = -1;
 var VALID = [];
 var CF_RECS = {};
 var NUM_RECS = 0;
@@ -190,21 +191,17 @@ var build_dnszone_table_markup = function(records) {
     NUM_RECS = records.length;
 	for (var i=0; i<records.length; i++) {
          
-        // A, MX, CNAME, TXT records
-        if (records[i]['type'].match(/^(A|CNAME)$/)) {
+        // CNAME records
+        if (records[i]['type'].match(/^(CNAME)$/)) {
 
             html += '<tr id="info_row_' + i + '" class="dt_info_row ' + row_toggle + '">';
 
             html += '<td id="name_value_' + i + '">' + records[i]['type'] + '</td>';
             html += '<td id="type_value_' + i + '">' + records[i]['name'].substring(0, records[i]['name'].length - 1) + '</td>';
-            // A
-            if (records[i]['type'] == 'A') {
-                html += '<td colspan="2" id="value_value_hehe_' + i + '">points to ' + records[i]['address'] + '</td>';
-            } 
-            // CNAME
-            else if (records[i]['type'] == 'CNAME') {
+            
+            if (records[i]['type'] == 'CNAME') {
                 html += '<td colspan="2" id="value_value_hehe_' + i + '">points to ' + records[i]['cname'] + '</td>';
-            } 		
+            }
 
 		    // action links
             html += '<td>';
@@ -239,18 +236,46 @@ var build_dnszone_table_markup = function(records) {
             html += 	'<div id="dnszone_table_delete_div_' + i + '" class="dt_module"></div>';
 		    html += 	'<div id="status_bar_' + i + '" class="cjt_status_bar"></div>';
             html += '</td></tr>';
-        }
 
-        // alternate row stripes
-		row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
+            // alternate row stripes
+		    row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
+        }
 	}
+
+	for (var i=0; i<records.length; i++) {
+        // A, records
+        if (records[i]['type'].match(/^(A)$/)) {
+
+            html += '<tr id="info_row_a_' + i + '" class="dt_info_row ' + row_toggle + '">';
+            html += '<td id="name_value_a_' + i + '">' + records[i]['type'] + '</td>';
+            html += '<td id="type_value_a_' + i + '">' + records[i]['name'].substring(0, records[i]['name'].length - 1) + '</td>';
+            
+            // A
+            if (records[i]['type'] == 'A') {
+                html += '<td colspan="2" id="value_value_hehe_a_' + i + '">' + records[i]['address'] + '</td>';
+            } 
+
+		    // action links
+            html += '<td>';
+            html +=	'<a href="javascript:void(0);" onclick="show_a_help('+i+',\''+ records[i]['name'] +'\')">Want to run on CloudFlare?</a>';
+            html += '</td>';
+            html += '</tr>';
+
+            html += '<tr id="module_row_a_' + i + '" class="dt_module_row ' + row_toggle + '"><td colspan="7">';
+            html += '</td></tr>';
+
+            // alternate row stripes
+		    row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
+        }
+    }
+
 	html += '</table>';
 
     // Set the global is CF powered text.
     if (NUM_RECS > 0) {
         if (is_cf_powered) { 
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
-            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="#" onclick="return get_stats(\''+domain+'\');">Stats and Settings</a>';
+            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Stats and Settings</a>';
             YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
         } else {
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
@@ -440,6 +465,22 @@ var change_cf_setting = function (domain, action, value) {
     return false;
 }
 
+var hide_a_help = function(rec_num) {
+    YAHOO.util.Dom.get("module_row_a_" + rec_num).innerHTML = '<td colspan="7"></td>';
+    OPEN_HELP = -1;
+}
+
+var show_a_help = function(rec_num, rec_name) {
+
+    if (OPEN_HELP >= 0) {
+        YAHOO.util.Dom.get("module_row_a_" + OPEN_HELP).innerHTML = '<td colspan="7"></td>';
+    }
+    YAHOO.util.Dom.get("module_row_a_" + rec_num).innerHTML = '<td colspan="7"><div style="padding: 20px">A type records cannot be directly routed though the CloudFlare network. Instead, click <a href="../zoneedit/advanced.html">here</a> and either switch the type of ' + rec_name + ' to CNAME, or else make a new CNAME record pointing to ' + rec_name + '</div></td>';
+    OPEN_HELP = rec_num;
+
+    return false;
+}
+
 var showHelp = function(type) {
 
     var help_contents = {
@@ -481,21 +522,21 @@ var get_stats = function(domain) {
                      
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     html += '<tr class="dt_header_row">';
-                    html += 	'<th>&nbsp;</th>';
+                    html += 	'<th width="178">&nbsp;</th>';
                     html += 	'<th>regular traffic</th>';
                     html += 	'<th>crawlers/bots</th>';
                     html += 	'<th>threats</th>';
                     html += '</tr>';
 
                     html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td>Page Views</td>';
+                    html += 	'<td width="178">Page Views</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.regular+'</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.crawler+'</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.threat+'</td>';
                     html += '</tr>';
 
                     html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td>Unique Visitors</td>';
+                    html += 	'<td width="178">Unique Visitors</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.regular+'</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.crawler+'</td>';
                     html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.threat+'</td>';
@@ -547,15 +588,15 @@ var get_stats = function(domain) {
                     html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
                     html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
                     html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
-                    html += '</select></td><td>&nbsp;</td><td><a href="#" onclick="showHelp(\'seclvl\')">info</a></td></tr>';
+                    html += '</select></td><td>&nbsp;</td><td><a href="javascript:void(0);" onclick="showHelp(\'seclvl\')">info</a></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
                     if (dev_mode > server_time) {
                         html += 	'<td width="280">Development Mode will end at</td><td>' 
                             + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
-                            '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td><td><a href="#" onclick="showHelp(\'devmode\')">info</a></td>';
+                            '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td><td><a href="javascript:void(0);" onclick="showHelp(\'devmode\')">info</a></td>';
                     } else {
                         html += 	'<td width="280">Development Mode is currently</td><td>off'
-                            + '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td><td><a href="#" onclick="showHelp(\'devmode\')">info</a></td>';
+                            + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td><td><a href="javascript:void(0);" onclick="showHelp(\'devmode\')">info</a></td>';
                     }
                     html += '</tr>';
                     html += '</table></p>';
