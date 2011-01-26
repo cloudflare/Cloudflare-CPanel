@@ -1,3 +1,8 @@
+/**
+* Copywrite 2011 CloudFlare, Inc.
+*
+* @author ian@cloudflare.com
+*/
 
 var OPEN_HELP = -1;
 var VALID = [];
