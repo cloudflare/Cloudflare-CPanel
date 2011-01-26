@@ -51,9 +51,9 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 <p class="cf_description">
 Now that CloudFlare is activated, you can see quick stats for your website and manage the basic CloudFlare settings right here from your control panel. Stats take 24 hours to first appear and subsequently update once per day.  
 </p><p class="cf_description">
-To access all of your reports and manage all the CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
+To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
 </p><p class="cf_description">
-Remember: You can easily activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
+Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
 </p>
 
 [% ELSE %]
@@ -61,7 +61,7 @@ Remember: You can easily activate and deactivate CloudFlare for each website by 
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>Activate CloudFlare</div>
 
 <p class="cf_description">
-Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate.
+Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
 </p><p class="cf_description">
 CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designed as "on" or "off" CloudFlare by using an orange and gray cloud. 
 </p>

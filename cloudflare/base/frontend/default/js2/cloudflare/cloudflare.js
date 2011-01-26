@@ -443,8 +443,8 @@ var change_cf_setting = function (domain, action, value) {
 var showHelp = function(type) {
 
     var help_contents = {
-        "devmode" : "Temporarily enter <b>development mode</b> for your websites. This will bypass CloudFlare's accelerated cache and slow down your site, but is useful if you are editing cachable content (like images, css, or JavaScript) and would like to see those changes right away. Press shift-reload if your changes are not immediate. Once entered, development mode will last for <b>3 hours</b> and then automatically toggle off.",
-        "seclvl" : "Adjust your <b>basic security level</b> to modify CloudFlare's protection behavior. A <b>low</b> security setting will challenge only the most threatening visitors. A <b>high</b> security setting will challenge all visitors that have exhibited threatening behavior within the last 14 days. We recommend starting out with a high or medium setting.",
+        "devmode" : "CloudFlare makes your website load faster by caching static resources like images, CSS and Javascript. If you are editing cachable content (like images, CSS, or JS) and want to see the changes right away, you should enter <b>Development mode</b>. This will bypass CloudFlare's cache. Development mode will automatically toggle off after <b>3 hours</b>. Hint: Press shift-reload if you do not see your changes immediate. If you forget to enter Development mode, you should log in to your CloudFlare.com account and use Cache Purge.",
+        "seclvl" : " CloudFlare provides security for your website and you can adjust your security setting for each website. A <b>low</b> security setting will challenge only the most threatening visitors. A <b>high</b> security setting will challenge all visitors that have exhibited threatening behavior within the last 14 days. We recommend starting with a high or medium setting.",
     };
 
     YAHOO.util.Dom.get("help_div").innerHTML = '<div style="padding: 20px">'
@@ -476,8 +476,8 @@ var get_stats = function(domain) {
                     var html = "<b>Stats and Settings for " + YAHOO.util.Dom.get("domain").value +
                         " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
                         + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b><br />"
-                        + "For more details, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.<br />"
-                        + "Note that basic stats only update once per day... To get fifteen minute updates, upgrade to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a>.";
+                        + "For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.<br />"
+                        + "Note: Basic stats only update once per day. For fifteen minute stat updates, upgrade to to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a> service.";
                      
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     html += '<tr class="dt_header_row">';
@@ -526,8 +526,8 @@ var get_stats = function(domain) {
                         var cloudflare = stats.pageLoadTime.cloudflare;
                         
                         html += '<tr class="dt_module_row rowA">';
-                        html += 	'<td width="282">Page load time (with Cloudflare)</td><td>' + cloudflare + ' sec.</td>';
-                        html += 	'<td>Page load time (without Cloudflare)</td><td>' + without + ' sec.</td>';
+                        html += 	'<td width="282">Page load time (with CloudFlare)</td><td>' + cloudflare + ' sec.</td>';
+                        html += 	'<td>Page load time (without CloudFlare)</td><td>' + without + ' sec.</td>';
                         html += '</tr>';
                     }
                     html += '</table></p>';     
@@ -547,15 +547,15 @@ var get_stats = function(domain) {
                     html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
                     html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
                     html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
-                    html += '</select></td><td>&nbsp;</td><td><a href="#" onclick="showHelp(\'seclvl\')">help?</a></td></tr>';
+                    html += '</select></td><td>&nbsp;</td><td><a href="#" onclick="showHelp(\'seclvl\')">info</a></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
                     if (dev_mode > server_time) {
                         html += 	'<td width="280">Development Mode will end at</td><td>' 
                             + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
-                            '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td><td><a href="#" onclick="showHelp(\'devmode\')">help?</a></td>';
+                            '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td><td><a href="#" onclick="showHelp(\'devmode\')">info</a></td>';
                     } else {
-                        html += 	'<td width="280">Development Mode is currently</td><td>off.'
-                            + '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td><td><a href="#" onclick="showHelp(\'devmode\')">help?</a></td>';
+                        html += 	'<td width="280">Development Mode is currently</td><td>off'
+                            + '</td><td>Click <a href="#" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td><td><a href="#" onclick="showHelp(\'devmode\')">info</a></td>';
                     }
                     html += '</tr>';
                     html += '</table></p>';
