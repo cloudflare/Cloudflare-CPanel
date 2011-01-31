@@ -39,7 +39,7 @@ sed -i -e "s/$DEFAULT_HOST_KEY/$host_key/" etc/cloudflare.json
 cp etc/cloudflare.json /usr/local/cpanel/etc/
 
 ## Generate the include file
-touch /usr/local/cpanel/etc/cloudflare-local.tmpl
+touch /usr/local/cpanel/etc/cloudflare_local.tmpl
 
 ## Also data file -- world readible, for the web server.
 ## @TODO -- figure out what user this users.

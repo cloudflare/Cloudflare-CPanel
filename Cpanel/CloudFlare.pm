@@ -1,6 +1,6 @@
 package Cpanel::CloudFlare;
 
-# cpanel - Cpanel/CloudFlare.pm                   Copyright(c) 2011 CloudFlare, Inc.
+# cpanel - Cpanel/CloudFlare.pm                   Copyright(c) 2010 CloudFlare, Inc.
 #                                                               All rights Reserved.
 # copyright@cloudflare.com                                      http://cloudflare.com
 # @author ian@cloudflare.com
