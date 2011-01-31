@@ -88,7 +88,7 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
         <th>Site</th>
         <th>Status</th>
         <th>&nbsp;</th>
-        <th>CloudFlare Status</th>
+        <th align="center">CloudFlare Status</th>
 </tr>
 
 [% FOR domain_data = base_domains_result.0.res -%]
@@ -98,11 +98,11 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
     <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Stats and Settings</a></td>
-    <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 [% ELSE -%]
     <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
     <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
-    <td align="left" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 [% END -%]
 </tr>
 [% END -%]

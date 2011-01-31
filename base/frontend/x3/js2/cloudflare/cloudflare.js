@@ -517,13 +517,14 @@ var get_stats = function(domain) {
                     var result = data.cpanelresult.data[0].response.result;
                     var stats = result.objs[0];
 
+                    var numberFormat = {decimalPlaces:0, decimalSeparator:".", thousandsSeparator:","};
                     var start = new Date(parseInt(result.timeZero));
                     var end = new Date(parseInt(result.timeZero) +  604800000);
-                    var html = "<b>Stats and Settings for " + YAHOO.util.Dom.get("domain").value +
+                    var html = "<p><b>Stats and Settings for " + YAHOO.util.Dom.get("domain").value +
                         " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
-                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b><br />"
+                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p><p>"
                         + "For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.<br />"
-                        + "Note: Basic stats only update once per day. For fifteen minute stat updates, upgrade to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a> service.";
+                        + "Note: Basic stats only update once per day. For fifteen minute stat updates, upgrade to <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro</a> service.</p>";
                      
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     html += '<tr class="dt_header_row">';
@@ -535,45 +536,47 @@ var get_stats = function(domain) {
 
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="178">Page Views</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.regular+'</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.crawler+'</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.pageviews.threat+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
                     html += '</tr>';
 
                     html += '<tr class="dt_module_row rowB">';
                     html += 	'<td width="178">Unique Visitors</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.regular+'</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.crawler+'</td>';
-                    html += 	'<td style="text-align:center;">'+stats.trafficBreakdown.uniques.threat+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
+                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
                     html += '</tr>';
                     html += '</table>';
 
                     
                     html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     
-                    var total = stats.requestsServed.cloudflare + stats.requestsServed.user;
-                    var saved = stats.requestsServed.cloudflare;
+                    var total = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user), 
+                        numberFormat);
+                    var saved = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare), numberFormat);
                     
                     html += '<tr class="dt_module_row rowA">';
-                     html += 	'<td width="282">Requests saved by CloudFlare</td><td>' + saved + '</td>';
+                     html += 	'<td width="282">Requests saved by CloudFlare</td><td width="150">' + saved + '</td>';
                     html += 	'<td>Total requests</td><td>' + total + '</td>';
                     html += '</tr>';
 
-                    var total = stats.bandwidthServed.cloudflare + stats.requestsServed.user;
-                    var saved = stats.bandwidthServed.cloudflare;
+                    var total = YAHOO.util.Number.format(parseInt(stats.bandwidthServed.cloudflare + stats.requestsServed.user)
+                                                         , numberFormat);
+                    var saved = YAHOO.util.Number.format(parseInt(stats.bandwidthServed.cloudflare), numberFormat);
 
                     html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="282">Bandwidth saved by CloudFlare</td><td>' + saved + ' KB</td>';
-                    html += 	'<td>Total bandwidth</td><td>' + total + ' KB</td>';
+                    html += 	'<td width="282">Bandwidth saved by CloudFlare</td><td width="150">' + saved + ' KB</td>';
+                    html += 	'<td>Total bandwidth</td><td>' + saved + ' KB</td>';
                     html += '</tr>';
 
                     if (stats.pageLoadTime) {
-                        var without = stats.pageLoadTime.without;
-                        var cloudflare = stats.pageLoadTime.cloudflare;
+                        var without = parseFloat(stats.pageLoadTime.without);
+                        var cloudflare = parseFloat(stats.pageLoadTime.cloudflare);
                         
                         html += '<tr class="dt_module_row rowA">';
-                        html += 	'<td width="282">Page load time (with CloudFlare)</td><td>' + cloudflare + ' sec.</td>';
-                        html += 	'<td>Page load time (without CloudFlare)</td><td>' + without + ' sec.</td>';
+                        html += 	'<td width="282">Page load time (with CloudFlare)</td><td width="150">' + cloudflare.toFixed(2) + ' sec.</td>';
+                        html += 	'<td>Page load time (without CloudFlare)</td><td>' + without.toFixed(2) + ' sec.</td>';
                         html += '</tr>';
                     }
                     html += '</table></p>';     
