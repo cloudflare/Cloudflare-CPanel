@@ -1,5 +1,6 @@
 { 
   "host_key":"DEFAULT_KEY_REPLACE_ME",
+  "host_formal_name":"DEFAULT_HOST_FORMAL_NAME",
   "host_name":"api.cloudflare.com",
   "host_uri":"/host-gw.html",
   "user_name":"www.cloudflare.com",

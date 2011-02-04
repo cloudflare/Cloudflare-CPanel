@@ -34,7 +34,9 @@ my $cf_host_port;
 my $cf_host_prefix;
 my $has_ssl;
 my $cf_debug_mode;
+my $hoster_name;
 my $cf_global_data = {};
+my $DEFAULT_HOSTER_NAME = "Your Web Hosting Provider";
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name', 
                'class' => 'class', 'address' => 'address', 'type' => 'type', 
@@ -51,6 +53,10 @@ sub CloudFlare_init {
     $cf_debug_mode = $data->{"debug"};
     $cf_user_name = $data->{"user_name"};
     $cf_user_uri = $data->{"user_uri"};
+    $hoster_name = $data->{"host_formal_name"};
+    if (!$hoster_name) {
+        $hoster_name = $DEFAULT_HOSTER_NAME;
+    }
 
     ## Load the global statshot of who is on CF.
     if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
@@ -405,7 +411,7 @@ sub api2_getbasedomains {
             $dom->{"cloudflare"} = 0;
         }
     }
-    return {"has_cf" => $has_cf, "res" => $res};
+    return {"has_cf" => $has_cf, "res" => $res, "hoster" => $hoster_name};
 }
 
 sub api2 {
