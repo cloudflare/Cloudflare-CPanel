@@ -530,11 +530,9 @@ var get_stats = function(domain) {
                     var numberFormatFloat = {decimalPlaces:2, decimalSeparator:".", thousandsSeparator:","};
                     var start = new Date(parseInt(result.timeZero));
                     var end = new Date(parseInt(result.timeZero) +  604800000);
-                    var html = "<p><b>Stats and Settings for " + YAHOO.util.Dom.get("domain").value +
+                    var html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
                         " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
-                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p><p>"
-                        + "For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.<br /><br />"
-                        + "Note: Basic stats update every 24 hours. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p>";
                      
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
                     html += '<tr class="dt_header_row">';
@@ -631,9 +629,18 @@ var get_stats = function(domain) {
                     html += '</tr></td>';
                     html += '</table></p>';
 
-                    if (percent_time) {
 
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4><table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="https://chart.googleapis.com/chart?cht=bhs&chco=000000|e67300&chs=200x75&chd=t:'+ cloudflare_time +',' + without_time +'&chxt=y&chxl=0:|Without CloudFlare|With CloudFlare&chds=0,5&chm=N *f* sec.,000000,0,-1,11">  </span> </td><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
+                    html += '<div id="analytics-stats">';
+
+                    if (percent_time) {
+			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
+			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
+
+
+                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>';
+
+
+                    html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
                     
                     } else {
 
@@ -641,12 +648,19 @@ var get_stats = function(domain) {
 
                     }
 
-                    html += '<div class="analytics-speed-column" id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=e67300|000000&chs=50x50&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="50" height="50"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
-                    
-                    html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=e67300|000000&chs=50x50&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="50" height="50"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
-                                
 
+                    html += '<div class="analytics-speed-column analytics-right-rail">';
+                    html += '<div id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=e67300|000000&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
+                    
+                    html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=e67300|000000&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
+                                
+                    html += '</div></div>';
+
+                    html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/login.html" target="_blank"><span class="label">See more stats</span></a></div></div>';
+
+                    html += "<p>Note: Basic stats update every 24 hours. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
                     html += '<A NAME="infobox"></A>'
+                    html += '<p id="cf-settings"><b>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</b></p>';
                     html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     
                     var security = stats.userSecuritySetting;
@@ -677,6 +691,7 @@ var get_stats = function(domain) {
                     }
                     html += '</tr>';
                     html += '</table></p>';
+                    html += "<p>For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/login.html\" target=\"_blank\">CloudFlare</a>.</p>";
                     
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
 			    }
