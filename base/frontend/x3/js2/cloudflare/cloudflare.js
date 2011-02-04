@@ -300,9 +300,10 @@ var update_user_records_table = function(cb_lambda) {
 				if (data.cpanelresult.error) {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
 				}
-				else if (data.cpanelresult.data) {                    
+				else if (data.cpanelresult.data) {              
                     var html = build_dnszone_table_markup(data.cpanelresult.data);
-                    YAHOO.util.Dom.get("user_records_div").innerHTML = html;
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = 
+                        '<a name="user_recs_' + YAHOO.util.Dom.get("domain").value + '"></a>' + html;
 
                     // Now add in tool tips
 	                for (var i=0; i<NUM_RECS; i++) {
@@ -316,6 +317,11 @@ var update_user_records_table = function(cb_lambda) {
                     // Call the cb, if it is set.
                     if (cb_lambda) {
                         cb_lambda();
+                    }
+
+                    // Jump to the edit anchor
+                    if (YAHOO.util.Dom.get("domain").value) {
+                        window.location.hash="user_recs_" + YAHOO.util.Dom.get("domain").value;
                     }
 				}
 				else {
@@ -571,14 +577,6 @@ var get_stats = function(domain) {
                         percent_reqs = 0;
                     }
 
-                    /**
-                    html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td width="210">Requests saved by CloudFlare</td><td width="150">' + saved + '</td>';
-                    html += 	'<td width="230">Total requests</td><td>' + total + '</td>';
-                    html +=     '<td style="text-align:right;"><image src="../images/icons-custom/Info_16x16.png" width="16" height="16" onclick="showHelp(\'hits\')"></td>';
-                    html += '</tr>';
-*/
-
                     var total_bw = parseFloat(stats.bandwidthServed.cloudflare) + parseFloat(stats.bandwidthServed.user);
                     var saved_bw = parseFloat(stats.bandwidthServed.cloudflare);
                     var percent_bw = (saved_bw / total_bw) * 100.;
@@ -598,16 +596,6 @@ var get_stats = function(domain) {
                     }
                     total_bw = YAHOO.util.Number.format(total_bw, numberFormatFloat);
                     saved_bw = YAHOO.util.Number.format(saved_bw, numberFormatFloat);
-
-
-/*
-                    html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="210">Bandwidth saved by CloudFlare</td><td width="150">' + saved + saved_units + '</td>';
-                    html += 	'<td width="230">Total bandwidth</td><td>' + total + total_units + '</td>';
-                    html +=     '<td style="text-align:right;"><image src="../images/icons-custom/Info_16x16.png" width="16" height="16" onclick="showHelp(\'bandwidth\')"></td>';
-                    html += '</tr>';
-*/
-
                     
                     var without_time = 0;
                     var cloudflare_time = 0;
@@ -617,14 +605,6 @@ var get_stats = function(domain) {
                         without_time = parseFloat(stats.pageLoadTime.without);
                         cloudflare_time = parseFloat(stats.pageLoadTime.cloudflare);
                         percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100) + '%';
-
-/*                      
-                        html += '<tr class="dt_module_row rowA">';
-                        html += 	'<td width="210">Page load time (with CloudFlare)</td><td width="150">' + cloudflare.toFixed(2) + ' sec.</td>';
-                        html += 	'<td width="230">Page load time (without CloudFlare)</td><td>' + without.toFixed(2) + ' sec.</td>';
-                        html +=     '<td style="text-align:right;"><image src="../images/icons-custom/Info_16x16.png" width="16" height="16" onclick="showHelp(\'pageload\')"></td>';
-                        html += '</tr>';
-*/
                     }
                     html += '</tr></td>';
                     html += '</table></p>';
@@ -643,11 +623,8 @@ var get_stats = function(domain) {
                     html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
                     
                     } else {
-
                     html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4><h5>The page load time comparison is currently gathering data.</h5></td></tr></table></div>';
-
                     }
-
 
                     html += '<div class="analytics-speed-column analytics-right-rail">';
                     html += '<div id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
@@ -694,7 +671,7 @@ var get_stats = function(domain) {
                     html += "<p>For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
                     
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
-			    }
+                }
 		    }
 		    catch (e) {
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
