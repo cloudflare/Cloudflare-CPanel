@@ -535,11 +535,17 @@ var get_stats = function(domain) {
                     var numberFormat = {decimalPlaces:0, decimalSeparator:".", thousandsSeparator:","};
                     var numberFormatFloat = {decimalPlaces:2, decimalSeparator:".", thousandsSeparator:","};
                     var start = new Date(parseInt(result.timeZero));
-                    var end = new Date(parseInt(result.timeZero) +  604800000);
-                    var html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
-                        " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
-                        + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p>";
-                     
+                    var end = new Date(parseInt(result.timeEnd));
+                    var html;
+                    if (start > end) {
+                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                            " &middot; " + YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) 
+                            + "</b></p>";
+                    } else {
+                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                            " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
+                            + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p>";
+                    }
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
                     html += '<tr class="dt_header_row">';
                     html += 	'<th width="100">&nbsp;</th>';
