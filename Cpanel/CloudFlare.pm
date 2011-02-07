@@ -1,6 +1,6 @@
 package Cpanel::CloudFlare;
 
-# cpanel - Cpanel/CloudFlare.pm                   Copyright(c) 2010 CloudFlare, Inc.
+# cpanel - Cpanel/CloudFlare.pm                   Copyright(c) 2011 CloudFlare, Inc.
 #                                                               All rights Reserved.
 # copyright@cloudflare.com                                      http://cloudflare.com
 # @author ian@cloudflare.com
@@ -36,7 +36,7 @@ my $has_ssl;
 my $cf_debug_mode;
 my $hoster_name;
 my $cf_global_data = {};
-my $DEFAULT_HOSTER_NAME = "Your Web Hosting Provider";
+my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name', 
                'class' => 'class', 'address' => 'address', 'type' => 'type', 

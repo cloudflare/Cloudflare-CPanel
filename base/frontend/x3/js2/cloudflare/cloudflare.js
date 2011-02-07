@@ -538,14 +538,19 @@ var get_stats = function(domain) {
                     var end = new Date(parseInt(result.timeEnd));
                     var html;
                     if (start > end) {
-                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
-                            " &middot; " + YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) 
-                            + "</b></p>";
+                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
+                        html += "<p>Basic stats update every 24 hours for the free service. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
-                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
-                            " &middot; " + YAHOO.util.Date.format(start, {format:"%B %e, %Y"}) 
-                            + " to "+ YAHOO.util.Date.format(end, {format:"%B %e, %Y"}) + "</b></p>";
-                    }
+                        var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
+                        var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
+                        if (start_fm === end_fm) {
+                            html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                                " &middot; " + start_fm + "</b></p>";
+                        } else {
+                            html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                                " &middot; " + start_fm 
+                                + " to "+ end_fm + "</b></p>";
+                        }
 	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
                     html += '<tr class="dt_header_row">';
                     html += 	'<th width="100">&nbsp;</th>';
@@ -629,7 +634,7 @@ var get_stats = function(domain) {
                     html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
                     
                     } else {
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4><h5>The page load time comparison is currently gathering data.</h5></td></tr></table></div>';
+                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
                     }
 
                     html += '<div class="analytics-speed-column analytics-right-rail">';
@@ -640,8 +645,11 @@ var get_stats = function(domain) {
                     html += '</div></div>';
 
                     html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/analytics.html" target="_blank"><span class="label">See more stats</span></a></div></div>';
-
+                        
                     html += "<p>Note: Basic stats update every 24 hours. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+
+                    } // END if (end < start)
+
                     html += '<A NAME="infobox"></A>'
                     html += '<p id="cf-settings"><b>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</b></p>';
                     html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
@@ -675,7 +683,7 @@ var get_stats = function(domain) {
                     html += '</tr>';
                     html += '</table></p>';
                     html += "<p>For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
-                    
+
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
                 }
 		    }

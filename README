@@ -11,7 +11,7 @@ First, acquire a host api key from CloudFlare.
 
 Install (as root):
 
-./install_cf HOST_API_KEY [mod_cf]
+./install_cf HOST_API_KEY [mod_cf] [Provider Name]
 
 This works for the default theme and locale. Other themes or locales may require custom work. 
 Replace HOST_API_KEY with your api key. Adding the string mod_cf will also install the Apache 
@@ -36,9 +36,9 @@ Uninstall:
 
 /usr/local/cpanel/bin/unregister_cpanelplugin <full path to install file cloudflare.cpanelplugin>
 
+Customization:
+
+To include customized text, edit the file /usr/local/cpanel/etc/cloudflare_local.tmpl. This file is included in CloudFlare's HTML template.
+
 Copyright (c) 2011 by CloudFlare, Inc.
 All Rights Reserved.
-
-Customize:
-
-Edit the file /usr/local/cpanel/etc/cloudflare_local.tmpl. This file is included in CloudFlare's HTML template.
