@@ -505,11 +505,22 @@ var showHelp = function(type) {
 
     };
 
-    YAHOO.util.Dom.get("help_div").innerHTML = '<div style="padding: 20px">'
-        + help_contents[type]
-        + '</div>';
+    if ('DN' in window) {
 
-    window.location.hash="infobox";
+        var help_lightbox;
+        if ('CF' in window && 'lightbox' in window.CF) {
+            help_lightbox = window.CF.lightbox;
+            help_lightbox.cfg.contentString = help_contents[type];
+        } else {
+            window.CF = window.CF || {};
+            window.CF.lightbox = help_lightbox = new DN.Lightbox({
+                contentString: help_contents[type],
+                animate: false,
+                maxWidth: 500
+            });
+        }
+        help_lightbox.show.call(help_lightbox, this);
+    }
 
     return false;
 }

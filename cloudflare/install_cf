@@ -16,8 +16,9 @@ fi
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
-## Now the JS
+## Now the JS/CSS
 cp -r base/frontend/default/js2/cloudflare /usr/local/cpanel/base/frontend/default/js2/
+cp -r base/frontend/default/css2/cloudflare /usr/local/cpanel/base/frontend/default/css2/
 
 ## And the HTML files
 cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
