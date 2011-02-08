@@ -506,11 +506,19 @@ var showHelp = function(type) {
     };
 
     if ('DN' in window) {
-        var help_lightbox = new DN.Lightbox({
-            contentString: help_contents[type],
-            animate: false,
-            maxWidth: 500
-        });
+
+        var help_lightbox;
+        if ('CF' in window && 'lightbox' in window.CF) {
+            help_lightbox = window.CF.lightbox;
+            help_lightbox.cfg.contentString = help_contents[type];
+        } else {
+            window.CF = window.CF || {};
+            window.CF.lightbox = help_lightbox = new DN.Lightbox({
+                contentString: help_contents[type],
+                animate: false,
+                maxWidth: 500
+            });
+        }
         help_lightbox.show.call(help_lightbox, this);
     }
 
