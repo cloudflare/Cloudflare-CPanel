@@ -505,11 +505,14 @@ var showHelp = function(type) {
 
     };
 
-    YAHOO.util.Dom.get("help_div").innerHTML = '<div style="padding: 20px">'
-        + help_contents[type]
-        + '</div>';
-
-    window.location.hash="infobox";
+    if ('DN' in window) {
+        var help_lightbox = new DN.Lightbox({
+            contentString: help_contents[type],
+            animate: false,
+            maxWidth: 500
+        });
+        help_lightbox.show.call(help_lightbox, this);
+    }
 
     return false;
 }
