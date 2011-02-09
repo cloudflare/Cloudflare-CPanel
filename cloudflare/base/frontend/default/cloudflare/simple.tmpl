@@ -49,7 +49,7 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare Account</div>
 
 <p class="cf_description">
-Now that CloudFlare is activated, you can see quick stats for your website and manage the basic CloudFlare settings right here from your control panel. Stats take 24 hours to first appear and subsequently update once per day.  
+Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.  
 </p><p class="cf_description">
 To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
 </p><p class="cf_description">
@@ -97,7 +97,7 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
     <td>[% domain_data.domain %]</td>
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
-    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Stats and Settings</a></td>
+    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
     <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 [% ELSE -%]
     <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
@@ -158,7 +158,7 @@ CloudFlare accelerates and protects any website online. On average, a website on
 <li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
 <li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
 <li><b>Lower CPU Usage:</b> As fewer requests hit our server, this lowers the overall CPU usage of your account.
-<li><b>New Site Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
+<li><b>New Statistics Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
 </ul>
 
 <b>Limitations of the CloudFlare system:</b>
