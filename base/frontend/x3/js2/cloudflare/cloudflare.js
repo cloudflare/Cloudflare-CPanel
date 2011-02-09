@@ -280,7 +280,7 @@ var build_dnszone_table_markup = function(records) {
     if (NUM_RECS > 0) {
         if (is_cf_powered) { 
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
-            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Stats and Settings</a>';
+            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
             YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
         } else {
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
@@ -549,16 +549,16 @@ var get_stats = function(domain) {
                     var end = new Date(parseInt(result.timeEnd));
                     var html;
                     if (start > end) {
-                        html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
-                        html += "<p>Basic stats update every 24 hours for the free service. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+                        html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
+                        html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
                         var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
                         var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
                         if (start_fm === end_fm) {
-                            html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                            html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
                                 " &middot; " + start_fm + "</b></p>";
                         } else {
-                            html = "<p><b>Basic Stats for " + YAHOO.util.Dom.get("domain").value +
+                            html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
                                 " &middot; " + start_fm 
                                 + " to "+ end_fm + "</b></p>";
                         }
@@ -655,9 +655,9 @@ var get_stats = function(domain) {
                                 
                     html += '</div></div>';
 
-                    html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/analytics.html" target="_blank"><span class="label">See more stats</span></a></div></div>';
+                    html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/analytics.html" target="_blank"><span class="label">See more statistics</span></a></div></div>';
                         
-                    html += "<p>Note: Basic stats update every 24 hours. For 15 minute stat updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+                    html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
 
                     } // END if (end < start)
 
@@ -693,7 +693,7 @@ var get_stats = function(domain) {
                     }
                     html += '</tr>';
                     html += '</table></p>';
-                    html += "<p>For more stats and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
+                    html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
 
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
                 }
