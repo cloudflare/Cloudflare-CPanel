@@ -319,10 +319,10 @@ var update_user_records_table = function(cb_lambda) {
                         cb_lambda();
                     }
 
-                    // Jump to the edit anchor
-                    if (YAHOO.util.Dom.get("domain").value) {
-                        window.location.hash="user_recs_" + YAHOO.util.Dom.get("domain").value;
-                    }
+                    // Scroll to the edit anchor
+                    var yoffset = YAHOO.util.Dom.getY('user_records_div');
+                    window.scrollTo(0, yoffset);
+
 				}
 				else {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
