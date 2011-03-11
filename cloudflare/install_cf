@@ -13,6 +13,21 @@ if [ "$host_key" == "" ]; then
     exit 0
 fi
 
+## Make sure we're in the right directory.
+if [ ! -f "etc/cloudflare.json.back" ]
+then
+    echo "Error -- must run this script from the same directory as the script."
+    exit 0
+fi
+
+## And that we are root.
+id=`id -u`
+if [ "$id" != 0 ]
+then
+    echo "Error -- must run this script as root."
+    exit 0
+fi
+
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
