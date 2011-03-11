@@ -53,7 +53,7 @@ fi
 cp etc/cloudflare.json.back etc/cloudflare.json
 
 if [ "$formal_name" == "" ]; then
-    formal_name= "your web hosting provider"
+    formal_name="your web hosting provider"
 fi
 sed -i -e "s/$DEFAULT_HOST_KEY/$host_key/" etc/cloudflare.json 
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
