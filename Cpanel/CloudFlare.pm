@@ -19,6 +19,7 @@ use Cpanel::DataStore            ();
 
 use Socket                       ();
 use JSON::Syck                   ();
+use Digest::MD5 qw(md5_hex);
 use strict;
 
 my $logger = Cpanel::Logger->new();
@@ -86,8 +87,10 @@ sub api2_user_create {
 
     # Use a random string as a password.
     my $password = crypt(int(rand(10000000)), time);
-    $logger->info("Createing Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
-   
+    $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
+    $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}} = md5_hex($OPTS{"user"} . $cf_host_key);
+    $logger->info("Making user token: " . $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}});
+    
     ## Otherwise, try to create this user.
     my $args = {
         "host" => $cf_host_name,
@@ -97,10 +100,12 @@ sub api2_user_create {
             "act" => "user_create",
             "host_key" => $cf_host_key,
             "cloudflare_email" => $OPTS{"email"},
-            "cloudflare_pass" => $password
+            "cloudflare_pass" => $password,
+            "unique_id" => $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}},
         },
     };
 
+    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
     my $result = __https_post_req->($args);  
     return JSON::Syck::Load($result);
 }
@@ -121,21 +126,37 @@ sub api2_user_lookup {
                  "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
     }
 
+    if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
+        $logger->info("Using user token");
+        my $login_args = {
+            "host" => $cf_host_name,
+            "uri" => $cf_host_uri,
+            "port" => $cf_host_port,
+            "query" => {
+                "act" => "user_lookup",
+                "host_key" => $cf_host_key,
+                "unique_id" => $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}},
+            },
+        };
 
-    ## Otherwise, try to log this user in.
-    my $login_args = {
-        "host" => $cf_host_name,
-        "uri" => $cf_host_uri,
-        "port" => $cf_host_port,
-        "query" => {
-            "act" => "user_lookup",
-            "host_key" => $cf_host_key,
-            "cloudflare_email" => $OPTS{"email"}
-        },
-    };
+        my $result = __https_post_req->($login_args);
+        return JSON::Syck::Load($result);
+    } else {
+        $logger->info("Using user email");
+        my $login_args = {
+            "host" => $cf_host_name,
+            "uri" => $cf_host_uri,
+            "port" => $cf_host_port,
+            "query" => {
+                "act" => "user_lookup",
+                "host_key" => $cf_host_key,
+                "cloudflare_email" => $OPTS{"email"},
+            },
+        };
 
-    my $result = __https_post_req->($login_args);
-    return JSON::Syck::Load($result);
+        my $result = __https_post_req->($login_args);
+        return JSON::Syck::Load($result);
+    }
 }
 
 ## Pulls certain stats for the passed in zone.

@@ -117,17 +117,6 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 
 </div><!-- end body-content div -->
 
-<script type="text/javascript">
-//<![CDATA[
-var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
-var LANG = [% js_lang.json() %];
-var USER_ID = [% cf_user.response.user_key.json() %];
-var USER_API_KEY = [% cf_user.response.user_api_key.json() %];
-var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
-
-//]]>
-</script>
-
 [% ELSE -%]
 
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare</div>
@@ -217,3 +206,14 @@ CloudFlare accelerates and protects any website online. On average, a website on
 [% END -%]
 
 [% END -%]
+
+<script type="text/javascript">
+//<![CDATA[
+var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
+var LANG = [% js_lang.json() %];
+var USER_ID = [% cf_user.response.user_key.json() %];
+var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
+var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
+
+//]]>
+</script>

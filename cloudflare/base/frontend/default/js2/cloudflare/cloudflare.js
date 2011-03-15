@@ -533,7 +533,7 @@ var get_stats = function(domain) {
         success : function(o) {
             try {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
-                if (data.cpanelresult.error) {
+                if (data.cpanelresult.error || data.cpanelresult.data.length == 0) {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                 } else if (data.cpanelresult.data[0].result == "error") {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
