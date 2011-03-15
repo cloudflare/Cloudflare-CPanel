@@ -211,7 +211,7 @@ CloudFlare accelerates and protects any website online. On average, a website on
 //<![CDATA[
 var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
 var LANG = [% js_lang.json() %];
-var USER_ID = [% cf_user.response.user_key.json() %];
+var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 0 %];
 var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
 var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
 
