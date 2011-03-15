@@ -6,5 +6,6 @@
   "user_name":"www.cloudflare.com",
   "user_uri":"/api_json.html",
   "host_port":"443",
-  "host_prefix":"cloudflare-resolve-to"
+  "host_prefix":"cloudflare-resolve-to",
+  "cp_version":"0.1.0"
 }

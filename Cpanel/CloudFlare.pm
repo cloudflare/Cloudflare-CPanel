@@ -36,6 +36,7 @@ my $cf_host_prefix;
 my $has_ssl;
 my $cf_debug_mode;
 my $hoster_name;
+my $cf_cp_version;
 my $cf_global_data = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
@@ -54,6 +55,7 @@ sub CloudFlare_init {
     $cf_debug_mode = $data->{"debug"};
     $cf_user_name = $data->{"user_name"};
     $cf_user_uri = $data->{"user_uri"};
+    $cf_cp_version = $data->{"cp_version"};
     $hoster_name = $data->{"host_formal_name"};
     if (!$hoster_name) {
         $hoster_name = $DEFAULT_HOSTER_NAME;
@@ -460,6 +462,33 @@ sub api2 {
     return ( \%{ $API{$func} } );
 }
 
+## Run the auto-update here
+sub check_auto_update {
+
+    print "Checking CloudFlare for latest version\n";
+    CloudFlare_init();
+    print "Current Version: $cf_cp_version\n";
+
+    my $check_args = {
+        "host" => $cf_host_name,
+        "uri" => $cf_host_uri,
+        "port" => $cf_host_port,
+        "query" => {
+            "act" => "cpanel_info",
+            "host_key" => $cf_host_key,
+        },
+    };
+
+    my $result = JSON::Syck::Load(__https_post_req->($check_args));
+    print "Latest Version: " . $result->{"response"}{"cpanel_latest"} . "\n";
+    if ($result->{"response"}{"cpanel_latest"} > $cf_cp_version) {
+        print "Downloading the latest version.\n";
+        `curl -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`
+    } else {
+        print "You already have the latest version.\n";
+    }
+}
+
 ########## Internal Functions Defined Below #########
 
 sub __fetchzone {
@@ -577,6 +606,11 @@ sub __serialize_request {
         push @KEYLIST, Cpanel::Encoder::URI::uri_encode_str($opt) . '=' . Cpanel::Encoder::URI::uri_encode_str( $opt_ref->{$opt} );
     }
     return join( '&', @KEYLIST );
+}
+
+## Are we running from the command line?
+if ($ARGV[0] eq "check") {
+    check_auto_update();
 }
 
 1; # Ah, perl.

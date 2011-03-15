@@ -70,6 +70,15 @@ touch /usr/local/cpanel/etc/cloudflare_local.tmpl
 touch /usr/local/cpanel/etc/cloudflare_data.yaml
 chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
 
+## Start the updator going
+cp bin/cloudflare_update.sh /usr/local/cpanel/bin/
+iscf=`crontab -l | grep cloudflare`
+if [ "$iscf" == "" ]; then
+    crontab -l > c.cur
+    echo "12 2 * * 0 /usr/local/cpanel/bin/cloudflare_update.sh >/dev/null 2>&1" >> c.cur
+    crontab c.cur
+fi
+
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
     wget --no-check-certificate http://www.github.com/cloudflare/CloudFlare-Tools/raw/master/mod_cloudflare.c 
