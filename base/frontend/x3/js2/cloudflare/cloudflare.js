@@ -289,7 +289,6 @@ var build_dnszone_row_markup = function(type, rec_num, record) {
             html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
                 + '" onclick="toggle_record_on(' + rec_num + ', \'' + record['name'] + '\', '
                 + record['line']+' )"><img src="../images/cloudflare/solo_cloud_off-55x25.png" class="cf_disabled'+rec_num+'"/></span>';
-    
         }
         html += '</td>';
     }
