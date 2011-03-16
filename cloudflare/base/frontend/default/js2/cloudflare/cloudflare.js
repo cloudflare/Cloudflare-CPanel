@@ -68,7 +68,7 @@ var signup_to_cf = function() {
 		"cpanel_jsonapi_module" : "CloudFlare",
 		"cpanel_jsonapi_func" : "user_create",
         "user" : user,
-        "email" : email,
+        "email" : email
 	};
     
     // callback
@@ -200,7 +200,7 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_key" : USER_ID,
         "subdomains" : cf_zones.join(","),
-        "cf_recs" : YAHOO.lang.JSON.stringify(CF_RECS),
+        "cf_recs" : YAHOO.lang.JSON.stringify(CF_RECS)
 	};
 
     if (old_rec) {
@@ -607,7 +607,7 @@ var push_all_off = function () {
 		"cpanel_jsonapi_func" : "zone_delete",
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_key" : USER_ID,
-        "subdomains" : cf_zones.join(","),
+        "subdomains" : cf_zones.join(",")
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -679,7 +679,7 @@ var change_cf_setting = function (domain, action, value) {
         "user_email" : USER_EMAIL,
         "user_api_key" : USER_API_KEY,
         "v" : value,
-        "a" : action,
+        "a" : action
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -711,7 +711,7 @@ var showHelp = function(type) {
         "visits" : "Traffic is classified by regular, search engine crawlers and threats. Page Views is defined by the number of requests to your site which return HTML.",
         "pageload" : "CloudFlare visits the home page of your website from several locations around the world from shared hosting. We do the same request twice: once through the CloudFlare system, and once directly to your site, so bypassing the CloudFlare system. We report both page load times here. CloudFlare improves the performance of your website by caching static resources like images, CSS and Javascript closer to your visitors and by compressing your requests so they are delivered quickly.",
         "hits" : "CloudFlare sits in front of your server and acts as a proxy, which means your traffic passes through our network. Our network nodes are distributed all over the world. We cache your static resources like images, CSS and Javascript at these nodes and deliver them to your visitors in those regions. By serving certain resources from these nodes, not only do we make your website load faster for your visitors, but we save you requests from your origin server. This means that CloudFlare offsets load so your server can perform optimally. CloudFlare does not cache html.",
-        "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server.",        
+        "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server."       
 
     };
 
