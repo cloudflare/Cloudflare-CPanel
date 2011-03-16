@@ -34,7 +34,7 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 [% IF cf_user.result == "error" -%]
 
 [% IF !CPANEL.CPDATA.CONTACTEMAIL -%]
-<div class="h1Title">You must add your email address before continuing.</div>
+<div class="h1Title">You must add an email address before continuing. Click <a href="../contact/index.html">here</a> to do so.</div>
 [% ELSE %]
 <div class="h1Title">[% cf_user.msg %]</div>
 [% END %]
