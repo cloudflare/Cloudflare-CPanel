@@ -6,14 +6,55 @@
 
 var OPEN_HELP = -1;
 var VALID = [];
+
+/*
+ * Cached data describing the DNS zone table
+ */
+// Set of DNS entries with CF enabled
 var CF_RECS = {};
+
+// Total number of records, CNAME + A
 var NUM_RECS = 0;
+
+// Tooltips for each DNS record
 var REC_TEXT = [];
+
+// Record info for the WWW record
 var WWW_DOM_INFO = [];
 
+// Quick first stab at localization - some strings are still in the wild
+var CF_LANG = {
+
+    'creating_account' : "Creating Your CloudFlare Account. This may take several minutes.",
+
+    'signup_welcome' : "Welcome to CloudFlare",
+
+    'signup_info' : "Generate a CloudFlare password <a href=\"https://www.cloudflare.com/forgot-password.html\" target=\"_blank\">here</a>. Your CloudFlare email is curently set to {email}. Click <a href=\"\">here</a> to continue.",
+
+    'tooltip_zone_cf_off' : "CloudFlare is currently off. Click to enable",
+
+    'tooltip_zone_cf_on' : "CloudFlare is currently on. Click to disable"
+};
+
+// args is optional, only for strings which need params
+var get_lang_string = function(keyname, args) {
+
+    var translation = CF_LANG[keyname],
+        args = args || {};
+
+    if (translation) {
+
+        try {
+            return YAHOO.lang.substitute(translation, args);
+        } catch (e) {}
+
+    }
+    return '';
+}
 var signup_to_cf = function() {
 
-    var tos = YAHOO.util.Dom.get("USER_tos").checked;
+    var tos = YAHOO.util.Dom.get("USER_tos").checked,
+        signup_welcome, signup_info, creating_account;
     if (!tos) {
 		CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
         return false;
@@ -40,8 +81,12 @@ var signup_to_cf = function() {
 					CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
 				}
                 else if (data.cpanelresult.data[0].result == 'success') {
+
+                    signup_welcome = get_lang_string('signup_welcome');
+                    signup_info = get_lang_string('signup_info', {email: email});
+
                     YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-					CPANEL.widgets.status_bar("add_USER_status_bar", "success", "Welcome to CloudFlare", "Generate a CloudFlare password <a href=\"https://www.cloudflare.com/forgot-password.html\" target=\"_blank\">here</a>. Your CloudFlare email is curently set to " + email + ". Click <a href=\"\">here</a> to continue.");
+                    CPANEL.widgets.status_bar("add_USER_status_bar", "success", signup_welcome, signup_info);
                     // After 10 sec, reload the page
                     setTimeout('window.location.reload(true)', 10000);
 				}
@@ -66,7 +111,8 @@ var signup_to_cf = function() {
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
     
     YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "none");
-    YAHOO.util.Dom.get("add_USER_record_status").innerHTML = CPANEL.icons.ajax + " " + "Creating Your CloudFlare Account. This may take several minutes.";
+    creating_account = get_lang_string('creating_account');
+    YAHOO.util.Dom.get("add_USER_record_status").innerHTML = CPANEL.icons.ajax + " " + creating_account;
 };
 
 var reset_form = function(type) {
@@ -105,6 +151,8 @@ var toggle_domain = function() {
 };
 
 var update_zones = function(rec_num, orig_state, old_rec, old_line) {
+    var tooltip = '', records;
+
     var callback = {
         success : function(o) {
             try {
@@ -122,7 +170,7 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
                     });
 				}
 				else {
-                    update_user_records_table();
+                    update_user_records_rows([rec_num]);
 			    }
 			}
 			catch (e) {
@@ -176,6 +224,80 @@ var toggle_record_on = function(rec_num, new_rec, line) {
     update_zones(rec_num, "_off");
 };
 
+var is_domain_cf_powered = function(records) {
+    var is_cf_powered = false;
+    for (var i=0, l=records.length; i<l; i++) {
+        if (records[i]['type'].match(/^(CNAME)$/) &&
+            records[i]['cloudflare']) {
+            is_cf_powered = true;
+            break;
+        }
+    }
+    return is_cf_powered;
+};
+
+var build_dnszone_cache = function(records) {
+
+    NUM_RECS = records.length;
+    var tooltip_zone_cf_on = get_lang_string('tooltip_zone_cf_on'),
+        tooltip_zone_cf_off = get_lang_string('tooltip_zone_cf_off');
+    for (var i=0; i<records.length; i++) {
+
+        // CNAME records
+        if (records[i]['type'].match(/^(CNAME)$/)) {
+            if (records[i]['cloudflare'] == 1) {                
+
+                // Add the zone to our list of CF zones.
+                CF_RECS[records[i]['name']] = records[i]['line'];
+                REC_TEXT[i] = tooltip_zone_cf_on;
+
+                if (records[i]['name'].match(/^(www\.)/)) {
+                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];                  
+                }
+            } else {
+
+                REC_TEXT[i] = tooltip_zone_cf_off;
+
+                if (records[i]['name'].match(/^(www\.)/)) {
+                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
+                }
+            }
+        }
+    }
+};
+
+var build_dnszone_row_markup = function(type, rec_num, record) {
+    var html = '';
+
+    if (type == "CNAME") {
+
+        html += '<td id="name_value_' + rec_num + '">' + record['type'] + '</td>';
+        html += '<td id="type_value_' + rec_num + '">' + record['name'].substring(0, record['name'].length - 1) + '</td>';
+        
+        if (record['type'] == 'CNAME') {
+            html += '<td colspan="2" id="value_value_hehe_' + rec_num + '">points to ' + record['cname'] + '</td>';
+        }
+    
+        // action links
+        html += '<td>';
+    
+        if (record['cloudflare'] == 1) {                
+            html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
+                + '" onclick="toggle_record_off(' + rec_num + ', \'' + record['name'] + '\', '
+                + record['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" class="cf_enabled" /></span>';
+    
+        } else {
+            html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
+                + '" onclick="toggle_record_on(' + rec_num + ', \'' + record['name'] + '\', '
+                + record['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" class="cf_disabled'+rec_num+'"/></span>';
+    
+        }
+        html += '</td>';
+    }
+
+    return html;
+};
+
 // Builds the Zone List.
 var build_dnszone_table_markup = function(records) {
 	// set the initial row stripe
@@ -191,55 +313,23 @@ var build_dnszone_table_markup = function(records) {
         html += 	'<th>CloudFlare status</th>';
         html += '</tr>';
 
-    // Reset these
-    var is_cf_powered = false;
-    NUM_RECS = records.length;
+
+    // Setup cache data (NUM_RECS, CF_RECS, REC_TEXT, WWW_DOM_INFO)
+    build_dnszone_cache(records);
+
 	for (var i=0; i<records.length; i++) {
          
         // CNAME records
         if (records[i]['type'].match(/^(CNAME)$/)) {
 
             html += '<tr id="info_row_' + i + '" class="dt_info_row ' + row_toggle + '">';
-
-            html += '<td id="name_value_' + i + '">' + records[i]['type'] + '</td>';
-            html += '<td id="type_value_' + i + '">' + records[i]['name'].substring(0, records[i]['name'].length - 1) + '</td>';
-            
-            if (records[i]['type'] == 'CNAME') {
-                html += '<td colspan="2" id="value_value_hehe_' + i + '">points to ' + records[i]['cname'] + '</td>';
-            }
-
-		    // action links
-            html += '<td>';
-
-            if (records[i]['cloudflare'] == 1) {                
-                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
-                    + '" onclick="toggle_record_off(' + i + ', \'' + records[i]['name'] + '\', '
-                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" class="cf_enabled" /></span>';
-                // And add the zone to our list of CF zones.
-                CF_RECS[records[i]['name']] = records[i]['line'];
-                REC_TEXT[i] = "CloudFlare is currently on. Click to disable";
-                is_cf_powered = true;
-
-                if (records[i]['name'].match(/^(www\.)/)) {
-                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];                  
-                }
-		    } else {
-                html +=		'<span class="action_link" id="cloudflare_table_edit_' + i
-                    + '" onclick="toggle_record_on(' + i + ', \'' + records[i]['name'] + '\', '
-                    + records[i]['line']+' )"><img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" class="cf_disabled'+i+'"/></span>';
-                REC_TEXT[i] = "CloudFlare is currently off. Click to enable";
-
-                if (records[i]['name'].match(/^(www\.)/)) {
-                    WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
-                }
-            }
-            html += '</td>';
+            html += build_dnszone_row_markup("CNAME", i, records[i]);
             html += '</tr>';
-
+        
             html += '<tr id="module_row_' + i + '" class="dt_module_row ' + row_toggle + '"><td colspan="7">';
             html += 	'<div id="dnszone_table_edit_div_' + i + '" class="dt_module"></div>';
             html += 	'<div id="dnszone_table_delete_div_' + i + '" class="dt_module"></div>';
-		    html += 	'<div id="status_bar_' + i + '" class="cjt_status_bar"></div>';
+            html += 	'<div id="status_bar_' + i + '" class="cjt_status_bar"></div>';
             html += '</td></tr>';
 
             // alternate row stripes
@@ -278,7 +368,7 @@ var build_dnszone_table_markup = function(records) {
 
     // Set the global is CF powered text.
     if (NUM_RECS > 0) {
-        if (is_cf_powered) { 
+        if (is_domain_cf_powered(records)) { 
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
             YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
@@ -292,6 +382,83 @@ var build_dnszone_table_markup = function(records) {
 	return html;
 };
 
+// Assuming the user records table is showing the table already,
+// just redraw the rows given by num_rows, i.e. [1,2,3]
+var update_user_records_rows = function(row_nums, cb_lambda) {
+    var domain = YAHOO.util.Dom.get("domain").value;
+    var callback = {
+        success : function(o) {
+            try {
+				var data = YAHOO.lang.JSON.parse(o.responseText);
+				if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+				}
+				else if (data.cpanelresult.data) {              
+
+                    build_dnszone_cache(data.cpanelresult.data);
+                    for (var i=0, l=row_nums.length; i<l; i++) {
+                        var v = row_nums[i];
+                        var row_html = build_dnszone_row_markup("CNAME", v, data.cpanelresult.data[v]);
+
+                        $('#info_row_' + v).html(row_html);
+
+                        new YAHOO.widget.Tooltip("tt_cf_enabled_"+v, { 
+                            context: "cloudflare_table_edit_"+v, 
+                            text: REC_TEXT[v],
+                            showDelay: 300
+                        });
+                    }
+
+                    // Set the global is CF powered text.
+                    if (NUM_RECS > 0) {
+                        if (is_domain_cf_powered(data.cpanelresult.data)) { 
+                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
+                            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
+                        } else {
+                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+                            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="https://www.cloudflare.com/images/icons-custom/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\')" />';
+                        }
+                    }
+
+                    // Call the cb, if it is set.
+                    if (cb_lambda) {
+                        cb_lambda();
+                    }
+
+                    // Scroll to the edit anchor
+                    var yoffset = YAHOO.util.Dom.getY('user_records_div');
+                    window.scrollTo(0, yoffset);
+
+				}
+				else {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+			    }
+			}
+			catch (e) {
+				CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+			}
+        },
+        failure : function(o) {
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+    
+    // send the AJAX request
+    var api2_call = {
+		"cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "fetchzone",
+		"domain" : YAHOO.util.Dom.get("domain").value
+	};
+    
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    for(var i=0, l=row_nums.length; i<l; i++) {
+        var rec_num = row_nums[i];
+        YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+    }
+};
 var update_user_records_table = function(cb_lambda) {
     var callback = {
         success : function(o) {
@@ -322,6 +489,51 @@ var update_user_records_table = function(cb_lambda) {
                     // Scroll to the edit anchor
                     var yoffset = YAHOO.util.Dom.getY('user_records_div');
                     window.scrollTo(0, yoffset);
+
+				}
+				else {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+			    }
+			}
+			catch (e) {
+				CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+			}
+        },
+        failure : function(o) {
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+    
+    // send the AJAX request
+    var api2_call = {
+		"cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "fetchzone",
+		"domain" : YAHOO.util.Dom.get("domain").value
+	};
+    
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + " [This may take several minutes]</div>";
+};
+
+// fetch zone records and build the global records cache
+var refresh_records = function(cb_lambda) {
+    var callback = {
+        success : function(o) {
+            try {
+				var data = YAHOO.lang.JSON.parse(o.responseText);
+				if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+				}
+				else if (data.cpanelresult.data) {              
+
+                    // only build the cache
+                    build_dnszone_cache(data.cpanelresult.data);
+
+                    // Call the cb, if it is set.
+                    if (cb_lambda) {
+                        cb_lambda();
+                    }
 
 				}
 				else {
@@ -418,7 +630,7 @@ var toggle_www_on = function(domain) {
 var toggle_all_off = function(domain) {
     reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
-    update_user_records_table(push_all_off);
+    refresh_records(push_all_off);
     return false;
 }
 
