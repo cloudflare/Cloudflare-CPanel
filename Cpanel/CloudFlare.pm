@@ -24,8 +24,9 @@ use strict;
 
 my $logger = Cpanel::Logger->new();
 my $locale;
-my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json";
-my $cf_data_file = "/usr/local/cpanel/etc/cloudflare_data.yaml";
+my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json"; 
+my $cf_data_file_name = ".cloudflare_data.yaml";
+my $cf_data_file;
 my $cf_host_key;
 my $cf_host_name;
 my $cf_host_uri;
@@ -61,21 +62,11 @@ sub CloudFlare_init {
         $hoster_name = $DEFAULT_HOSTER_NAME;
     }
 
-    ## Load the global statshot of who is on CF.
-    if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
-        #$logger->info("Successfully loaded cf data");
-    } else {
-        $cf_global_data = {"cf_zones" => {}};
-        $logger->warn( "Failed to load cf data -- storing blank data");
-        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
-    }
-
     eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
     if ( !$has_ssl ) {
         $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
     }
 }
-
 
 # Can only be called with json or xml api because it uses
 # a non-standard return
@@ -87,6 +78,7 @@ sub api2_user_create {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     # Use a random string as a password.
     my $password = crypt(int(rand(10000000)), time);
     $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
@@ -117,6 +109,7 @@ sub api2_user_create {
 sub api2_user_lookup {
     my %OPTS = @_;
 
+    __load_data_file($OPTS{"homedir"});
     if (!$cf_host_key) {
         $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
         return [];
@@ -236,6 +229,7 @@ sub api2_zone_set {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     my $domain = ".".$OPTS{"zone_name"}.".";
     my $subs = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -344,6 +338,7 @@ sub api2_zone_delete {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     my $domain = ".".$OPTS{"zone_name"}.".";
 
     ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
@@ -424,6 +419,8 @@ sub api2_fetchzone {
 }
 
 sub api2_getbasedomains {        
+    my %OPTS = @_;
+    __load_data_file($OPTS{"homedir"});
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
@@ -490,6 +487,19 @@ sub check_auto_update {
 }
 
 ########## Internal Functions Defined Below #########
+
+sub __load_data_file {
+    my $home_dir = shift;
+    $cf_data_file = $home_dir . "/" . $cf_data_file_name;    
+    if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
+        $logger->info("Successfully loaded cf data -- $cf_data_file");
+    } else {
+        $cf_global_data = {"cf_zones" => {}};
+        $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
+        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+        chmod 0600, $cf_data_file;
+    }
+}
 
 sub __fetchzone {
     my %OPTS    = @_;

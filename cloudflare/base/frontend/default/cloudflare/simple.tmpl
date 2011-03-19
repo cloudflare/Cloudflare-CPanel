@@ -20,10 +20,10 @@ FOR pair = js_lang;
 END;
 
 SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS});
-SET base_domains_result = Api2.exec('CloudFlare','getbasedomains');
+SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir});
 SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
 
-SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER}).0;
+SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER, 'homedir' => CPANEL.homedir}).0;
 
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
@@ -214,6 +214,7 @@ var LANG = [% js_lang.json() %];
 var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 0 %];
 var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
 var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
+var USER_HOME_DIR = [% CPANEL.homedir.json() %];
 
 //]]>
 </script>

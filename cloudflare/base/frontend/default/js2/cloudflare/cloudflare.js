@@ -68,7 +68,8 @@ var signup_to_cf = function() {
 		"cpanel_jsonapi_module" : "CloudFlare",
 		"cpanel_jsonapi_func" : "user_create",
         "user" : user,
-        "email" : email
+        "email" : email,
+        "homedir" : USER_HOME_DIR
 	};
     
     // callback
@@ -200,7 +201,8 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_key" : USER_ID,
         "subdomains" : cf_zones.join(","),
-        "cf_recs" : YAHOO.lang.JSON.stringify(CF_RECS)
+        "cf_recs" : YAHOO.lang.JSON.stringify(CF_RECS),
+        "homedir" : USER_HOME_DIR
 	};
 
     if (old_rec) {
@@ -448,7 +450,8 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
 		"cpanel_jsonapi_version" : 2,
 		"cpanel_jsonapi_module" : "CloudFlare",
 		"cpanel_jsonapi_func" : "fetchzone",
-		"domain" : YAHOO.util.Dom.get("domain").value
+		"domain" : YAHOO.util.Dom.get("domain").value,
+        "homedir" : USER_HOME_DIR
 	};
     
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -507,7 +510,8 @@ var update_user_records_table = function(cb_lambda) {
 		"cpanel_jsonapi_version" : 2,
 		"cpanel_jsonapi_module" : "CloudFlare",
 		"cpanel_jsonapi_func" : "fetchzone",
-		"domain" : YAHOO.util.Dom.get("domain").value
+		"domain" : YAHOO.util.Dom.get("domain").value,
+        "homedir" : USER_HOME_DIR
 	};
     
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -552,7 +556,8 @@ var refresh_records = function(cb_lambda) {
 		"cpanel_jsonapi_version" : 2,
 		"cpanel_jsonapi_module" : "CloudFlare",
 		"cpanel_jsonapi_func" : "fetchzone",
-		"domain" : YAHOO.util.Dom.get("domain").value
+		"domain" : YAHOO.util.Dom.get("domain").value,
+        "homedir" : USER_HOME_DIR
 	};
     
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -607,7 +612,8 @@ var push_all_off = function () {
 		"cpanel_jsonapi_func" : "zone_delete",
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_key" : USER_ID,
-        "subdomains" : cf_zones.join(",")
+        "subdomains" : cf_zones.join(","),
+        "homedir" : USER_HOME_DIR
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -679,7 +685,8 @@ var change_cf_setting = function (domain, action, value) {
         "user_email" : USER_EMAIL,
         "user_api_key" : USER_API_KEY,
         "v" : value,
-        "a" : action
+        "a" : action,
+        "homedir" : USER_HOME_DIR
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
@@ -931,7 +938,8 @@ var get_stats = function(domain) {
 		"cpanel_jsonapi_func" : "zone_get_stats",
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_email" : USER_EMAIL,
-        "user_api_key" : USER_API_KEY
+        "user_api_key" : USER_API_KEY,
+        "homedir" : USER_HOME_DIR
 	};
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
