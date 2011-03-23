@@ -77,7 +77,7 @@ cp etc/cloudflare.json /usr/local/cpanel/etc/
 
 ## Api key file
 echo $host_key > /root/.cpanel/datastore/cf_api
-chown 600 /root/.cf_api
+chmod 600 /root/.cpanel/datastore/cf_api
 
 ## Generate the include file
 touch /usr/local/cpanel/etc/cloudflare_local.tmpl
