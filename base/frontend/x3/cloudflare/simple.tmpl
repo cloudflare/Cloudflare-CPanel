@@ -20,7 +20,7 @@ FOR pair = js_lang;
 END;
 
 SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS});
-SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir});
+SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
 
 SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER, 'homedir' => CPANEL.homedir}).0;

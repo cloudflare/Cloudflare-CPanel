@@ -26,6 +26,7 @@ my $logger = Cpanel::Logger->new();
 my $locale;
 my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json"; 
 my $cf_data_file_name = ".cloudflare_data.yaml";
+my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
 my $cf_host_key;
 my $cf_host_name;
@@ -109,7 +110,7 @@ sub api2_user_create {
 sub api2_user_lookup {
     my %OPTS = @_;
 
-    __load_data_file($OPTS{"homedir"});
+    __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
     if (!$cf_host_key) {
         $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
         return [];
@@ -420,7 +421,7 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {        
     my %OPTS = @_;
-    __load_data_file($OPTS{"homedir"});
+    __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
@@ -490,12 +491,23 @@ sub check_auto_update {
 
 sub __load_data_file {
     my $home_dir = shift;
+    my $user = shift;
     $cf_data_file = $home_dir . "/" . $cf_data_file_name;    
     if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
         $logger->info("Successfully loaded cf data -- $cf_data_file");
     } else {
-        $cf_global_data = {"cf_zones" => {}};
-        $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
+        ## Try to load the data from the old default data file (if it exists)
+        if (-e $cf_old_data_file_name) {
+            $logger->info( "Failed to load cf data -- Trying to copy from $cf_old_data_file_name for $user");
+            my $tmp_data = {};
+            Cpanel::DataStore::load_ref($cf_old_data_file_name, $tmp_data);
+            $cf_global_data->{"cf_user_tokens"}->{$user} = $tmp_data->{"cf_user_tokens"}->{$user};
+            $cf_global_data->{"cf_zones"} = $tmp_data->{"cf_zones"};
+
+        } else {
+            $cf_global_data = {"cf_zones" => {}};
+            $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
+        }
         Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
         chmod 0600, $cf_data_file;
     }
