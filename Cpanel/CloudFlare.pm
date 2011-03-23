@@ -25,7 +25,7 @@ use strict;
 my $logger = Cpanel::Logger->new();
 my $locale;
 my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json"; 
-my $cf_data_file_name = ".cloudflare_data.yaml";
+my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
 my $cf_host_key;
@@ -66,6 +66,13 @@ sub CloudFlare_init {
     eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
     if ( !$has_ssl ) {
         $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
+    }
+
+    ## Load the api key.    
+    if (-x "/usr/local/cpanel/bin/apikeywrap") {
+        my $response=`/usr/local/cpanel/bin/apikeywrap $cf_host_key`;
+        chomp $response;
+        $cf_host_key = $response;
     }
 }
 
@@ -123,7 +130,9 @@ sub api2_user_lookup {
     }
 
     if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
-        $logger->info("Using user token");
+        if ($cf_debug_mode) {
+            $logger->info("Using user token");
+        }
         my $login_args = {
             "host" => $cf_host_name,
             "uri" => $cf_host_uri,
@@ -138,7 +147,9 @@ sub api2_user_lookup {
         my $result = __https_post_req->($login_args);
         return JSON::Syck::Load($result);
     } else {
-        $logger->info("Using user email");
+        if ($cf_debug_mode) {
+            $logger->info("Using user email");
+        }
         my $login_args = {
             "host" => $cf_host_name,
             "uri" => $cf_host_uri,
@@ -494,7 +505,9 @@ sub __load_data_file {
     my $user = shift;
     $cf_data_file = $home_dir . "/" . $cf_data_file_name;    
     if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
-        $logger->info("Successfully loaded cf data -- $cf_data_file");
+        if ($cf_debug_mode) {
+            $logger->info("Successfully loaded cf data -- $cf_data_file");
+        }
     } else {
         ## Try to load the data from the old default data file (if it exists)
         if (-e $cf_old_data_file_name) {

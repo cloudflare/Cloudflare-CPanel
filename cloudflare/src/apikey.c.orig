@@ -1,0 +1,20 @@
+#include <stdio.h>
+#include <string.h>
+
+int main(int argc, char **argv) {
+    const char *tkn = "DEFAULT_KEY_REPLACE_ME";
+    const char *api_path = "/root/.cpanel/datastore/cf_api";
+
+    if (argc > 1) {
+        if (strncmp(tkn, argv[1], 16) == 0) {
+            char line[80];
+            FILE* fp = fopen(api_path,"r");
+            if (fgets(line, 80, fp)) {
+                printf("%s", line);                    
+            }
+            fclose(fp);
+        } else {
+            printf("MISSMATCH\n");
+        }
+    }
+}

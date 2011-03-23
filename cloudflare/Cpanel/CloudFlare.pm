@@ -24,8 +24,10 @@ use strict;
 
 my $logger = Cpanel::Logger->new();
 my $locale;
-my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json";
-my $cf_data_file = "/usr/local/cpanel/etc/cloudflare_data.yaml";
+my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json"; 
+my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
+my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
+my $cf_data_file;
 my $cf_host_key;
 my $cf_host_name;
 my $cf_host_uri;
@@ -61,21 +63,18 @@ sub CloudFlare_init {
         $hoster_name = $DEFAULT_HOSTER_NAME;
     }
 
-    ## Load the global statshot of who is on CF.
-    if( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
-        #$logger->info("Successfully loaded cf data");
-    } else {
-        $cf_global_data = {"cf_zones" => {}};
-        $logger->warn( "Failed to load cf data -- storing blank data");
-        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
-    }
-
     eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
     if ( !$has_ssl ) {
         $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
     }
-}
 
+    ## Load the api key.    
+    if (-x "/usr/local/cpanel/bin/apikeywrap") {
+        my $response=`/usr/local/cpanel/bin/apikeywrap $cf_host_key`;
+        chomp $response;
+        $cf_host_key = $response;
+    }
+}
 
 # Can only be called with json or xml api because it uses
 # a non-standard return
@@ -87,6 +86,7 @@ sub api2_user_create {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     # Use a random string as a password.
     my $password = crypt(int(rand(10000000)), time);
     $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
@@ -117,6 +117,7 @@ sub api2_user_create {
 sub api2_user_lookup {
     my %OPTS = @_;
 
+    __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
     if (!$cf_host_key) {
         $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
         return [];
@@ -129,7 +130,9 @@ sub api2_user_lookup {
     }
 
     if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
-        $logger->info("Using user token");
+        if ($cf_debug_mode) {
+            $logger->info("Using user token");
+        }
         my $login_args = {
             "host" => $cf_host_name,
             "uri" => $cf_host_uri,
@@ -144,7 +147,9 @@ sub api2_user_lookup {
         my $result = __https_post_req->($login_args);
         return JSON::Syck::Load($result);
     } else {
-        $logger->info("Using user email");
+        if ($cf_debug_mode) {
+            $logger->info("Using user email");
+        }
         my $login_args = {
             "host" => $cf_host_name,
             "uri" => $cf_host_uri,
@@ -236,6 +241,7 @@ sub api2_zone_set {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     my $domain = ".".$OPTS{"zone_name"}.".";
     my $subs = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -344,6 +350,7 @@ sub api2_zone_delete {
         return [];
     }
 
+    __load_data_file($OPTS{"homedir"});
     my $domain = ".".$OPTS{"zone_name"}.".";
 
     ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
@@ -424,6 +431,8 @@ sub api2_fetchzone {
 }
 
 sub api2_getbasedomains {        
+    my %OPTS = @_;
+    __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
@@ -490,6 +499,32 @@ sub check_auto_update {
 }
 
 ########## Internal Functions Defined Below #########
+
+sub __load_data_file {
+    my $home_dir = shift;
+    my $user = shift;
+    $cf_data_file = $home_dir . "/" . $cf_data_file_name;    
+    if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
+        if ($cf_debug_mode) {
+            $logger->info("Successfully loaded cf data -- $cf_data_file");
+        }
+    } else {
+        ## Try to load the data from the old default data file (if it exists)
+        if (-e $cf_old_data_file_name) {
+            $logger->info( "Failed to load cf data -- Trying to copy from $cf_old_data_file_name for $user");
+            my $tmp_data = {};
+            Cpanel::DataStore::load_ref($cf_old_data_file_name, $tmp_data);
+            $cf_global_data->{"cf_user_tokens"}->{$user} = $tmp_data->{"cf_user_tokens"}->{$user};
+            $cf_global_data->{"cf_zones"} = $tmp_data->{"cf_zones"};
+
+        } else {
+            $cf_global_data = {"cf_zones" => {}};
+            $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
+        }
+        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+        chmod 0600, $cf_data_file;
+    }
+}
 
 sub __fetchzone {
     my %OPTS    = @_;

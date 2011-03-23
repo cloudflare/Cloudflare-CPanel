@@ -53,15 +53,31 @@ fi
 
 ## Updating to swap out the default key for an actual one.
 cp etc/cloudflare.json.back etc/cloudflare.json
+cp src/apikey.c.orig src/apikey.c
 
 if [ "$formal_name" == "" ]; then
     formal_name="your web hosting provider"
 fi
-sed -i -e "s/$DEFAULT_HOST_KEY/$host_key/" etc/cloudflare.json 
+
+# Generate the random key for getting the api key.
+date=`date "+%s"`
+local_tkn=$( echo "$host_key$date" | md5sum | md5sum )
+
+sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" etc/cloudflare.json 
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
+sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" src/apikey.c 
+
+## make the keywrap
+gcc src/apikey.c -o /usr/local/cpanel/bin/apikeywrap
+chmod 755 /usr/local/cpanel/bin/apikeywrap
+chmod ug+s /usr/local/cpanel/bin/apikeywrap
 
 ## And write the config file
 cp etc/cloudflare.json /usr/local/cpanel/etc/
+
+## Api key file
+echo $host_key > /root/.cpanel/datastore/cf_api
+chown 600 /root/.cf_api
 
 ## Generate the include file
 touch /usr/local/cpanel/etc/cloudflare_local.tmpl
