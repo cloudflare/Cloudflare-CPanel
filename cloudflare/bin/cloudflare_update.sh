@@ -4,7 +4,12 @@ cd /usr/local/cpanel
 
 # Pull the host key
 tmp_host_key=`cat etc/cloudflare.json | grep host_key | cut -d "\"" -f 4`
-host_key=`/usr/local/cpanel/bin/apikeywrap $tmp_host_key`
+host_key=""
+if [ -e /usr/local/cpanel/bin/apikeywrap ]; then
+    host_key=`/usr/local/cpanel/bin/apikeywrap $tmp_host_key`
+else 
+    host_key=$tmp_host_key
+fi
 host_formal_name=`cat etc/cloudflare.json | grep host_formal_name | cut -d "\"" -f 4`
 if [ "$host_key" == "" ]; then
     echo "error -- can not find a valid host key"
