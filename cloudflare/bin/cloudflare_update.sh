@@ -27,7 +27,7 @@ if [ -e "/tmp/cloudflare.tar.gz" ]; then
     tar -zxf cloudflare.tar.gz
     mv */cloudflare .
     cd cloudflare
-    ./install_cf $host_key dd "${host_formal_name}"
+    ./install_cf $host_key mod_cf "${host_formal_name}"
 
     # Cleanup
     cd /usr/local/cpanel
