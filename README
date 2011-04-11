@@ -40,5 +40,14 @@ Customization:
 
 To include customized text, edit the file /usr/local/cpanel/etc/cloudflare_local.tmpl. This file is included in CloudFlare's HTML template.
 
+Command Line Tools:
+
+List all zones currently active on CloudFlare:
+# perl Cpanel/CloudFlare.pm list
+
+Check to see if there is a new version of the CloudFlare plug-in available.
+# perl Cpanel/CloudFlare.pm check
+
+
 Copyright (c) 2011 by CloudFlare, Inc.
 All Rights Reserved.
