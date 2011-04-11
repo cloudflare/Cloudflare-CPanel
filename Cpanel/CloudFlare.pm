@@ -498,6 +498,32 @@ sub check_auto_update {
     }
 }
 
+## Returns a list of all users and zones on CF.
+sub list_active_zones {
+    if ($>) {
+        die("must be root to run.");
+    }
+
+    CloudFlare_init();
+    my %zones;
+    foreach my $user (`ls /home`) {
+        chomp $user;
+        if ( -e "/home/$user/$cf_data_file_name") {
+            __load_data_file("/home/$user", $user);
+            foreach my $zone (keys %{$cf_global_data->{"cf_zones"}}) {
+                if ($cf_global_data->{"cf_zones"}{$zone}) {
+                    $zones{$zone} = 1;
+                }
+            }
+        }
+    }
+
+    print "The following zones are currently active on CloudFlare:\n";
+    foreach my $zone (keys %zones) {
+        print "$zone\n";
+    }
+}
+
 ########## Internal Functions Defined Below #########
 
 sub __load_data_file {
@@ -646,6 +672,8 @@ sub __serialize_request {
 ## Are we running from the command line?
 if ($ARGV[0] eq "check") {
     check_auto_update();
+} elsif ($ARGV[0] eq "list") {
+    list_active_zones();
 }
 
 1; # Ah, perl.
