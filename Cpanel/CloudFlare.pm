@@ -490,9 +490,17 @@ sub check_auto_update {
 
     my $result = JSON::Syck::Load(__https_post_req->($check_args));
     print "Latest Version: " . $result->{"response"}{"cpanel_latest"} . "\n";
+    print "Latest SHA1: " . $result->{"response"}{"cpanel_sha1"} . "\n";
+
     if ($result->{"response"}{"cpanel_latest"} > $cf_cp_version) {
         print "Downloading the latest version.\n";
-        `curl -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`
+        `curl -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`;
+        if (`sha1sum /tmp/cloudflare.tar.gz | grep $result->{"response"}{"cpanel_sha1"}`) {
+            print "Valid Checksum\n";
+        } else {
+            print "Checksum failed, aborting upgrade\n";
+            unlink("/tmp/cloudflare.tar.gz");
+        }
     } else {
         print "You already have the latest version.\n";
     }
