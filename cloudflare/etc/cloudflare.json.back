@@ -7,5 +7,5 @@
   "user_uri":"/api_json.html",
   "host_port":"443",
   "host_prefix":"cloudflare-resolve-to",
-  "cp_version":"1.4.0"
+  "cp_version":"1.4.1"
 }
