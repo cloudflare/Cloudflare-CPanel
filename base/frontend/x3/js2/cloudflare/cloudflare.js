@@ -69,6 +69,7 @@ var signup_to_cf = function() {
 		"cpanel_jsonapi_func" : "user_create",
         "user" : user,
         "email" : email,
+        "password" : YAHOO.util.Dom.get("USER_pass").value,
         "homedir" : USER_HOME_DIR
 	};
     
@@ -92,8 +93,15 @@ var signup_to_cf = function() {
                     setTimeout('window.location.reload(true)', 10000);
 				}
 				else {
-                    YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-					CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                    YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "block");
+                    if (data.cpanelresult.data[0].err_code == 124) {
+                        YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "table-row");
+                        YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
+					    CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
+                    } else {
+                        YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
+					    CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                    }
 				}
 			}
 			catch (e) {

@@ -88,7 +88,7 @@ sub api2_user_create {
 
     __load_data_file($OPTS{"homedir"});
     # Use a random string as a password.
-    my $password = crypt(int(rand(10000000)), time);
+    my $password = ($OPTS{"password"})? $OPTS{"password"}: crypt(int(rand(10000000)), time);
     $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
     $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}} = md5_hex($OPTS{"user"} . $cf_host_key);
     $logger->info("Making user token: " . $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}});
