@@ -98,6 +98,7 @@ fi
 
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
+    rm -f mod_cloudflare*
     wget --no-check-certificate http://www.github.com/cloudflare/CloudFlare-Tools/raw/master/mod_cloudflare.c 
     apxs -i -a -c mod_cloudflare.c
     /usr/local/cpanel/bin/apache_conf_distiller --update 
