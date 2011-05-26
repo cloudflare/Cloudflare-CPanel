@@ -219,6 +219,6 @@ var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 
 var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
 var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
 var USER_HOME_DIR = [% CPANEL.homedir.json() %];
-
+var CF_ON_CLOUD_MESSAGE = [% (cf_user.on_cloud_message)? cf_user.on_cloud_message.json(): false %];
 //]]>
 </script>

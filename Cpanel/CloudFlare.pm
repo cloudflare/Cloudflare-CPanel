@@ -34,6 +34,7 @@ my $cf_host_uri;
 my $cf_user_name;
 my $cf_user_uri;
 my $cf_host_port;
+my $cf_host_on_cloud_msg;
 my $cf_host_prefix;
 my $has_ssl;
 my $cf_debug_mode;
@@ -59,6 +60,7 @@ sub CloudFlare_init {
     $cf_user_uri = $data->{"user_uri"};
     $cf_cp_version = $data->{"cp_version"};
     $hoster_name = $data->{"host_formal_name"};
+    $cf_host_on_cloud_msg = $data->{"cloudflare_on_message"};
     if (!$hoster_name) {
         $hoster_name = $DEFAULT_HOSTER_NAME;
     }
@@ -144,8 +146,9 @@ sub api2_user_lookup {
             },
         };
 
-        my $result = __https_post_req->($login_args);
-        return JSON::Syck::Load($result);
+        my $result = JSON::Syck::Load(__https_post_req->($login_args));
+        $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+        return ($result);
     } else {
         if ($cf_debug_mode) {
             $logger->info("Using user email");
@@ -161,8 +164,9 @@ sub api2_user_lookup {
             },
         };
 
-        my $result = __https_post_req->($login_args);
-        return JSON::Syck::Load($result);
+        my $result = JSON::Syck::Load(__https_post_req->($login_args));
+        $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+        return ($result);
     }
 }
 
