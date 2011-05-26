@@ -25,6 +25,7 @@ use strict;
 my $logger = Cpanel::Logger->new();
 my $locale;
 my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json"; 
+my $cf_local_config_file = "/usr/local/cpanel/etc/cloudflare_local.json"; 
 my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
@@ -50,6 +51,8 @@ my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
 ## Initialize vars here.
 sub CloudFlare_init { 
     my $data = JSON::Syck::LoadFile($cf_config_file);
+    my $local_data = (-e $cf_local_config_file)? JSON::Syck::LoadFile($cf_local_config_file): {};
+
     $cf_host_key = $data->{"host_key"};
     $cf_host_name = $data->{"host_name"};
     $cf_host_uri = $data->{"host_uri"};
@@ -60,7 +63,7 @@ sub CloudFlare_init {
     $cf_user_uri = $data->{"user_uri"};
     $cf_cp_version = $data->{"cp_version"};
     $hoster_name = $data->{"host_formal_name"};
-    $cf_host_on_cloud_msg = $data->{"cloudflare_on_message"};
+    $cf_host_on_cloud_msg = ($local_data->{"cloudflare_on_message"})? $local_data->{"cloudflare_on_message"}: "";
     if (!$hoster_name) {
         $hoster_name = $DEFAULT_HOSTER_NAME;
     }
