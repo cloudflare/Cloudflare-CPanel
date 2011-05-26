@@ -28,6 +28,10 @@ SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CO
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 -%]
+<div id="FixedContent">
+	<ul id="Notifications"></ul>
+</div>
+
 <div class="body-content">
 <div class="yui-skin-sam">
 

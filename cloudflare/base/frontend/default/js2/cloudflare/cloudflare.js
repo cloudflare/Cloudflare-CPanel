@@ -230,6 +230,12 @@ var toggle_record_off = function(rec_num, old_rec, line) {
 
 // Adds the given Rec to CF
 var toggle_record_on = function(rec_num, new_rec, line) {
+    if (CF_ON_CLOUD_MESSAGE) {
+        var timeout = 60,
+            message_type = 'message',
+            message_token = 'cf-toggle-on';
+        $.cf.notify(CF_ON_CLOUD_MESSAGE, message_type, timeout, message_token);
+    }
     CF_RECS[new_rec] = line;
     update_zones(rec_num, "_off");
 };
