@@ -230,6 +230,11 @@ var toggle_record_off = function(rec_num, old_rec, line) {
 
 // Adds the given Rec to CF
 var toggle_record_on = function(rec_num, new_rec, line) {
+    var message = "It worked! CloudFlare is being activated for your site. This will take up to 5 minutes. In the meantime, you can choose your CloudFlare Settings below.",
+        timeout = 60,
+        message_type = 'message',
+        message_token = 'cf-toggle-on';
+    $.cf.notify(message, message_type, timeout, message_token);
     CF_RECS[new_rec] = line;
     update_zones(rec_num, "_off");
 };
