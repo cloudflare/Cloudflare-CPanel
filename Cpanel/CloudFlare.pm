@@ -50,7 +50,6 @@ my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
 ## Initialize vars here.
 sub CloudFlare_init { 
     my $data = JSON::Syck::LoadFile($cf_config_file);
-    my $local_data = (-e $cf_local_config_file)? JSON::Syck::LoadFile($cf_local_config_file): {};
 
     $cf_host_key = $data->{"host_key"};
     $cf_host_name = $data->{"host_name"};
