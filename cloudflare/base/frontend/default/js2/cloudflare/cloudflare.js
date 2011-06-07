@@ -807,7 +807,7 @@ var get_stats = function(domain) {
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'visits\')"></td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'visits\')"></td>';
                     html += '</tr>';
 
                     html += '<tr class="dt_module_row rowB">';
@@ -815,7 +815,7 @@ var get_stats = function(domain) {
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
                     html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'uniques\')"></td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'uniques\')"></td>';
                     html += '</tr>';
                     html += '</table>';
                     
@@ -870,19 +870,19 @@ var get_stats = function(domain) {
 			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
 
 
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>';
+                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>';
 
 
                     html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
                     
                     } else {
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
+                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
                     }
 
                     html += '<div class="analytics-speed-column analytics-right-rail">';
-                    html += '<div id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
+                    html += '<div id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
                     
-                    html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
+                    html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
                                 
                     html += '</div></div>';
 
@@ -910,17 +910,17 @@ var get_stats = function(domain) {
                     html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
                     html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
                     html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'seclvl\')"></td></tr>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'seclvl\')"></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
                     if (dev_mode > server_time) {
                         html += 	'<td width="280">Development Mode will end at</td><td>' 
                             + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
                             '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td>';
-                        html += '<td style="text-align:center;"><image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
+                        html += '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     } else {
                         html += 	'<td width="280">Development Mode is currently</td><td>off'
                             + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td>';
-                        html +=     '<td style="text-align:center;"><image src="../images/icons-custom/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
+                        html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     }
                     html += '</tr>';
                     html += '</table></p>';
