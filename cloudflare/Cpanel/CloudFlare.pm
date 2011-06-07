@@ -499,7 +499,7 @@ sub check_auto_update {
 
     if ($result->{"response"}{"cpanel_latest"} > $cf_cp_version) {
         print "Downloading the latest version.\n";
-        `curl -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`;
+        `curl -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`;
         if (`sha1sum /tmp/cloudflare.tar.gz | grep $result->{"response"}{"cpanel_sha1"}`) {
             print "Valid Checksum\n";
         } else {
