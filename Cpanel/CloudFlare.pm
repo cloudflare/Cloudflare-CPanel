@@ -421,7 +421,7 @@ sub api2_fetchzone {
 
     foreach my $res (@{$raw->{"record"}}) {
         if ((($res->{"type"} eq "CNAME") || ($res->{"type"} eq "A")) &&
-            ($res->{"name"} !~ /(^direct|^ssh|^ftp|ssl|mx|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost|$cf_host_prefix)/) &&
+            ($res->{"name"} !~ /(^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost|$cf_host_prefix)/) &&
             ($res->{"name"} ne $domain) &&
             ($res->{"cname"} !~ /google.com/)){
             if ($res->{"cname"} =~ /cdn.cloudflare.net$/) {
