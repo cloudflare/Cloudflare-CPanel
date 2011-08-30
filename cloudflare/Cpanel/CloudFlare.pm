@@ -488,12 +488,19 @@ sub check_auto_update {
         "uri" => $cf_host_uri,
         "port" => $cf_host_port,
         "query" => {
-            "act" => "cpanel_info",
+            "host_key" => $cf_host_key,
+            "act"      => "cpanel_info",
             "host_key" => $cf_host_key,
         },
     };
 
     my $result = JSON::Syck::Load(__https_post_req->($check_args));
+
+    if ($result->{"result"} eq "error") {
+        print "Error: " . $result->{"msg"}. "\n";
+        exit -10;
+    }
+
     print "Latest Version: " . $result->{"response"}{"cpanel_latest"} . "\n";
     print "Latest SHA1: " . $result->{"response"}{"cpanel_sha1"} . "\n";
 

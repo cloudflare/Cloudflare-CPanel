@@ -28,6 +28,19 @@ then
     exit 0
 fi
 
+## And that the host key is correct
+error=`curl -s -k https://api.cloudflare.com/host-gw.html -d act=cpanel_info -d host_key=$host_key | grep "No or invalid host_key"`
+
+if [ "$error" != "" ]; then
+    echo "Your HOST_KEY ($host_key) is invalid."
+    echo ""
+    echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name]."
+    echo ""
+    echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
+    echo "mod_cf is optional. If set, the installer will try to also install mod_cloudflare."
+    exit 0
+fi
+
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
