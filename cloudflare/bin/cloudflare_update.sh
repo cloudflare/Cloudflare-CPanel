@@ -20,7 +20,7 @@ fi
 perl Cpanel/CloudFlare.pm check
 
 # If a new file exists, install it
-if [ -e "/tmp/cloudflare.tar.gz" ]; then
+if [ -e "/tmp/cloudflare.tar.gz" ] && [ `stat -c %u /tmp/cloudflare.tar.gz` -eq 0 ]; then
     mkdir cloudflare_tmp
     mv /tmp/cloudflare.tar.gz cloudflare_tmp/
     cd cloudflare_tmp
@@ -32,4 +32,6 @@ if [ -e "/tmp/cloudflare.tar.gz" ]; then
     # Cleanup
     cd /usr/local/cpanel
     rm -rf cloudflare_tmp
+else
+	echo "Failed sanity check / file doesn't exist!"
 fi
