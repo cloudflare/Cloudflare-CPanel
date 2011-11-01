@@ -20,6 +20,7 @@ use Cpanel::DataStore            ();
 use Socket                       ();
 use JSON::Syck                   ();
 use Digest::MD5 qw(md5_hex);
+use File::Temp qw/ tempdir /;
 use strict;
 
 my $logger = Cpanel::Logger->new();
@@ -506,12 +507,14 @@ sub check_auto_update {
 
     if ($result->{"response"}{"cpanel_latest"} > $cf_cp_version) {
         print "Downloading the latest version.\n";
-        `curl -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > /tmp/cloudflare.tar.gz`;
-        if (`sha1sum /tmp/cloudflare.tar.gz | grep $result->{"response"}{"cpanel_sha1"}`) {
-            print "Valid Checksum\n";
+        my $dir = tempdir( CLEANUP => 0 );
+        `curl -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > $dir/cloudflare.tar.gz`;
+        if (`sha1sum $dir/cloudflare.tar.gz | grep $result->{"response"}{"cpanel_sha1"}`) {
+            print "$dir\n";
         } else {
             print "Checksum failed, aborting upgrade\n";
-            unlink("/tmp/cloudflare.tar.gz");
+            unlink("$dir/cloudflare.tar.gz");
+            rmdir($dir);
         }
     } else {
         print "You already have the latest version.\n";

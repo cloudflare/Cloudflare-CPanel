@@ -17,12 +17,12 @@ if [ "$host_key" == "" ]; then
 fi
 
 # Pull the latest version down
-perl Cpanel/CloudFlare.pm check
+dir=`perl Cpanel/CloudFlare.pm check | tail -1`
 
 # If a new file exists, install it
-if [ -e "/tmp/cloudflare.tar.gz" ]; then
+if [ ! -d cloudflare_tmp ] && [ -e "$dir/cloudflare.tar.gz" ] && [ `stat -c %u $dir/cloudflare.tar.gz` -eq 0 ]; then
     mkdir cloudflare_tmp
-    mv /tmp/cloudflare.tar.gz cloudflare_tmp/
+    mv /$dir/cloudflare.tar.gz cloudflare_tmp/
     cd cloudflare_tmp
     tar -zxf cloudflare.tar.gz
     mv */cloudflare .
@@ -31,5 +31,6 @@ if [ -e "/tmp/cloudflare.tar.gz" ]; then
 
     # Cleanup
     cd /usr/local/cpanel
+    rm -rf $dir
     rm -rf cloudflare_tmp
 fi
