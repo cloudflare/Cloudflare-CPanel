@@ -659,6 +659,10 @@ var enable_domain = function(domain) {
     return false;
 }
 
+var change_cf_accnt = function() {
+    window.open('https://www.cloudflare.com/cloudflare-settings.html?z='+YAHOO.util.Dom.get("domain").value,'_blank');    
+}
+
 var change_cf_setting = function (domain, action, value) {
     YAHOO.util.Dom.get("domain").value = domain;
     var callback = {
@@ -687,6 +691,12 @@ var change_cf_setting = function (domain, action, value) {
     };
 
     if (value == "SecurityLevelSetting") {
+        value = YAHOO.util.Dom.get(value).value;
+    } else if (value == "AlwaysOnline") {
+        value = YAHOO.util.Dom.get(value).value;
+    } else if (value == "AutomaticIPv6") {
+        value = YAHOO.util.Dom.get(value).value;
+    } else if (value == "CachingLevel") {
         value = YAHOO.util.Dom.get(value).value;
     }
     
@@ -732,7 +742,12 @@ var showHelp = function(type) {
         "visits" : "Traffic is classified by regular, search engine crawlers and threats. Page Views is defined by the number of requests to your site which return HTML.",
         "pageload" : "CloudFlare visits the home page of your website from several locations around the world from shared hosting. We do the same request twice: once through the CloudFlare system, and once directly to your site, so bypassing the CloudFlare system. We report both page load times here. CloudFlare improves the performance of your website by caching static resources like images, CSS and Javascript closer to your visitors and by compressing your requests so they are delivered quickly.",
         "hits" : "CloudFlare sits in front of your server and acts as a proxy, which means your traffic passes through our network. Our network nodes are distributed all over the world. We cache your static resources like images, CSS and Javascript at these nodes and deliver them to your visitors in those regions. By serving certain resources from these nodes, not only do we make your website load faster for your visitors, but we save you requests from your origin server. This means that CloudFlare offsets load so your server can perform optimally. CloudFlare does not cache html.",
-        "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server."       
+        "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server.",       
+        "fpurge_ts":"Immediately purge all cached resources for your website. This will force CloudFlare to expire all static resources cached prior to the button click and fetch a new version.",
+        "ipv46":"Automatically enable IPv6 networking for all your orange-clouded websites. CloudFlare will listen to <a href='http://en.wikipedia.org/wiki/IPv6'>IPv6</a> even if your host or server only supports IPv4.",
+        "ob":"Automatically enable always online for web pages that lose connectivity or time out. Seamlessly bumps your visitors back to normal browsing when your site comes back online.",
+        "cache_lvl":"Adjust your caching level to modify CloudFlare's caching behavior. The <b>basic</b> setting will cache most static resources (i.e., css, images, and JavaScript). The <b>aggressive</b> setting will cache all static resources, including ones with a query string.<br /><br />Basic: http://example.com/pic.jpg<br />Aggressive: http://example.com/pic.jpg?with=query",
+        "pro":"Choose your CloudFlare plan. Upgrading will make your website even faster, even safer and even smarter. <b>SSL support</b> is included in every plan and will be <b>automatically</b> provisioned. All plans are month to month: no long-term contracts! "
 
     };
 
@@ -779,7 +794,8 @@ var get_stats = function(domain) {
                     var start = new Date(parseInt(result.timeZero));
                     var end = new Date(parseInt(result.timeEnd));
                     var html;
-                    if (start > end) {
+
+                    if (0 && start > end) {
                         html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
                         html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
@@ -865,6 +881,7 @@ var get_stats = function(domain) {
 
                     html += '<div id="analytics-stats">';
 
+                        /**
                     if (percent_time) {
 			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
 			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
@@ -878,14 +895,17 @@ var get_stats = function(domain) {
                     } else {
                     html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
                     }
+*/
+
+                    html += '<div class="analytics-speed-column" id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
 
                     html += '<div class="analytics-speed-column analytics-right-rail">';
-                    html += '<div id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
                     
                     html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
                                 
-                    html += '</div></div>';
-
+                    html += '</div>';
+                    html += '</div>';    
+                    
                     html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/analytics.html" target="_blank"><span class="label">See more statistics</span></a></div></div>';
                         
                     html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
@@ -896,11 +916,22 @@ var get_stats = function(domain) {
                     html += '<p id="cf-settings"><b>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</b></p>';
                     html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
                     
-                    var security = stats.userSecuritySetting;
-                    var dev_mode = stats.dev_mode * 1000;
+                    var security    = stats.userSecuritySetting;
+                    var cachelvl    = stats.cache_lvl;
+                    var ip46lvl     = stats.ipv46;
+                    var dev_mode    = stats.dev_mode * 1000;
+                    var ob          = stats.ob;
                     var server_time = stats.currentServerTime;
-			        var local_time = new Date();
-			        var timeOffset = local_time.getTimezoneOffset() * 60 * 1000;                    
+			        var local_time  = new Date();
+			        var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;                    
+
+                    html += '<tr class="dt_module_row rowB">';
+                    html += 	'<td width="280">CloudFlare Account Type</td>';
+                    html += 	'<td><select name="AccountType" id="AccountType" onChange="change_cf_accnt()">';
+                    html += '<option value="free"'+((!stats.pro_zone)? 'selected': '')+'>Free</option>'
+                    html += '<option value="pro"'+((stats.pro_zone)? 'selected': '')+'>CloudFlare Pro</option>'
+                    html += '</select></td><td>&nbsp;</td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pro\')"></td></tr>';
 
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">CloudFlare security setting</td>';
@@ -923,6 +954,41 @@ var get_stats = function(domain) {
                         html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     }
                     html += '</tr>';
+
+                    html += '<tr class="dt_module_row rowA">';
+                    html += 	'<td width="280">Cache Purge</td><td>&nbsp;'
+                        + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">here</a> to purge</td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'fpurge_ts\')"></td>';
+                    html += '</tr>';
+
+                    html += '<tr class="dt_module_row rowB">';
+                    html += 	'<td width="280">Always Online</td>';
+                    html += 	'<td><select name="AlwaysOnline" id="AlwaysOnline" onChange="change_cf_setting(\''
+                        + domain+'\', \'ob\', \'' + 'AlwaysOnline' + '\')">';
+                    html += '<option value="0"'+((ob == "0")? 'selected': '')+'>Off</option>'
+                    html += '<option value="1"'+((ob == "1")? 'selected': '')+'>On</option>'
+                    html += '</select></td><td>&nbsp;</td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'ob\')"></td></tr>';
+                    
+                    html += '<tr class="dt_module_row rowA">';
+                    html += 	'<td width="280">Automatic IPv6</td>';
+                    html += 	'<td><select name="AutomaticIPv6" id="AutomaticIPv6" onChange="change_cf_setting(\''
+                        + domain+'\', \'ipv46\', \'' + 'AutomaticIPv6' + '\')">';
+                    html += '<option value="0"'+((ip46lvl == "0")? 'selected': '')+'>Off</option>'
+                    html += '<option value="1"'+((ip46lvl == "1")? 'selected': '')+'>Full</option>'
+                    html += '</select></td><td>&nbsp;</td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'ipv46\')"></td></tr>';
+                    
+                    html += '<tr class="dt_module_row rowB">';
+                    html += 	'<td width="280">CloudFlare caching level</td>';
+                    html += 	'<td><select name="CachingLevel" id="CachingLevel" onChange="change_cf_setting(\''
+                        + domain+'\', \'cache_lvl\', \'' + 'CachingLevel' + '\')">';
+                    html += '<option value="agg"'+((cachelvl == "agg")? 'selected': '')+'>Aggressive</option>'
+                    html += '<option value="basic"'+((cachelvl == "basic")? 'selected': '')+'>Basic</option>'
+                    html += '</select></td><td>&nbsp;</td>';
+                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'cache_lvl\')"></td></tr>';
+                    html += '<tr>';
+                    
                     html += '</table></p>';
                     html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
 
