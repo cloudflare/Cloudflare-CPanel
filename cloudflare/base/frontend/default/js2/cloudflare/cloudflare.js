@@ -954,7 +954,7 @@ var get_stats = function(domain) {
                         html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     }
                     html += '</tr>';
-
+/**
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">Cache Purge</td><td>&nbsp;'
                         + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">here</a> to purge</td>';
@@ -988,7 +988,7 @@ var get_stats = function(domain) {
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'cache_lvl\')"></td></tr>';
                     html += '<tr>';
-                    
+*/                    
                     html += '</table></p>';
                     html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
 
