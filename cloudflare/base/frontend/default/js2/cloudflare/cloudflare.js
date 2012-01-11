@@ -940,6 +940,7 @@ var get_stats = function(domain) {
                     html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
                     html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
                     html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
+                    html += '<option value="help"'+((security == "I&#39;m under attack!")? 'selected': '')+'>I&#39;m under attack!</option>'
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'seclvl\')"></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
