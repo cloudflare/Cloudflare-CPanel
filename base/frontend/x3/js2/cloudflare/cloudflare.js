@@ -976,7 +976,7 @@ var get_stats = function(domain) {
                     html += 	'<td><select name="AutomaticIPv6" id="AutomaticIPv6" onChange="change_cf_setting(\''
                         + domain+'\', \'ipv46\', \'' + 'AutomaticIPv6' + '\')">';
                     html += '<option value="0"'+((ip46lvl == "0")? 'selected': '')+'>Off</option>'
-                    html += '<option value="1"'+((ip46lvl == "1")? 'selected': '')+'>Full</option>'
+                    html += '<option value="3"'+((ip46lvl == "3")? 'selected': '')+'>Full</option>'
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'ipv46\')"></td></tr>';
                     
