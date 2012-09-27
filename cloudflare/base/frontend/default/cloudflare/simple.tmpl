@@ -22,28 +22,23 @@ END;
 SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS});
 SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
-
-SET cf_user = Api2.exec('CloudFlare','user_lookup', {'email' => CPANEL.CPDATA.CONTACTEMAIL, 'user' => CPANEL.CPDATA.USER, 'homedir' => CPANEL.homedir}).0;
+SET cf_user = Api2.exec('CloudFlare','user_lookup', {'user' => CPANEL.CPDATA.USER, 'homedir' => CPANEL.homedir}).0;
 
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
+FOR domain_data = base_domains_result.0.res;
+        SET temp = Api2.exec('CloudFlare','fetchzone', {'domain'=> domain_data.domain, 'homedir' => CPANEL.homedir});
+END;
+SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
+
 -%]
+
 <div id="FixedContent">
 	<ul id="Notifications"></ul>
 </div>
 
 <div class="body-content">
 <div class="yui-skin-sam">
-
-[% IF cf_user.result == "error" -%]
-
-[% IF !CPANEL.CPDATA.CONTACTEMAIL -%]
-<div class="h1Title">You must add an email address before continuing. Click <a href="../contact/index.html">here</a> to do so.</div>
-[% ELSE %]
-<div class="h1Title">[% cf_user.msg %]</div>
-[% END %]
-
-[% ELSE %]
 
 [% IF cf_user.response.user_key -%]
 
@@ -99,6 +94,7 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 <tr>
     <td><a href="javascript:void(0);" onclick="return enable_domain('[% domain_data.domain %]');">[Edit]</a></td>
     <td>[% domain_data.domain %]</td>
+
 [% IF domain_data.cloudflare -%]        
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
     <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
@@ -174,7 +170,6 @@ CloudFlare accelerates and protects any website online. On average, a website on
 <li>Note: This service is a beta collaboration between CloudFlare and [% base_domains_result.0.hoster %]. We encourage you to send any bug reports to support@cloudflare.com.
 </ul>
 
-<input type="hidden" id="USER_email" name="USER_email" value="[% CPANEL.CPDATA.CONTACTEMAIL %]" />
 <input type="hidden" id="USER_user" name="USER_user" value="[% CPANEL.CPDATA.USER %]" />
 
 <h4>Sign up for CloudFlare now</h4>
@@ -183,12 +178,12 @@ CloudFlare accelerates and protects any website online. On average, a website on
 
 	<tr>
           <td class="col1">Your Email: </td>
-		  <td class="col2"><input class="input_text" type="text" id="USER_email" value="[% CPANEL.CPDATA.CONTACTEMAIL %]" /></td>
+		  <td class="col2"><input class="input_text" type="text" id="USER_email" name="USER_email" value=""/></td>
 		  <td><div id="USER_email_error"></div></td>
 	</tr>
 	<tr id="cf_pass_noshow">
           <td class="col1">Password: </td>
-          <td class="col2"><input class="input_text" type="text" id="USER_pass"></td>
+          <td class="col2"><input class="input_text" type="password" id="USER_pass"></td>
 	</tr>
 	<tr>
           <td class="col1">&nbsp;</td>
@@ -213,15 +208,13 @@ CloudFlare accelerates and protects any website online. On average, a website on
 
 [% END -%]
 
-[% END -%]
-
 <script type="text/javascript">
 //<![CDATA[
 var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
 var LANG = [% js_lang.json() %];
 var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 0 %];
 var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
-var USER_EMAIL = [% CPANEL.CPDATA.CONTACTEMAIL.json() %];
+var USER_EMAIL = [% (cf_user.response.cloudflare_email)? cf_user.response.cloudflare_email.json(): 0 %];
 var USER_HOME_DIR = [% CPANEL.homedir.json() %];
 var CF_ON_CLOUD_MESSAGE = [% cf_user.on_cloud_message.json() %];
 //]]>

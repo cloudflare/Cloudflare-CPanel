@@ -94,8 +94,10 @@ sub api2_user_create {
     # Use a random string as a password.
     my $password = ($OPTS{"password"})? $OPTS{"password"}: crypt(int(rand(10000000)), time);
     $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
+    $cf_global_data->{"cloudflare_email"} = $OPTS{"email"};	
     $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}} = md5_hex($OPTS{"email"} . $cf_host_key);
     $logger->info("Making user token: " . $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}});
+    
     
     ## Otherwise, try to create this user.
     my $args = {
@@ -112,6 +114,9 @@ sub api2_user_create {
     };
 
     Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+    
+    
+    
     my $result = __https_post_req->($args);  
     return JSON::Syck::Load($result);
 }
@@ -162,7 +167,7 @@ sub api2_user_lookup {
             "query" => {
                 "act" => "user_lookup",
                 "host_key" => $cf_host_key,
-                "cloudflare_email" => $OPTS{"email"},
+                "cloudflare_email" => $cf_global_data->{"cf_email"},
             },
         };
 
@@ -418,22 +423,30 @@ sub api2_fetchzone {
     my $raw = __fetchzone(@_);
     my $results = [];
     my %OPTS    = @_;
+    
+    __load_data_file($OPTS{"homedir"});
     my $domain = $OPTS{'domain'}.".";
 
     foreach my $res (@{$raw->{"record"}}) {
         if ((($res->{"type"} eq "CNAME") || ($res->{"type"} eq "A")) &&
-            ($res->{"name"} !~ /(^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost|$cf_host_prefix)/) &&
+            ($res->{"name"} !~ /(^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost)/) &&
             ($res->{"name"} ne $domain) &&
+	    ($res->{"name"} ne $cf_host_prefix .".". $domain) &&
             ($res->{"cname"} !~ /google.com/)){
             if ($res->{"cname"} =~ /cdn.cloudflare.net$/) {
                 $res->{"cloudflare"} = 1;
+                $cf_global_data->{"cf_zones"}->{$OPTS{'domain'}} = 1;
             } else {
                 $res->{"cloudflare"} = 0;
-            }
+	    }
             push @$results, $res; 
         }
     }
+    
+    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+    
     return $results;
+    
 }
 
 sub api2_getbasedomains {        
