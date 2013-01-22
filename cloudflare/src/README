@@ -1,0 +1,49 @@
+cpwrap/AdminBin example                         Copyright(c) 2010 cPanel, Inc.
+                                                          All rights Reserved.
+copyright@cpanel.net                                         http://cpanel.net
+
+
+This package provides an example of using privilege escalation from within an API1/API2 call in cPanel.  This should be used for example purposes only, this should never be used on a production system.
+
+for full documentation on privilege escalation in cPanel/WHM please see: 
+http://etwiki.cpanel.net/twiki/bin/view/DeveloperResources/PrivilegeEscalation
+
+Installation
+---------------------
+Copy testadmin to /usr/local/cpanel/bin/testadmin
+Change the permissions on testadmin to 0700
+copy Test.pm to /usr/local/cpanel/Cpanel/Test.pm
+run make in the package's directory
+run make install in the packages directory
+
+to invoke via cpanel, run /xml-api/cpanel?cpanel_xmlapi_module=Test&cpanel_xmlapi_func=listrootfiles&dir=%2Froot
+
+it should respond with an XML document containing the list of files in /root
+
+License
+---------------------
+
+The code contained in this tarball is copyright cPanel, Inc.  This may be used under the following conditions:
+
+1. It is distributed for non-commercial use only
+2. If distributed for commercial use, prior written approval must be given by cPanel, Inc (contact copyright@cpanel.net for details)
+3. An uncompiled version of this code is publicly available
+4. It is understood that cPanel, Inc will not provide support for modified versions of this code.
+5. All copyright notices are left intact in the modified version.
+6. Contact information for the maintainer of the modified version is contained within the source.
+
+Usage
+---------------------
+When working with this system the flow of logic is as following:
+
+A perl subroutine (usually an API call) invokes Cpanel::AdminBin (as seen in Test.pm).
+Cpanel::AdminBin provides the interface for working with the cpwrap system
+Cpanel::AdminBin will then call the wrapper script (compiled as testwrap)
+testwrap needs to be installed into /usr/local/cpanel/bin with perms of 4755 (named "testwrap")
+testwrap will then ensure that it is called by a valid cpanel process and then invoke the specified script
+Cpanel::AdminBin will then write the arguments for the action requested to STDIN of the wrapper binary
+The binary script will then pass this information on to the admin script (provided as testadmin) prepending the UID of the calling user to the arguments
+The admin script will take the arguments, perform the action in question, return the data to the binary, which will return to Cpanel::AdminBin which will return it to the invoking subroutine
+
+
+When editing this system it is important to change the value of the PROG_NAME variable within the Makefile, this will change the identifier used for your privilege escalation to be used, when changing this it is important to change the 'name' passed to the AdminBin call ('test' in the case of these examples).

@@ -80,7 +80,7 @@ sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json
 
 ## Delete the keywrap, it doesn't need to be there anymore
 
-if [ -e /usr/local/cpanel/bin/apikeywrap];
+if [ -e /usr/local/cpanel/bin/apikeywrap ];
 then
     rm -f /usr/local/cpanel/bin/apikeywrap
 fi
@@ -111,6 +111,12 @@ fi
 
 ## Change cfadmin script to root only.
 chmod 700 /usr/local/cpanel/bin/cfadmin
+
+cd src
+make
+make install
+make clean
+cd ..
 
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
