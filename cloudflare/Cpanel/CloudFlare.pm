@@ -47,8 +47,6 @@ my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name', 
                'class' => 'class', 'address' => 'address', 'type' => 'type', 
                'txtdata' => 'txtdata', 'preference' => 'preference', 'exchange' => 'exchange' );
-
-## Initialize vars here.
 sub CloudFlare_init { 
     my $data = JSON::Syck::LoadFile($cf_config_file);
 
@@ -73,11 +71,11 @@ sub CloudFlare_init {
     }
 
     ## Load the api key.    
-    if (-x "/usr/local/cpanel/bin/apikeywrap") {
-        my $response=`/usr/local/cpanel/bin/apikeywrap $cf_host_key`;
-        chomp $response;
-        $cf_host_key = $response;
-    }
+    my $response=Cpanel::AdminBin::adminrun('cf','RETRIEVE','OH_HAI');
+    chomp $response;
+    $cf_host_key = $response;
+    $logger->info("=======I think the key is:$response"); 
+    
 }
 
 # Can only be called with json or xml api because it uses
@@ -93,7 +91,7 @@ sub api2_user_create {
     __load_data_file($OPTS{"homedir"});
     # Use a random string as a password.
     my $password = ($OPTS{"password"})? $OPTS{"password"}: crypt(int(rand(10000000)), time);
-    $logger->info("Creating Cloudflare user for " . $OPTS{"email"} . " -- " . $password);
+    $logger->info("Creating Cloudflare user for " . $OPTS{"email"});
     $cf_global_data->{"cloudflare_email"} = $OPTS{"email"};	
     $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}} = md5_hex($OPTS{"email"} . $cf_host_key);
     $logger->info("Making user token: " . $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}});

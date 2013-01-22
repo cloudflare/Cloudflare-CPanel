@@ -101,7 +101,7 @@ touch /usr/local/cpanel/etc/cloudflare_data.yaml
 chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
 
 ## Start the updator going
-cp bin/cloudflare_update.sh /usr/local/cpanel/bin/
+cp bin/* /usr/local/cpanel/bin/
 iscf=`crontab -l | grep cloudflare`
 if [ "$iscf" == "" ]; then
     crontab -l > c.cur

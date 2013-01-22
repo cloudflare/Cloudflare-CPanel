@@ -1,0 +1,73 @@
+#!/usr/bin/perl
+
+# Sanatize @INC
+BEGIN {
+    unshift @INC, '/usr/local/cpanel';
+    @INC = grep( !/(^\.|\.\.|\/\.+)/, @INC );
+    @INC = grep( /^(\/usr\/lib\d*\/perl|\/usr\/local\/lib\d*\/perl|\/usr\/local\/cpanel)/, @INC );
+}
+
+use Storable ();
+
+
+# Parse the arguments passed to the testadmin scripts via stdin
+my $theargs = <STDIN>;
+unless ( $theargs =~ /^(\d+) ([A-Z]+) (\S+)/ ) {
+    print STDERR "$0 : Syntax Mismatch\n";
+    exit 1;
+}
+chomp($theargs);
+
+my ( $uid, $action, @args ) = split( / /, $theargs );
+
+# This command hash contains all the logic for the actions to be run as root
+# to add a new escalated action, add a new key with a value of a coderef to this hash
+my %commands = (
+    'RETRIEVE' => sub {
+    
+        $file = "/root/.cpanel/datastore/cf_api";
+        
+        if ( -e $file)
+        {
+            open (FILE, $file) or die;
+
+            while(<FILE>)
+            {
+                chomp;
+                print $_;
+            }
+            close(FILE);
+        }
+        else
+        {
+            print "";
+            exit; 
+        }
+   
+        
+    },
+);
+
+
+# Verify that the command exists
+if ( !exists $commands{$action} ) {
+    print "not a valid action\n";
+    exit 1;
+}
+
+# Code used to ensure that the correct user is being run.
+my ( $user, $gid, $home ) = ( getpwuid( int($uid) ) )[ 0, 3, 7 ];
+
+if ( $user eq 'root' || $user eq '' ) {
+    print "Admin Binary called with invalid user\n";
+    exit;
+}
+
+if ( !-e "/var/cpanel/users/$user" && $user ne 'cpanel' ) {
+    print "Admin binary called with invalid user\n";
+    exit;
+}
+
+# Execute the action in question
+$commands{$action}->(  @args );
+
