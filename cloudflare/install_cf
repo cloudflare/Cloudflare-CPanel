@@ -77,7 +77,6 @@ local_tkn=$( echo "$host_key$date" | md5sum | md5sum )
 
 sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" etc/cloudflare.json 
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
-sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" src/apikey.c 
 
 ## Delete the keywrap, it doesn't need to be there anymore
 
