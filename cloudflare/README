@@ -49,5 +49,5 @@ Check to see if there is a new version of the CloudFlare plug-in available.
 # perl Cpanel/CloudFlare.pm check
 
 
-Copyright (c) 2011 by CloudFlare, Inc.
+Copyright (c) 2013 by CloudFlare, Inc.
 All Rights Reserved.
