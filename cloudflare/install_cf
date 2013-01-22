@@ -66,7 +66,6 @@ fi
 
 ## Updating to swap out the default key for an actual one.
 cp etc/cloudflare.json.back etc/cloudflare.json
-cp src/apikey.c.orig src/apikey.c
 
 if [ "$formal_name" == "" ]; then
     formal_name="your web hosting provider"
@@ -80,10 +79,12 @@ sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" etc/cloudflare.json
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
 sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" src/apikey.c 
 
-## make the keywrap
-gcc src/apikey.c -o /usr/local/cpanel/bin/apikeywrap
-chmod 755 /usr/local/cpanel/bin/apikeywrap
-chmod ug+s /usr/local/cpanel/bin/apikeywrap
+## Delete the keywrap, it doesn't need to be there anymore
+
+if [ -e /usr/local/cpanel/bin/apikeywrap];
+then
+    rm -f /usr/local/cpanel/bin/apikeywrap
+fi
 
 ## And write the config file
 cp etc/cloudflare.json /usr/local/cpanel/etc/
@@ -100,7 +101,7 @@ touch /usr/local/cpanel/etc/cloudflare_local.tmpl
 touch /usr/local/cpanel/etc/cloudflare_data.yaml
 chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
 
-## Start the updator going
+## Start the updator going, also copies the AdminBin stuff
 cp bin/* /usr/local/cpanel/bin/
 iscf=`crontab -l | grep cloudflare`
 if [ "$iscf" == "" ]; then
@@ -108,6 +109,9 @@ if [ "$iscf" == "" ]; then
     echo "12 2 * * 0 /usr/local/cpanel/bin/cloudflare_update.sh >/dev/null 2>&1" >> c.cur
     crontab c.cur
 fi
+
+## Change cfadmin script to root only.
+chmod 700 /usr/local/cpanel/bin/cfadmin
 
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then

@@ -72,9 +72,9 @@ sub CloudFlare_init {
 
     ## Load the api key.    
     my $response=Cpanel::AdminBin::adminrun('cf','RETRIEVE','OH_HAI');
+    $response =~ s/.\n//;
     chomp $response;
     $cf_host_key = $response;
-    $logger->info("=======I think the key is:$response"); 
     
 }
 

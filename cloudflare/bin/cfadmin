@@ -68,6 +68,9 @@ if ( !-e "/var/cpanel/users/$user" && $user ne 'cpanel' ) {
     exit;
 }
 
+# This is needed by the Cpanel::AdminBin module
+print ".\n";
+
 # Execute the action in question
 $commands{$action}->(  @args );
 
