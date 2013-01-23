@@ -20,8 +20,8 @@ fi
 
 
 installed_version=`cat etc/cloudflare.json | grep version | cut -d "\"" -f 4`
-current_version=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=714101354cc03bc8cbabeaf07a400118" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 6`
-current_version_sha=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=714101354cc03bc8cbabeaf07a400118" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 4`
+current_version=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$host_key" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 6`
+current_version_sha=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$host_key" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 4`
 
 if [[ $installed_version != $current_version ]] 
 	then
