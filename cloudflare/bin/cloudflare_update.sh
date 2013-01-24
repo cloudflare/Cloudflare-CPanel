@@ -23,7 +23,9 @@ installed_version=`cat etc/cloudflare.json | grep version | cut -d "\"" -f 4`
 current_version=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$host_key" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 6`
 current_version_sha=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$host_key" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_sha1 | cut -d "\"" -f 4`
 
-if [[ $installed_version != $current_version ]] 
+new_version=`echo $installed_version $current_version | awk '{ print ($1 < $2) ? 0 : 1 }'`
+
+if [ $new_version ] 
 	then
 		curl -s -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > cloudflare.tar.gz
 		download_sha=`shasum cloudflare.tar.gz | awk '{print $1}'`
