@@ -259,9 +259,7 @@ void check_if_parent()
         snprintf(procpath, (sizeof(procpath) - 1), "/proc/%d/exe", ppid);
         if (does_file_exist(procpath)
             && readlink(procpath, readlinkbuf, sizeof(readlinkbuf) - 1) > 0) {
-            if (readlinkbuf == strstr(readlinkbuf, "/usr/local/cpanel/cpanel")
-                || readlinkbuf == strstr(readlinkbuf, "/usr/sbin/exim")
-                || readlinkbuf == strstr(readlinkbuf, "/usr/local/sbin/exim")) {
+            if (readlinkbuf == strstr(readlinkbuf, "/usr/local/cpanel/cpanel")) 		{
                 cpanelisparent = 1;
             } else {
                 syslog(LOG_INFO, "cPWrapper run with a parent: %s\n", readlinkbuf);
@@ -271,9 +269,8 @@ void check_if_parent()
         snprintf(procpath, (sizeof(procpath) - 1), "/proc/%d/file", ppid);
         if (!cpanelisparent && does_file_exist(procpath)
             && readlink(procpath, readlinkbuf, sizeof(readlinkbuf) - 1) > 0) {
-            if (readlinkbuf == strstr(readlinkbuf, "/usr/local/cpanel/cpanel")
-                || readlinkbuf == strstr(readlinkbuf, "/usr/sbin/exim")
-                || readlinkbuf == strstr(readlinkbuf, "/usr/local/sbin/exim")) {
+            if (readlinkbuf == strstr(readlinkbuf, "/usr/local/cpanel/cpanel"))
+                {
                 cpanelisparent = 1;
             } else {
                 syslog(LOG_INFO, "cPWrapper run with a parent: %s\n", readlinkbuf);
