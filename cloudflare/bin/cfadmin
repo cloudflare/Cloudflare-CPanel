@@ -4,7 +4,7 @@
 BEGIN {
     unshift @INC, '/usr/local/cpanel';
     @INC = grep( !/(^\.|\.\.|\/\.+)/, @INC );
-    @INC = grep( /^(\/usr\/lib\d*\/perl|\/usr\/local\/lib\d*\/perl|\/usr\/local\/cpanel)/, @INC );
+    @INC = grep( /^(\/usr\/lib\d*\/perl|\/usr\/local\/lib\d*\/perl|\/usr\/local\/cpanel|\/usr\/share\/perl)/, @INC );
 }
 
 use Storable ();
