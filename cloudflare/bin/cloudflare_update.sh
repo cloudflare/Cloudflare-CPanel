@@ -25,7 +25,7 @@ current_version_sha=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpa
 
 new_version=`echo $installed_version $current_version | awk '{ print ($1 < $2) ? 0 : 1 }'`
 
-if [ $new_version ] 
+if [ $new_version == 0 ] 
 	then
 		curl -s -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > cloudflare.tar.gz
 		download_sha=`shasum cloudflare.tar.gz | awk '{print $1}'`
