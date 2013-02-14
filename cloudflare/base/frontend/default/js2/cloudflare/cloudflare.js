@@ -474,6 +474,8 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
         YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
     }
 };
+
+
 var update_user_records_table = function(cb_lambda) {
     var callback = {
         success : function(o) {
@@ -747,8 +749,8 @@ var showHelp = function(type) {
         "ipv46":"Automatically enable IPv6 networking for all your orange-clouded websites. CloudFlare will listen to <a href='http://en.wikipedia.org/wiki/IPv6'>IPv6</a> even if your host or server only supports IPv4.",
         "ob":"Automatically enable always online for web pages that lose connectivity or time out. Seamlessly bumps your visitors back to normal browsing when your site comes back online.",
         "cache_lvl":"Adjust your caching level to modify CloudFlare's caching behavior. The <b>basic</b> setting will cache most static resources (i.e., css, images, and JavaScript). The <b>aggressive</b> setting will cache all static resources, including ones with a query string.<br /><br />Basic: http://example.com/pic.jpg<br />Aggressive: http://example.com/pic.jpg?with=query",
-        "pro":"Choose your CloudFlare plan. Upgrading will make your website even faster, even safer and even smarter. <b>SSL support</b> is included in every plan and will be <b>automatically</b> provisioned. All plans are month to month: no long-term contracts! "
-
+        "pro":"Choose your CloudFlare plan. Upgrading will make your website even faster, even safer and even smarter. <b>SSL support</b> is included in every plan and will be <b>automatically</b> provisioned. All plans are month to month: no long-term contracts! ",
+        "railgun": "Railgun WAN optimizer"
     };
 
     if ('DN' in window) {
@@ -771,6 +773,110 @@ var showHelp = function(type) {
     return false;
 }
 
+var set_railgun = function (domain, value) {
+    YAHOO.util.Dom.get("domain").value = domain;
+    var callback = {
+        success : function(o) {
+            try {
+                var data = YAHOO.lang.JSON.parse(o.responseText);
+                if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + data.cpanelresult.data[0].msg + "</div>";
+			    } else {
+                    get_stats(domain);
+                    return false;
+			    }
+			}
+            catch (e) {
+                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
+            }
+        },
+        failure : function(o) {            
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' 
+                + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+
+    rtoken = YAHOO.util.Dom.get(value).value;
+    
+    var action = "set_railgun";
+    
+    if (rtoken == "remove")
+         action = "remove_railgun";
+    
+    // send the AJAX request
+    var api2_call = {
+	    "cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : action,
+		"zone_name" : YAHOO.util.Dom.get("domain").value,
+        "user_email" : USER_EMAIL,
+        "user_api_key" : USER_API_KEY,
+        "rtkn" : rtoken,
+        "homedir" : USER_HOME_DIR
+	};
+
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    return false;
+}
+
+var set_railgun_mode = function (domain, value, mode) {
+    YAHOO.util.Dom.get("domain").value = domain;
+    var callback = {
+        success : function(o) {
+            try {
+                var data = YAHOO.lang.JSON.parse(o.responseText);
+                if (data.cpanelresult.error) {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+                } else if (data.cpanelresult.data[0].result == "error") {
+                    YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
+                        + " " + data.cpanelresult.data[0].msg + "</div>";
+			    } else {
+                    setTimeout(get_stats(domain), 3000);
+                    return false;
+			    }
+			}
+            catch (e) {
+                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
+            }
+        },
+        failure : function(o) {            
+            YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' 
+                + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
+        }
+    };
+
+    rtoken = YAHOO.util.Dom.get(value).value;
+    
+    var action = "enabled";
+    
+    if (YAHOO.util.Dom.get(mode).value == "0")
+         action = "disabled";
+        
+    // send the AJAX request
+    var api2_call = {
+	    "cpanel_jsonapi_version" : 2,
+		"cpanel_jsonapi_module" : "CloudFlare",
+		"cpanel_jsonapi_func" : "set_railgun_mode",
+		"zone_name" : YAHOO.util.Dom.get("domain").value,
+        "user_email" : USER_EMAIL,
+        "user_api_key" : USER_API_KEY,
+        "rtkn" : rtoken,
+        "mode" : action,
+        "homedir" : USER_HOME_DIR
+	};
+
+    YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+    return false;
+}
+
+
+
+
 var get_stats = function(domain) {
     reset_form();
 	YAHOO.util.Dom.get("domain").value = domain;
@@ -785,6 +891,66 @@ var get_stats = function(domain) {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                         + " " + data.cpanelresult.data[0].msg + "</div>";
 			    } else {
+
+                    var activeRailgun;     
+                    var activeRailgunRequest;                
+
+                    function getActiveRailguns(domain)
+                    {
+ 
+                            var callback = {
+                            success : function(o) {
+                                 try {
+                                    var data = YAHOO.lang.JSON.parse(o.responseText);
+                                    activeRailgunRequest = o;                                    
+                                    if (data.cpanelresult.error)
+                                    {
+                                       console.log("Hey, it didn't work.");
+                                    }
+                                    else if (data.cpanelresult.data[0].result == "error")
+                                    {
+                                       console.log("Seriously, it didn't work.");
+                                    }
+                                    else if (data.cpanelresult.data[0].response.railgun_conn.obj == null)
+                                    {
+                                       activeRailgun = null;
+                                    }
+                                    else
+                                    {
+                                       activeRailgun = data.cpanelresult.data[0].response.railgun_conn.obj;
+                                    }
+                                 }
+                                 catch (e)
+                                    {
+                                       console.log("It was an exception. Happy?");
+                                    }
+                              },
+                              failure : function (o) {
+                                 console.log("It failed.");
+                                 }
+                              };
+                              
+            
+                              
+                            var api2_call = {
+		                        "cpanel_jsonapi_version" : 2,
+                        		"cpanel_jsonapi_module" : "CloudFlare",
+                        		"cpanel_jsonapi_func" : "get_active_railguns",
+                        		"zone_name" : YAHOO.util.Dom.get("domain").value,
+                              "user_email" : USER_EMAIL,
+                              "user_api_key" : USER_API_KEY,
+                              "homedir" : USER_HOME_DIR
+                           	};
+                    
+                             connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
+                  } 
+                  
+                  getActiveRailguns(domain); 
+
+
+
+
+
                     // Display stats here.
                     var result = data.cpanelresult.data[0].response.result;
                     var stats = result.objs[0];
@@ -795,7 +961,7 @@ var get_stats = function(domain) {
                     var end = new Date(parseInt(result.timeEnd));
                     var html;
 
-                    if (0 && start > end) {
+                    if (start > end) {
                         html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
                         html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
@@ -809,7 +975,8 @@ var get_stats = function(domain) {
                                 " &middot; " + start_fm 
                                 + " to "+ end_fm + "</b></p>";
                         }
-	                html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
+    
+                    html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
                     html += '<tr class="dt_header_row">';
                     html += 	'<th width="100">&nbsp;</th>';
                     html += 	'<th>regular traffic</th>';
@@ -932,7 +1099,7 @@ var get_stats = function(domain) {
                     html += '<option value="pro"'+((stats.pro_zone)? 'selected': '')+'>CloudFlare Pro</option>'
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pro\')"></td></tr>';
-
+ 
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">CloudFlare security setting</td>';
                     html += 	'<td><select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="change_cf_setting(\''
@@ -950,12 +1117,12 @@ var get_stats = function(domain) {
                             '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td>';
                         html += '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     } else {
-                        html += 	'<td width="280">Development Mode is currently</td><td>off'
+                        html += 	'<td width="280">Development Mode</td><td>Off'
                             + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td>';
                         html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
                     }
                     html += '</tr>';
-
+                    
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">Cache Purge</td><td>&nbsp;'
                         + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">here</a> to purge</td>';
@@ -988,12 +1155,134 @@ var get_stats = function(domain) {
                     html += '<option value="basic"'+((cachelvl == "basic")? 'selected': '')+'>Basic</option>'
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'cache_lvl\')"></td></tr>';
-                    html += '<tr>';
+       
+                    html += '<tr id="rglist" class="dt_module_row rowA">'; 
+                    html += '</tr>'
 
                     html += '</table></p>';
                     html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
 
+
+
                     YAHOO.util.Dom.get("user_records_div").innerHTML = html;
+
+                    var railgunList;                     
+
+                     function process_rg_response(data)
+                     {
+                       var rg_html="";
+                       
+                       if (data != null)
+                       {
+                           
+                          railgunList = data;
+                                                
+                          rg_html +=     '<td width="280"><strong>Railgun</td>';
+                       
+                          rg_html +=     '<td><select name="Railgun" id="Railgun" onChange="set_railgun(\''+ domain+'\',' + '\'Railgun\')">';
+                                                    
+                          rg_html += '<option value="remove">Railgun Not Selected</option>';
+                                                    
+                          var suppress = false;
+                          var preSelected = false;    
+                                                                                           
+                          for( var i = 0; i < railgunList.length; i++ )
+                          {                       
+                              rg_html += '<option value="' + railgunList[i].railgun_api_key + '" '; 
+                              if ( (activeRailgun != null) && (activeRailgun.railgun_id == railgunList[i].railgun_id) )
+                              { 
+                                 rg_html += 'selected' 
+                                 preSelected = true;
+                              }                           
+                              
+                              rg_html += '>' + railgunList[i].railgun_name; 
+                              
+                              if (railgunList[i].railgun_mode == "0")
+                                 {
+                                    rg_html += ' (Disabled)';
+                                    suppress = true;
+                                 }   
+                              
+                              rg_html += '</option>';
+                           }
+                                                                        
+                          rg_html += '</select></td>';
+                          
+                          if (preSelected) 
+                          {
+                              if(!suppress)
+                              {
+                                 rg_html += '<td>'
+                                 rg_html += '<select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode(\''+ domain+'\',' + '\'Railgun\', \'RailgunStatus\')">';
+                                 rg_html += '<option value="0">Off</option>'
+                                 rg_html += '<option value="1"' + ( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) + '>On</option>';
+                                 rg_html += '</select></td>';
+                              }
+                              else
+                              {
+                                 rg_html += '<td>&nbsp;</td>';
+                              }
+                          }
+                          else
+                          {
+                              rg_html += '<td>&nbsp;</td>'
+                          }
+                                                    
+                          rg_html += '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'railgun\')"></td></tr>'                     
+                        
+                          YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
+                        }
+                           
+                     }
+
+                    function getRailguns(domain)
+                    {
+ 
+                            var callback = {
+                            success : function(o) {
+                                 try {
+                                    var data = YAHOO.lang.JSON.parse(o.responseText);
+                                                                        
+                                    if (data.cpanelresult.error)
+                                    {
+                                       console.log("Hey, it didn't work.");
+                                    }
+                                    else if (data.cpanelresult.data[0].result == "error")
+                                    {
+                                       console.log("Seriously, it didn't work.");
+                                    }
+                                    else
+                                    {
+                                       process_rg_response(data.cpanelresult.data[0].response.railguns.objs);
+                                    }
+                                 }
+                                 catch (e)
+                                    {
+                                       console.log("It was an exception. Happy?");
+                                    }
+                              },
+                              failure : function (o) {
+                                 console.log("It failed.");
+                                 }
+                              };
+                              
+                              
+                            var api2_call = {
+		                        "cpanel_jsonapi_version" : 2,
+                        		"cpanel_jsonapi_module" : "CloudFlare",
+                        		"cpanel_jsonapi_func" : "get_railguns",
+                        		"zone_name" : YAHOO.util.Dom.get("domain").value,
+                              "user_email" : USER_EMAIL,
+                              "user_api_key" : USER_API_KEY,
+                              "homedir" : USER_HOME_DIR
+                           	};
+                    
+                             connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
+                  } 
+                  
+                  
+                  setTimeout(getRailguns(domain), 5000);
+                
                 }
 		    }
 		    catch (e) {
@@ -1022,12 +1311,18 @@ var get_stats = function(domain) {
         "user_api_key" : USER_API_KEY,
         "homedir" : USER_HOME_DIR
 	};
+	
+	
 
     YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
 
     return false;
 }
+
+
+
+
 
 var init_page = function() {
 

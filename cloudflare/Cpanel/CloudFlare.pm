@@ -208,6 +208,10 @@ sub api2_get_stats {
     return JSON::Syck::Load($result);
 }
 
+
+
+
+
 sub api2_edit_cf_setting {
     my %OPTS = @_;
 
@@ -463,6 +467,163 @@ sub api2_getbasedomains {
     return {"has_cf" => $has_cf, "res" => $res, "hoster" => $hoster_name};
 }
 
+sub api2_get_railguns {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    my $getrailgun_args = {
+        "host" => $cf_user_name,
+        "uri" => "/api/v2/railgun/zone_get_actives",
+        "port" => $cf_host_port,
+        "query" => {
+            "tkn" => $OPTS{"user_api_key"},
+            "email" => $OPTS{"user_email"},
+            "z" => $OPTS{"zone_name"},
+        },
+    };
+
+    my $result = __https_post_req->($getrailgun_args);
+    return JSON::Syck::Load($result);
+}
+
+
+sub api2_zone_get_active_railgun {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    ## Otherwise, pull this users stats.
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => "/api/v2/railgun/zone_conn_get_active",
+        "port" => $cf_host_port,
+        "query" => {
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "email" => $OPTS{"user_email"},
+            "enabled" => "all",
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
+    return JSON::Syck::Load($result);
+}
+
+sub api2_set_railgun {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+
+    api2_remove_railgun(%OPTS);
+
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => "/api/v2/railgun/conn_set",
+        "port" => $cf_host_port,
+        "query" => {
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "email" => $OPTS{"user_email"},
+            "rtkn" => $OPTS{"rtkn"},
+            "mode" => "0",
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
+    return JSON::Syck::Load($result);
+}
+
+sub api2_remove_railgun {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => "/api/v2/railgun/conn_multi_delete",
+        "port" => $cf_host_port,
+        "query" => {
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "email" => $OPTS{"user_email"},
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
+    return JSON::Syck::Load($result);
+}
+
+sub api2_railgun_mode {
+    my %OPTS = @_;
+
+    if (!$OPTS{"user_api_key"}) {
+        $logger->info("Missing user_api_key!");
+        return [];
+    }
+
+    if ( !$has_ssl ) { 
+        $logger->info("No SSL Configured");
+        return [{"result"=>"error", 
+                 "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+    }
+
+    ## Otherwise, pull this users stats.
+    my $stats_args = {
+        "host" => $cf_user_name,
+        "uri" => "/api/v2/railgun/conn_setmode_" . $OPTS{"mode"},
+        "port" => $cf_host_port,
+        "query" => {
+            "z" => $OPTS{"zone_name"},
+            "tkn" => $OPTS{"user_api_key"},
+            "email" => $OPTS{"user_email"},
+            "rtkn" => $OPTS{"rtkn"},
+        },
+    };
+
+    my $result = __https_post_req->($stats_args);
+    return JSON::Syck::Load($result);
+}
+
+
+
 sub api2 {
     my $func = shift;
 
@@ -484,7 +645,17 @@ sub api2 {
     $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
     $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
     $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
-
+    $API{'get_railguns'}{'func'}                        = 'api2_get_railguns';
+    $API{'get_railguns'}{'engine'}                      = 'hasharray';
+    $API{'get_active_railguns'}{'func'}                 = 'api2_zone_get_active_railgun';
+    $API{'get_active_railguns'}{'engine'}               = 'hasharray'; 
+    $API{'set_railgun'}{'func'}                         = 'api2_set_railgun';
+    $API{'set_railgun'}{'engine'}                       = 'hasharray';
+    $API{'remove_railgun'}{'func'}                      = 'api2_remove_railgun';
+    $API{'remove_railgun'}{'engine'}                    = 'hasharray';
+    $API{'set_railgun_mode'}{'func'}                    = 'api2_railgun_mode';
+    $API{'set_railgun_mode'}{'engine'}                  = 'hasharray';
+   
     return ( \%{ $API{$func} } );
 }
 
@@ -611,7 +782,7 @@ sub __https_post_req {
     my ( $args_hr ) = @_;
     if ($args_hr->{'port'} ne "443") {
         ## Downgrade to http
-        return __http_post_req($args_hr);
+        $logger->info("Port is not 443. Wait, how did that happen?");
     } else {
         my ( $args_hr ) = @_;
         my ($page, $response, %reply_headers)
@@ -625,74 +796,7 @@ sub __https_post_req {
     }
 }
 
-sub __http_post_req {
-    my ( $args_hr ) = @_;
-    my $query = $args_hr->{'query'};
-    if ( ref $args_hr->{'query'} eq 'HASH' ) {
-        $query = '';
-        foreach my $key ( keys %{ $args_hr->{'query'} } ) {
-            if ( ref $args_hr->{'query'}{$key} eq 'ARRAY' ) {
-                for my $val ( @{ $args_hr->{'query'}{$key} } ) {
-                    $query .=
-                        $query
-                        ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str($val)
-                        : "$key=" . Cpanel::Encoder::URI::uri_encode_str($val);
-                }
-            }
-            else {
-                $query .=
-                    $query
-                    ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} )
-                    : "$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} );
-            }
-        }
-    }
-    
-    my $postdata_len = length($query);
 
-    if ($cf_debug_mode) {
-        $logger->info($query);
-    }    
-
-    my $proto = getprotobyname('tcp');
-    return unless defined $proto;
-
-    socket( my $socket_fh, &Socket::AF_INET, &Socket::SOCK_STREAM, $proto );
-    return unless $socket_fh;
-
-    my $iaddr = gethostbyname($args_hr->{'host'});
-    my $port = $args_hr->{'port'};
-    
-    return unless ( defined $iaddr && defined $port );
-
-    my $sin = Socket::sockaddr_in( $port, $iaddr );
-    return unless defined $sin;
-    
-    my $result = "";
-    if ( connect( $socket_fh, $sin ) ) {
-        send $socket_fh, "POST /$args_hr->{'uri'} HTTP/1.0\nContent-Length: $postdata_len\nContent-Type: application/x-www-form-urlencoded\nHost: $args_hr->{'host'}\n\n$query", 0;
-        
-        my $in_header = 1;
-        while (<$socket_fh>) {
-            if ( /^\n$/ || /^\r\n$/ || /^$/ ) {
-                $in_header = 0;
-                next;
-            }
-            
-            if (!$in_header) {
-                $result .=  $_;
-            }
-        }
-    }
-
-    close $socket_fh;
-
-    if ($cf_debug_mode) {
-        $logger->info($result);
-    }
-
-    return $result;
-}
 
 sub __serialize_request {
     my $opt_ref = shift;
