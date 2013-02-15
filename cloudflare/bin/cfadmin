@@ -1,5 +1,45 @@
 #!/usr/bin/perl
 
+use lib "..";
+use lib "/usr/local/cpanel";
+use Cpanel::DnsUtils::UsercPanel ();
+
+use Cpanel::AdminBin             ();
+use Cpanel::Locale               ();
+use Cpanel::Logger               ();
+use Cpanel::UrlTools             ();
+use Cpanel::SocketIP             ();
+use Cpanel::Encoder::URI         ();
+use Cpanel::AcctUtils            ();
+use Cpanel::DomainLookup         ();
+use Cpanel::DataStore            ();
+
+use Socket                       ();
+use JSON::Syck                   ();
+use Digest::MD5 qw(md5_hex);
+use File::Temp qw/ tempdir /;
+
+my $logger = Cpanel::Logger->new();
+my $locale;
+my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json";
+my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
+my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
+my $cf_data_file;
+my $cf_host_key;
+my $cf_host_name;
+my $cf_host_uri;
+my $cf_user_name;
+my $cf_user_uri;
+my $cf_host_port;
+my $cf_host_on_cloud_msg;
+my $cf_host_prefix;
+my $has_ssl;
+my $cf_debug_mode;
+my $hoster_name;
+my $cf_cp_version;
+my $cf_global_data = {};
+my $DEFAULT_HOSTER_NAME = "your web hosting provider";
+
 # Sanatize @INC
 BEGIN {
     unshift @INC, '/usr/local/cpanel';
@@ -12,7 +52,10 @@ use Storable ();
 
 # Parse the arguments passed to the testadmin scripts via stdin
 my $theargs = <STDIN>;
-unless ( $theargs =~ /^(\d+) ([A-Z]+) (\S+)/ ) {
+
+
+#unless ( $theargs =~ /^(\d+) ([A-Z]+) (\S+)/ ) {
+unless ( $theargs =~ /^(\d+) ([A-Za-z_]+) (\S+)/ ) {
     print STDERR "$0 : Syntax Mismatch\n";
     exit 1;
 }
@@ -23,30 +66,351 @@ my ( $uid, $action, @args ) = split( / /, $theargs );
 # This command hash contains all the logic for the actions to be run as root
 # to add a new escalated action, add a new key with a value of a coderef to this hash
 my %commands = (
-    'RETRIEVE' => sub {
-    
-        $file = "/root/.cpanel/datastore/cf_api";
-        
-        if ( -e $file)
-        {
-            open (FILE, $file) or die;
+    'user_create' => sub {
+        my %OPTS = @args;
 
-            while(<FILE>)
-            {
-                chomp;
-                print $_;
+        CloudFlare_init();
+
+        if (!$cf_host_key) {
+            $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
+            return [];
+        }
+
+        # This is the one case where we need to do __load_data_file among other things, because of the
+        # host_key salt with the user token.
+		__load_data_file($OPTS{"homedir"});
+		# Use a random string as a password.
+		$logger->info("Creating Cloudflare user for " . $OPTS{"email"});
+		$cf_global_data->{"cloudflare_email"} = $OPTS{"email"};
+		$cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}} = md5_hex($OPTS{"email"} . $cf_host_key);
+		$logger->info("Making user token: " . $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}});
+		Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+
+        ## Otherwise, try to create this user.
+        my $args = {
+            "host" => $cf_host_name,
+            "uri" => $cf_host_uri,
+            "port" => $cf_host_port,
+            "query" => {
+                "act" => "user_create",
+                "host_key" => $cf_host_key,
+                "cloudflare_email" => $OPTS{"email"},
+                "cloudflare_pass" => ($OPTS{"password"})? $OPTS{"password"}: crypt(int(rand(10000000)), time),
+                "unique_id" => md5_hex($OPTS{"email"} . $cf_host_key),
+            },
+        };
+
+        my $result = __https_post_req->($args);
+        Storable::nstore_fd( JSON::Syck::Load($result), \*STDOUT );
+    },
+    'user_lookup' => sub {
+        my %OPTS = @args;
+
+        CloudFlare_init();
+
+        __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
+        if (!$cf_host_key) {
+            $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
+            return [];
+        }
+
+        if ( !$has_ssl ) {
+            $logger->info("No SSL Configured");
+            return [{"result"=>"error",
+                     "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+        }
+
+        if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
+            if ($cf_debug_mode) {
+                $logger->info("Using user token");
             }
-            close(FILE);
+            my $login_args = {
+                "host" => $cf_host_name,
+                "uri" => $cf_host_uri,
+                "port" => $cf_host_port,
+                "query" => {
+                    "act" => "user_lookup",
+                    "host_key" => $cf_host_key,
+                    "unique_id" => $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}},
+                },
+            };
+
+            my $result = JSON::Syck::Load(__https_post_req->($login_args));
+            $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+
+            Storable::nstore_fd( $result, \*STDOUT );
+        } else {
+            if ($cf_debug_mode) {
+                $logger->info("Using user email");
+            }
+            my $login_args = {
+                "host" => $cf_host_name,
+                "uri" => $cf_host_uri,
+                "port" => $cf_host_port,
+                "query" => {
+                    "act" => "user_lookup",
+                    "host_key" => $cf_host_key,
+                    "cloudflare_email" => $cf_global_data->{"cf_email"},
+                },
+            };
+
+            my $result = JSON::Syck::Load(__https_post_req->($login_args));
+            $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+            Storable::nstore_fd( $result, \*STDOUT );
         }
-        else
-        {
-            print "";
-            exit; 
+    },
+
+
+    'zone_set' => sub {
+        my %OPTS = @args;
+
+        CloudFlare_init();
+
+        if (!$cf_host_key || !$cf_host_prefix) {
+            $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_config_file.");
+            return [];
         }
-   
-        
+
+        __load_data_file($OPTS{"homedir"});
+        my $domain = ".".$OPTS{"zone_name"}.".";
+        my $subs = $OPTS{"subdomains"};
+        $subs =~ s/${domain}//g;
+
+        ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
+        my $recs2lines = JSON::Syck::Load($OPTS{"cf_recs"});
+
+        ## Set up the zone_set args.
+        my $login_args = {
+            "host" => $cf_host_name,
+            "uri" => $cf_host_uri,
+            "port" => $cf_host_port,
+            "query" => {
+                "act" => "zone_set",
+                "host_key" => $cf_host_key,
+                "user_key" => $OPTS{"user_key"},
+                "zone_name" => $OPTS{"zone_name"},
+                "resolve_to" => $cf_host_prefix . "." . $OPTS{"zone_name"},
+                "subdomains" => $subs
+            },
+        };
+
+        if (!$subs) {
+            $login_args->{"query"}->{"act"} = "zone_delete";
+            $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0
+        }
+
+        my $result = JSON::Syck::Load(__https_post_req->($login_args));
+
+        Storable::nstore_fd( $result, \*STDOUT );
+    },
+
+    'zone_delete' => sub {
+        my %OPTS = @args;
+
+        CloudFlare_init();
+
+        if (!$cf_host_key || !$cf_host_prefix) {
+            $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_config_file.");
+            return [];
+        }
+
+        __load_data_file($OPTS{"homedir"});
+        my $domain = ".".$OPTS{"zone_name"}.".";
+
+        ## Set up the zone_set args.
+        my $login_args = {
+            "host" => $cf_host_name,
+            "uri" => $cf_host_uri,
+            "port" => $cf_host_port,
+            "query" => {
+                "act" => "zone_delete",
+                "host_key" => $cf_host_key,
+                "user_key" => $OPTS{"user_key"},
+                "zone_name" => $OPTS{"zone_name"}
+            },
+        };
+
+        my $result = JSON::Syck::Load(__https_post_req->($login_args));
+
+        Storable::nstore_fd( $result, \*STDOUT );
     },
 );
+
+########## BEGIN Internal Functions #########
+sub CloudFlare_init {
+    my $data = JSON::Syck::LoadFile($cf_config_file);
+
+    $cf_host_key = $data->{"host_key"};
+    $cf_host_name = $data->{"host_name"};
+    $cf_host_uri = $data->{"host_uri"};
+    $cf_host_port = $data->{"host_port"};
+    $cf_host_prefix = $data->{"host_prefix"};
+    $cf_debug_mode = $data->{"debug"};
+    $cf_user_name = $data->{"user_name"};
+    $cf_user_uri = $data->{"user_uri"};
+    $cf_cp_version = $data->{"cp_version"};
+    $hoster_name = $data->{"host_formal_name"};
+    $cf_host_on_cloud_msg = ($data->{"cloudflare_on_message"})? $data->{"cloudflare_on_message"}: "";
+    if (!$hoster_name) {
+        $hoster_name = $DEFAULT_HOSTER_NAME;
+    }
+
+    eval { use Net::SSLeay qw(post_https make_headers make_form); $has_ssl = 1 };
+    if ( !$has_ssl ) {
+        $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
+    }
+
+    my $file = "/root/.cpanel/datastore/cf_api";
+    my $response = "";
+    $response = `cat $file`;
+    $response =~ s/\n//;
+    $cf_host_key = $response;
+}
+
+sub __load_data_file {
+    my $home_dir = shift;
+    my $user = shift;
+    $cf_data_file = $home_dir . "/" . $cf_data_file_name;
+    if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
+        if ($cf_debug_mode) {
+            $logger->info("Successfully loaded cf data -- $cf_data_file");
+        }
+    } else {
+        ## Try to load the data from the old default data file (if it exists)
+        if (-e $cf_old_data_file_name) {
+            $logger->info( "Failed to load cf data -- Trying to copy from $cf_old_data_file_name for $user");
+            my $tmp_data = {};
+            Cpanel::DataStore::load_ref($cf_old_data_file_name, $tmp_data);
+            $cf_global_data->{"cf_user_tokens"}->{$user} = $tmp_data->{"cf_user_tokens"}->{$user};
+            $cf_global_data->{"cf_zones"} = $tmp_data->{"cf_zones"};
+
+        } else {
+            $cf_global_data = {"cf_zones" => {}};
+            $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
+        }
+        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+        chmod 0600, $cf_data_file;
+    }
+}
+
+sub __fetchzone {
+    my %OPTS    = @_;
+    my $domain  = $OPTS{'domain'};
+    my $results = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'FETCH', 'storable', $domain, ($OPTS{'customonly'} ? 1 : 0)  );
+
+    if ( ref $results->{'record'} eq 'ARRAY' ) {
+        for(0 .. $#{ $results->{'record'} }) {
+            $results->{'record'}->[$_]->{'record'} = ($results->{'record'}->[$_]->{'address'} || $results->{'record'}->[$_]->{'cname'} || $results->{'record'}->[$_]->{'txtdata'});
+            $results->{'record'}->[$_]->{'line'} = ($results->{'record'}->[$_]->{'Line'});
+        }
+        foreach my $key ( keys %KEYMAP ) {
+            if ( exists $OPTS{$key} && defined $OPTS{$key} ) {
+                my %MULTITYPES = map { $_ => undef } split(/[\|\,]/, $OPTS{$key});
+                @{ $results->{'record'} } = grep { exists $MULTITYPES{$_->{ $KEYMAP{$key} }} } @{ $results->{'record'} };
+            }
+        }
+    }
+
+    return $results;
+}
+
+sub __https_post_req {
+    my ( $args_hr ) = @_;
+    if ($args_hr->{'port'} ne "443") {
+        ## Downgrade to http
+        return __http_post_req($args_hr);
+    } else {
+        my ( $args_hr ) = @_;
+        my ($page, $response, %reply_headers)
+            = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '',
+                         make_form(%{$args_hr->{'query'}}));
+        if ($cf_debug_mode) {
+            $logger->info($response);
+            $logger->info($page);
+        }
+        return $page;
+    }
+}
+
+sub __http_post_req {
+    my ( $args_hr ) = @_;
+    my $query = $args_hr->{'query'};
+    if ( ref $args_hr->{'query'} eq 'HASH' ) {
+        $query = '';
+        foreach my $key ( keys %{ $args_hr->{'query'} } ) {
+            if ( ref $args_hr->{'query'}{$key} eq 'ARRAY' ) {
+                for my $val ( @{ $args_hr->{'query'}{$key} } ) {
+                    $query .=
+                        $query
+                        ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str($val)
+                        : "$key=" . Cpanel::Encoder::URI::uri_encode_str($val);
+                }
+            }
+            else {
+                $query .=
+                    $query
+                    ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} )
+                    : "$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} );
+            }
+        }
+    }
+
+    my $postdata_len = length($query);
+
+    if ($cf_debug_mode) {
+        $logger->info($query);
+    }
+
+    my $proto = getprotobyname('tcp');
+    return unless defined $proto;
+
+    socket( my $socket_fh, &Socket::AF_INET, &Socket::SOCK_STREAM, $proto );
+    return unless $socket_fh;
+
+    my $iaddr = gethostbyname($args_hr->{'host'});
+    my $port = $args_hr->{'port'};
+
+    return unless ( defined $iaddr && defined $port );
+
+    my $sin = Socket::sockaddr_in( $port, $iaddr );
+    return unless defined $sin;
+
+    my $result = "";
+    if ( connect( $socket_fh, $sin ) ) {
+        send $socket_fh, "POST /$args_hr->{'uri'} HTTP/1.0\nContent-Length: $postdata_len\nContent-Type: application/x-www-form-urlencoded\nHost: $args_hr->{'host'}\n\n$query", 0;
+
+        my $in_header = 1;
+        while (<$socket_fh>) {
+            if ( /^\n$/ || /^\r\n$/ || /^$/ ) {
+                $in_header = 0;
+                next;
+            }
+
+            if (!$in_header) {
+                $result .=  $_;
+            }
+        }
+    }
+
+    close $socket_fh;
+
+    if ($cf_debug_mode) {
+        $logger->info($result);
+    }
+
+    return $result;
+}
+
+sub __serialize_request {
+    my $opt_ref = shift;
+    my @KEYLIST;
+    foreach my $opt ( keys %$opt_ref ) {
+        push @KEYLIST, Cpanel::Encoder::URI::uri_encode_str($opt) . '=' . Cpanel::Encoder::URI::uri_encode_str( $opt_ref->{$opt} );
+    }
+    return join( '&', @KEYLIST );
+}
+
+########## END Internal Functions #########
 
 
 # Verify that the command exists
@@ -73,4 +437,3 @@ print ".\n";
 
 # Execute the action in question
 $commands{$action}->(  @args );
-

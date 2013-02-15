@@ -1177,7 +1177,7 @@ var get_stats = function(domain) {
                            
                           railgunList = data;
                                                 
-                          rg_html +=     '<td width="280"><strong>Railgun</td>';
+                          rg_html +=     '<td width="280">Railgun</td>';
                        
                           rg_html +=     '<td><select name="Railgun" id="Railgun" onChange="set_railgun(\''+ domain+'\',' + '\'Railgun\')">';
                                                     
