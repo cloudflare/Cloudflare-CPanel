@@ -836,7 +836,7 @@ var set_railgun_mode = function (domain, value, mode) {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                         + " " + data.cpanelresult.data[0].msg + "</div>";
 			    } else {
-                    setTimeout(get_stats(domain), 3000);
+                    get_stats(domain);
                     return false;
 			    }
 			}
@@ -1235,7 +1235,7 @@ var get_stats = function(domain) {
                            
                      }
 
-                    function getRailguns(domain)
+                    setTimeout(function (domain)
                     {
  
                             var callback = {
@@ -1278,10 +1278,9 @@ var get_stats = function(domain) {
                            	};
                     
                              connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
-                  } 
+                  }, 1000);
                   
                   
-                  setTimeout(getRailguns(domain), 5000);
                 
                 }
 		    }
