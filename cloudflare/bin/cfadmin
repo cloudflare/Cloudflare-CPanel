@@ -63,18 +63,22 @@ chomp($theargs);
 
 my ( $uid, $action, @args ) = split( / /, $theargs );
 
+
 # This command hash contains all the logic for the actions to be run as root
 # to add a new escalated action, add a new key with a value of a coderef to this hash
 my %commands = (
     'user_create' => sub {
         my %OPTS = @args;
-
+      
+      if ( ( getpwuid( int($uid) ) )[0] eq $OPTS{"user"} )
+      {
         CloudFlare_init();
 
         if (!$cf_host_key) {
             $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
             return [];
         }
+        
 
         # This is the one case where we need to do __load_data_file among other things, because of the
         # host_key salt with the user token.
@@ -102,62 +106,75 @@ my %commands = (
 
         my $result = __https_post_req->($args);
         Storable::nstore_fd( JSON::Syck::Load($result), \*STDOUT );
+      }
+      else
+      {
+         exit;
+      }
     },
     'user_lookup' => sub {
         my %OPTS = @args;
+         
+        if ( ( getpwuid( int($uid) ) )[0] eq $OPTS{"user"} )
+        {
+        
+           CloudFlare_init();
 
-        CloudFlare_init();
+           __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
+           if (!$cf_host_key) {
+               $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
+               return [];
+           }
 
-        __load_data_file($OPTS{"homedir"}, $OPTS{"user"});
-        if (!$cf_host_key) {
-            $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
-            return [];
-        }
+           if ( !$has_ssl ) {
+               $logger->info("No SSL Configured");
+               return [{"result"=>"error",
+                        "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
+           }
 
-        if ( !$has_ssl ) {
-            $logger->info("No SSL Configured");
-            return [{"result"=>"error",
-                     "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
-        }
+           if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
+               if ($cf_debug_mode) {
+                   $logger->info("Using user token");
+               }
+               my $login_args = {
+                   "host" => $cf_host_name,
+                   "uri" => $cf_host_uri,
+                   "port" => $cf_host_port,
+                   "query" => {
+                       "act" => "user_lookup",
+                       "host_key" => $cf_host_key,
+                       "unique_id" => $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}},
+                   },
+               };
 
-        if ($cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}}) {
-            if ($cf_debug_mode) {
-                $logger->info("Using user token");
-            }
-            my $login_args = {
-                "host" => $cf_host_name,
-                "uri" => $cf_host_uri,
-                "port" => $cf_host_port,
-                "query" => {
-                    "act" => "user_lookup",
-                    "host_key" => $cf_host_key,
-                    "unique_id" => $cf_global_data->{"cf_user_tokens"}->{$OPTS{"user"}},
-                },
-            };
+               my $result = JSON::Syck::Load(__https_post_req->($login_args));
+               $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
 
-            my $result = JSON::Syck::Load(__https_post_req->($login_args));
-            $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+               Storable::nstore_fd( $result, \*STDOUT );
+           } else {
+               if ($cf_debug_mode) {
+                   $logger->info("Using user email");
+               }
+               my $login_args = {
+                   "host" => $cf_host_name,
+                   "uri" => $cf_host_uri,
+                   "port" => $cf_host_port,
+                   "query" => {
+                       "act" => "user_lookup",
+                       "host_key" => $cf_host_key,
+                       "cloudflare_email" => $cf_global_data->{"cf_email"},
+                   },
+               };
 
-            Storable::nstore_fd( $result, \*STDOUT );
-        } else {
-            if ($cf_debug_mode) {
-                $logger->info("Using user email");
-            }
-            my $login_args = {
-                "host" => $cf_host_name,
-                "uri" => $cf_host_uri,
-                "port" => $cf_host_port,
-                "query" => {
-                    "act" => "user_lookup",
-                    "host_key" => $cf_host_key,
-                    "cloudflare_email" => $cf_global_data->{"cf_email"},
-                },
-            };
-
-            my $result = JSON::Syck::Load(__https_post_req->($login_args));
-            $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-            Storable::nstore_fd( $result, \*STDOUT );
-        }
+               my $result = JSON::Syck::Load(__https_post_req->($login_args));
+               $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+               Storable::nstore_fd( $result, \*STDOUT );
+           }
+       }
+       else
+       {
+         exit;
+       }
     },
 
 
@@ -229,9 +246,9 @@ my %commands = (
                 "zone_name" => $OPTS{"zone_name"}
             },
         };
-
+        
         my $result = JSON::Syck::Load(__https_post_req->($login_args));
-
+        
         Storable::nstore_fd( $result, \*STDOUT );
     },
 );
@@ -332,83 +349,7 @@ sub __https_post_req {
     }
 }
 
-sub __http_post_req {
-    my ( $args_hr ) = @_;
-    my $query = $args_hr->{'query'};
-    if ( ref $args_hr->{'query'} eq 'HASH' ) {
-        $query = '';
-        foreach my $key ( keys %{ $args_hr->{'query'} } ) {
-            if ( ref $args_hr->{'query'}{$key} eq 'ARRAY' ) {
-                for my $val ( @{ $args_hr->{'query'}{$key} } ) {
-                    $query .=
-                        $query
-                        ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str($val)
-                        : "$key=" . Cpanel::Encoder::URI::uri_encode_str($val);
-                }
-            }
-            else {
-                $query .=
-                    $query
-                    ? "&$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} )
-                    : "$key=" . Cpanel::Encoder::URI::uri_encode_str( $args_hr->{'query'}{$key} );
-            }
-        }
-    }
 
-    my $postdata_len = length($query);
-
-    if ($cf_debug_mode) {
-        $logger->info($query);
-    }
-
-    my $proto = getprotobyname('tcp');
-    return unless defined $proto;
-
-    socket( my $socket_fh, &Socket::AF_INET, &Socket::SOCK_STREAM, $proto );
-    return unless $socket_fh;
-
-    my $iaddr = gethostbyname($args_hr->{'host'});
-    my $port = $args_hr->{'port'};
-
-    return unless ( defined $iaddr && defined $port );
-
-    my $sin = Socket::sockaddr_in( $port, $iaddr );
-    return unless defined $sin;
-
-    my $result = "";
-    if ( connect( $socket_fh, $sin ) ) {
-        send $socket_fh, "POST /$args_hr->{'uri'} HTTP/1.0\nContent-Length: $postdata_len\nContent-Type: application/x-www-form-urlencoded\nHost: $args_hr->{'host'}\n\n$query", 0;
-
-        my $in_header = 1;
-        while (<$socket_fh>) {
-            if ( /^\n$/ || /^\r\n$/ || /^$/ ) {
-                $in_header = 0;
-                next;
-            }
-
-            if (!$in_header) {
-                $result .=  $_;
-            }
-        }
-    }
-
-    close $socket_fh;
-
-    if ($cf_debug_mode) {
-        $logger->info($result);
-    }
-
-    return $result;
-}
-
-sub __serialize_request {
-    my $opt_ref = shift;
-    my @KEYLIST;
-    foreach my $opt ( keys %$opt_ref ) {
-        push @KEYLIST, Cpanel::Encoder::URI::uri_encode_str($opt) . '=' . Cpanel::Encoder::URI::uri_encode_str( $opt_ref->{$opt} );
-    }
-    return join( '&', @KEYLIST );
-}
 
 ########## END Internal Functions #########
 
@@ -436,4 +377,6 @@ if ( !-e "/var/cpanel/users/$user" && $user ne 'cpanel' ) {
 print ".\n";
 
 # Execute the action in question
+
+  
 $commands{$action}->(  @args );
