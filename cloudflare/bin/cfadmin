@@ -212,7 +212,10 @@ my %commands = (
 
     'zone_set' => sub {
         my %OPTS = @args;
-
+      
+         
+     if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir"} )
+      {
         CloudFlare_init();
 
         if (!$cf_host_key || !$cf_host_prefix) {
@@ -258,10 +261,20 @@ my %commands = (
          {
             Storable::nstore_fd( $result, \*STDOUT );
          }
+       }
+       else
+       {
+         exit;
+       }
+      
     },
 
     'zone_delete' => sub {
         my %OPTS = @args;
+
+      if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir   "} )
+      {
+
 
         CloudFlare_init();
 
@@ -296,6 +309,11 @@ my %commands = (
          {
             Storable::nstore_fd( $result, \*STDOUT );
          }    
+      }
+      else
+      {
+         exit;
+      }
    },
 );
 
