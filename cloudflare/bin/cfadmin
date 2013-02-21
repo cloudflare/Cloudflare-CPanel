@@ -13,7 +13,6 @@ use Cpanel::Encoder::URI         ();
 use Cpanel::AcctUtils            ();
 use Cpanel::DomainLookup         ();
 use Cpanel::DataStore            ();
-
 use Socket                       ();
 use JSON::Syck                   ();
 use Digest::MD5 qw(md5_hex);
@@ -39,6 +38,7 @@ my $hoster_name;
 my $cf_cp_version;
 my $cf_global_data = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
+my $current_version = `/usr/local/cpanel/cpanel -V`;
 
 # Sanatize @INC
 BEGIN {
@@ -47,7 +47,9 @@ BEGIN {
     @INC = grep( /^(\/usr\/lib\d*\/perl|\/usr\/local\/lib\d*\/perl|\/usr\/local\/cpanel|\/usr\/share\/perl)/, @INC );
 }
 
+
 use Storable ();
+use YAML::Syck ();
 
 
 # Parse the arguments passed to the testadmin scripts via stdin
@@ -62,6 +64,7 @@ unless ( $theargs =~ /^(\d+) ([A-Za-z_]+) (\S+)/ ) {
 chomp($theargs);
 
 my ( $uid, $action, @args ) = split( / /, $theargs );
+
 
 
 # This command hash contains all the logic for the actions to be run as root
@@ -105,7 +108,17 @@ my %commands = (
         };
 
         my $result = __https_post_req->($args);
-        Storable::nstore_fd( JSON::Syck::Load($result), \*STDOUT );
+        $result = JSON::Syck::Load($result); 
+
+         if ( $current_version =~ '11.36' )
+         {
+            print YAML::Syck::Dump($result);
+         }
+         else
+         {
+            Storable::nstore_fd( $result, \*STDOUT );
+         }
+               
       }
       else
       {
@@ -149,8 +162,19 @@ my %commands = (
 
                my $result = JSON::Syck::Load(__https_post_req->($login_args));
                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-
-               Storable::nstore_fd( $result, \*STDOUT );
+               $logger->info($result);
+               
+               if ( $current_version =~ '11.36' )
+               {
+                   print YAML::Syck::Dump($result);
+               }
+               else
+               {
+                  Storable::nstore_fd( $result, \*STDOUT );
+               }
+               
+               
+               
            } else {
                if ($cf_debug_mode) {
                    $logger->info("Using user email");
@@ -168,8 +192,16 @@ my %commands = (
 
                my $result = JSON::Syck::Load(__https_post_req->($login_args));
                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-               Storable::nstore_fd( $result, \*STDOUT );
-           }
+               
+               if ( $current_version =~ '11.36' )
+               {
+                   print YAML::Syck::Dump($result);          
+               }
+               else
+               {
+                  Storable::nstore_fd( $result, \*STDOUT );
+               }
+            }
        }
        else
        {
@@ -218,7 +250,14 @@ my %commands = (
 
         my $result = JSON::Syck::Load(__https_post_req->($login_args));
 
-        Storable::nstore_fd( $result, \*STDOUT );
+         if ( $current_version =~ '11.36' )
+         {
+            print YAML::Syck::Dump($result);
+         }
+         else
+         {
+            Storable::nstore_fd( $result, \*STDOUT );
+         }
     },
 
     'zone_delete' => sub {
@@ -249,8 +288,15 @@ my %commands = (
         
         my $result = JSON::Syck::Load(__https_post_req->($login_args));
         
-        Storable::nstore_fd( $result, \*STDOUT );
-    },
+         if ( $current_version =~ '11.36' )
+         {
+            print YAML::Syck::Dump($result);
+         }
+         else
+         {
+            Storable::nstore_fd( $result, \*STDOUT );
+         }    
+   },
 );
 
 ########## BEGIN Internal Functions #########
@@ -348,6 +394,7 @@ sub __https_post_req {
         return $page;
     }
 }
+
 
 
 
