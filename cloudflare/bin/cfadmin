@@ -40,6 +40,10 @@ my $cf_global_data = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 my $current_version = `/usr/local/cpanel/cpanel -V`;
 
+$current_version = ( split(/ /,$current_version) )[0];
+$current_version = ( split(/\./,$current_version) )[0] . (split(/\./,$current_version))[1];
+
+
 # Sanatize @INC
 BEGIN {
     unshift @INC, '/usr/local/cpanel';
@@ -110,7 +114,7 @@ my %commands = (
         my $result = __https_post_req->($args);
         $result = JSON::Syck::Load($result); 
 
-         if ( $current_version =~ '11.36' )
+         if ( $current_version >= 1136 )
          {
             print YAML::Syck::Dump($result);
          }
@@ -164,7 +168,7 @@ my %commands = (
                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
                $logger->info($result);
                
-               if ( $current_version =~ '11.36' )
+               if ( $current_version >= 1136 )
                {
                    print YAML::Syck::Dump($result);
                }
@@ -193,7 +197,7 @@ my %commands = (
                my $result = JSON::Syck::Load(__https_post_req->($login_args));
                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
                
-               if ( $current_version =~ '11.36' )
+               if ( $current_version >= 1136 )
                {
                    print YAML::Syck::Dump($result);          
                }
@@ -253,7 +257,7 @@ my %commands = (
 
         my $result = JSON::Syck::Load(__https_post_req->($login_args));
 
-         if ( $current_version =~ '11.36' )
+         if ( $current_version >= 1136 )
          {
             print YAML::Syck::Dump($result);
          }
@@ -301,7 +305,7 @@ my %commands = (
         
         my $result = JSON::Syck::Load(__https_post_req->($login_args));
         
-         if ( $current_version =~ '11.36' )
+         if ( $current_version >= 1136 )
          {
             print YAML::Syck::Dump($result);
          }
