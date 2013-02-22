@@ -272,7 +272,7 @@ my %commands = (
     'zone_delete' => sub {
         my %OPTS = @args;
 
-      if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir   "} )
+      if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir"} )
       {
 
 
