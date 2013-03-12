@@ -392,8 +392,7 @@ sub __fetchzone {
 sub __https_post_req {
     my ($args_hr) = @_;
     if ( $args_hr->{'port'} ne "443" ) {
-        ## Downgrade to http
-        return __http_post_req($args_hr);
+        die "POST request not defined to be Port 443, this should not happen.";
     }
     else {
         my ($args_hr) = @_;
