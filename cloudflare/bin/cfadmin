@@ -270,7 +270,7 @@ sub run {
 
     # Verify that the command exists
     if ( !exists $commands{$action} ) {
-        print "not a valid action\n";
+        print "not a valid action: $action\n";
         exit 1;
     }
 
