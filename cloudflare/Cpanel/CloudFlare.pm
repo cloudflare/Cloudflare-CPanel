@@ -18,7 +18,6 @@ use Cpanel::DomainLookup         ();
 use Cpanel::DataStore            ();
 
 use Socket                       ();
-use JSON::Syck                   ();
 use Digest::MD5 qw(md5_hex);
 use File::Temp qw/ tempdir /;
 use strict;
@@ -42,13 +41,21 @@ my $cf_debug_mode;
 my $hoster_name;
 my $cf_cp_version;
 my $cf_global_data = {};
+my $json_load_function;
+my $json_dump_function;
+my $json_loadfile_function;
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
                'class' => 'class', 'address' => 'address', 'type' => 'type',
                'txtdata' => 'txtdata', 'preference' => 'preference', 'exchange' => 'exchange' );
+
 sub CloudFlare_init {
-    my $data = JSON::Syck::LoadFile($cf_config_file);
+
+    $json_load_function     ||= __get_json_load_function();
+    $json_dump_function     ||= __get_json_dump_function();
+    $json_loadfile_function ||= __get_json_loadfile_function();
+    my $data = $json_loadfile_function->($cf_config_file);
 
     $cf_host_key = $data->{"host_key"};
     $cf_host_name = $data->{"host_name"};
@@ -74,20 +81,20 @@ sub CloudFlare_init {
 sub api2_user_create {
     my %OPTS = @_;
 
-	$result = Cpanel::AdminBin::adminfetchnocache('cf', '', 'user_create', 'storable', %OPTS);
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', %OPTS );
 
-	if ($result->{"result"} eq "error") {
-		$logger->info("CloudFlare Error: " . $result->{"msg"});
-	}
-	return $result;
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    }
+    return $result;
 }
 
 # Can only be called with json or xml api because it uses
 # a non-standard return
 sub api2_user_lookup {
     my %OPTS = @_;
-	$result = Cpanel::AdminBin::adminfetchnocache('cf', '', 'user_lookup', 'storable', %OPTS);
-	return $result;
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', %OPTS );
+    return $result;
 }
 
 ## Pulls certain stats for the passed in zone.
@@ -120,7 +127,7 @@ sub api2_get_stats {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_edit_cf_setting {
@@ -152,133 +159,147 @@ sub api2_edit_cf_setting {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_zone_set {
-	my %OPTS = @_;
+    my %OPTS = @_;
 
-	$result = Cpanel::AdminBin::adminfetchnocache('cf', '', 'zone_set', 'storable', %OPTS);
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', %OPTS );
 
-	__load_data_file($OPTS{"homedir"});
-    my $domain = ".".$OPTS{"zone_name"}.".";
-    my $subs = $OPTS{"subdomains"};
+    __load_data_file( $OPTS{"homedir"} );
+    my $domain = "." . $OPTS{"zone_name"} . ".";
+    my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
 
-	## Args for updating local DNS.
-    my %zone_args = ("domain" => $OPTS{"zone_name"},
-                     "class" => "IN",
-                     "type" => "CNAME",
-                     "name" => $cf_host_prefix,
-                     "ttl" => 1400,
-                     "cname" => $OPTS{"zone_name"},
-        );
+    ## Args for updating local DNS.
+    my %zone_args = (
+        "domain" => $OPTS{"zone_name"},
+        "class"  => "IN",
+        "type"   => "CNAME",
+        "name"   => $cf_host_prefix,
+        "ttl"    => 1400,
+        "cname"  => $OPTS{"zone_name"},
+    );
 
     my $is_cf = 0;
 
     ## If we get an error, do nothing and return the error to the user.
-    if ($result->{"result"} eq "error") {
-        $logger->info("CloudFlare Error: " . $result->{"msg"});
-    } else {
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    }
+    else {
         ## Otherwise, update the dns for this zone.
-        my $dom = ".".$OPTS{"zone_name"};
+        my $dom = "." . $OPTS{"zone_name"};
 
         ## First Make sure that the resolve to is set.
-        my $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'ADD', 'storable', $OPTS{"zone_name"},
-                                                       __serialize_request( \%zone_args ) );
+        my $res = Cpanel::AdminBin::adminfetchnocache(
+            'zone', '', 'ADD', 'storable', $OPTS{"zone_name"},
+            __serialize_request( \%zone_args )
+        );
 
         ## If there's a delete, remove this record from being CF.
-        if ($OPTS{"old_line"}) {
+        if ( $OPTS{"old_line"} ) {
             $zone_args{"line"} = $OPTS{"old_line"};
             $zone_args{"name"} = $OPTS{"old_rec"};
             $zone_args{"name"} =~ s/$domain//g;
             $zone_args{"cname"} = $OPTS{"zone_name"};
-            $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                                                        __serialize_request( \%zone_args ) );
+            $res = Cpanel::AdminBin::adminfetchnocache(
+                'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                __serialize_request( \%zone_args )
+            );
         }
 
-		## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
-		my $recs2lines = JSON::Syck::Load($OPTS{"cf_recs"});
+        ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
+        my $recs2lines = $json_load_function->( $OPTS{"cf_recs"} );
 
         ## Now, go ahead and update all of the CF enabled recs.
-        foreach my $ft (keys %{$result->{"response"}->{"forward_tos"}}) {
-            $zone_args{"line"} = $recs2lines->{$ft."."};
+        foreach my $ft ( keys %{ $result->{"response"}->{"forward_tos"} } ) {
+            $zone_args{"line"} = $recs2lines->{ $ft . "." };
             $zone_args{"name"} = $ft;
             $zone_args{"name"} =~ s/$dom//g;
             $zone_args{"cname"} = $result->{"response"}->{"forward_tos"}->{$ft};
 
-            $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                                                        __serialize_request( \%zone_args ) );
-            if (!$res->{"status"}) {
+            $res = Cpanel::AdminBin::adminfetchnocache(
+                'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                __serialize_request( \%zone_args )
+            );
+            if ( !$res->{"status"} ) {
                 ## Try again, bumping up the line by 1. -- no idea why this works.
                 $zone_args{"line"}++;
-                $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                                                            __serialize_request( \%zone_args ) );
+                $res = Cpanel::AdminBin::adminfetchnocache(
+                    'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                    __serialize_request( \%zone_args )
+                );
             }
 
-            if (!$res->{"status"}) {
+            if ( !$res->{"status"} ) {
                 $logger->info("Failed to set DNS for CloudFlare record $ft!");
-                $logger->info(JSON::Syck::Dump($res));
+                $logger->info( $json_dump_function->($res) );
                 $result->{"result"} = "error";
-                $result->{"msg"} = $res->{"statusmsg"};
+                $result->{"msg"}    = $res->{"statusmsg"};
             }
 
             ## Note that if at least one rec is on, this zone is on CF.
-            $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 1;
+            $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 1;
             $is_cf = 1;
         }
     }
 
-    if (!$is_cf) {
-       $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0;
+    if ( !$is_cf ) {
+        $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
     }
 
     ## Save the updated global data arg.
-    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+    Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
 
     return $result;
 }
 
 sub api2_zone_delete {
-	my %OPTS = @_;
+    my %OPTS = @_;
 
-	$result = Cpanel::AdminBin::adminfetchnocache('cf', '', 'zone_delete', 'storable', %OPTS);
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', %OPTS );
 
-    __load_data_file($OPTS{"homedir"});
-    my $domain = ".".$OPTS{"zone_name"}.".";
-    $cf_global_data->{"cf_zones"}->{$OPTS{"zone_name"}} = 0;
+    __load_data_file( $OPTS{"homedir"} );
+    my $domain = "." . $OPTS{"zone_name"} . ".";
+    $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
 
     ## Args for updating local DNS.
-    my %zone_args = ("domain" => $OPTS{"zone_name"},
-                     "class" => "IN",
-                     "type" => "CNAME",
-                     "name" => $cf_host_prefix,
-                     "ttl" => 1400,
-                     "cname" => $OPTS{"zone_name"},
-        );
+    my %zone_args = (
+        "domain" => $OPTS{"zone_name"},
+        "class"  => "IN",
+        "type"   => "CNAME",
+        "name"   => $cf_host_prefix,
+        "ttl"    => 1400,
+        "cname"  => $OPTS{"zone_name"},
+    );
 
     ## If we get an error, do nothing and return the error to the user.
-    if ($result->{"result"} eq "error") {
-        $logger->info("CloudFlare Error: " . $result->{"msg"});
-    } else {
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    }
+    else {
         ## Otherwise, update the dns for this zone.
-        my $dom = ".".$OPTS{"zone_name"};
+        my $dom = "." . $OPTS{"zone_name"};
 
         ## Loop over list of subs, removing from CF.
         my $res;
-        foreach my $linecom (split(/,/, $OPTS{"subdomains"})) {
-            my @line = split(':', $linecom);
+        foreach my $linecom ( split( /,/, $OPTS{"subdomains"} ) ) {
+            my @line = split( ':', $linecom );
             $zone_args{"line"} = $line[1];
             $zone_args{"name"} = $line[0];
             $zone_args{"name"} =~ s/$domain//g;
             $zone_args{"cname"} = $OPTS{"zone_name"};
-            $res = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                                                        __serialize_request( \%zone_args ) );
+            $res = Cpanel::AdminBin::adminfetchnocache(
+                'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+                __serialize_request( \%zone_args )
+            );
         }
     }
 
     ## Save the updated global data arg.
-    Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+    Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
 
     return $result;
 }
@@ -355,7 +376,7 @@ sub api2_get_railguns {
     };
 
     my $result = __https_post_req->($getrailgun_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_zone_get_active_railgun {
@@ -386,7 +407,7 @@ sub api2_zone_get_active_railgun {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_set_railgun {
@@ -420,7 +441,7 @@ sub api2_set_railgun {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_remove_railgun {
@@ -449,7 +470,7 @@ sub api2_remove_railgun {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2_railgun_mode {
@@ -480,7 +501,7 @@ sub api2_railgun_mode {
     };
 
     my $result = __https_post_req->($stats_args);
-    return JSON::Syck::Load($result);
+    return $json_load_function->($result);
 }
 
 sub api2 {
@@ -591,6 +612,42 @@ sub __serialize_request {
         push @KEYLIST, Cpanel::Encoder::URI::uri_encode_str($opt) . '=' . Cpanel::Encoder::URI::uri_encode_str( $opt_ref->{$opt} );
     }
     return join( '&', @KEYLIST );
+}
+
+sub __get_json_dump_function {
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
+    if ( $INC{'Cpanel/JSON.pm'} ) {
+        return \&Cpanel::JSON::Dump;
+    }
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
+    if ( $INC{'JSON/Syck.pm'} ) {
+        return \&JSON::Syck::Dump;
+    }
+    die "Failed to find JSON Dump funcition";
+}
+
+sub __get_json_load_function {
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
+    if ( $INC{'Cpanel/JSON.pm'} ) {
+        return \&Cpanel::JSON::Load;
+    }
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
+    if ( $INC{'JSON/Syck.pm'} ) {
+        return \&JSON::Syck::Load;
+    }
+    die "Failed to find JSON load funcition";
+}
+
+sub __get_json_loadfile_function {
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
+    if ( $INC{'Cpanel/JSON.pm'} ) {
+        return \&Cpanel::JSON::LoadFile;
+    }
+    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
+    if ( $INC{'JSON/Syck.pm'} ) {
+        return \&JSON::Syck::LoadFile;
+    }
+    die "Failed to find JSON load funcition";
 }
 
 1; # Ah, perl.
