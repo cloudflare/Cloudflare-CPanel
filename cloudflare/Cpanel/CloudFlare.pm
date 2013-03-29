@@ -640,7 +640,7 @@ sub __get_json_load_function {
 
 sub __get_json_loadfile_function {
     eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
-    if ( $INC{'Cpanel/JSON.pm'} ) {
+    if ( $INC{'Cpanel/JSON.pm'} && 'Cpanel::JSON'->can('LoadFile') ) {
         return \&Cpanel::JSON::LoadFile;
     }
     eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
