@@ -963,7 +963,7 @@ var get_stats = function(domain) {
 
                     if (start > end) {
                         html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
-                        html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+                        html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
                         var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
                         var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
