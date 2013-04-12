@@ -5,6 +5,8 @@ DEFAULT_HOST_FORMAL_NAME="DEFAULT_HOST_FORMAL_NAME"
 host_key=$1
 mod_cf=$2
 formal_name=$3
+theme_dir=${4:-default}
+
 if [ "$host_key" == "" ]; then
     echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name]."
     echo ""
@@ -45,13 +47,13 @@ fi
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
 ## Now the JS/CSS/Images
-cp -r base/frontend/default/js2/cloudflare /usr/local/cpanel/base/frontend/default/js2/
-cp -r base/frontend/default/js2-min/cloudflare /usr/local/cpanel/base/frontend/default/js2-min/
-cp -r base/frontend/default/css2/cloudflare /usr/local/cpanel/base/frontend/default/css2/
-cp -r base/frontend/default/images/cloudflare /usr/local/cpanel/base/frontend/default/images/
+cp -r base/frontend/$theme_dir/js2/cloudflare /usr/local/cpanel/base/frontend/$theme_dir/js2/
+cp -r base/frontend/$theme_dir/js2-min/cloudflare /usr/local/cpanel/base/frontend/$theme_dir/js2-min/
+cp -r base/frontend/$theme_dir/css2/cloudflare /usr/local/cpanel/base/frontend/$theme_dir/css2/
+cp -r base/frontend/$theme_dir/images/cloudflare /usr/local/cpanel/base/frontend/$theme_dir/images/
 
 ## And the HTML files
-cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
+cp -r base/frontend/$theme_dir/cloudflare /usr/local/cpanel/base/frontend/$theme_dir/
 
 ## Update Net/SSLeay.pm so that cpanel will work.
 line62=`sed 62q /usr/local/cpanel/perl/Net/SSLeay.pm | tail -1`
