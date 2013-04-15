@@ -166,7 +166,7 @@ sub run {
                         "query" => {
                             "act"              => "user_lookup",
                             "host_key"         => $cf_host_key,
-                            "cloudflare_email" => $cf_global_data->{"cf_email"},
+                            "cloudflare_email" => $cf_global_data->{"cloudflare_email"},
                         },
                     };
 
