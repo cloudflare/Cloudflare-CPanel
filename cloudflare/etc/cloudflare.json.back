@@ -8,5 +8,5 @@
   "host_port":"443",
   "host_prefix":"cloudflare-resolve-to",
   "cloudflare_on_message":"It worked! CloudFlare is being activated for your site. This will take up to 5 minutes. In the meantime, you can choose your CloudFlare Settings below.",
-  "cp_version":"3.8"
+  "cp_version":"3.9"
 }
