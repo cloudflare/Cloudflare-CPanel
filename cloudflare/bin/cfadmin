@@ -114,70 +114,67 @@ sub run {
         'user_lookup' => sub {
             my %OPTS = @args;
 
-            if ( ( getpwuid( int($uid) ) )[0] eq $OPTS{"user"} ) {
+            CloudFlare_init();
 
-                CloudFlare_init();
+            $cf_global_data->{"cloudflare_email"} = $OPTS{"email"};
+            __load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
 
-                __load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
-                if ( !$cf_host_key ) {
-                    $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
-                    return [];
-                }
-
-                if ( !$has_ssl ) {
-                    $logger->info("No SSL Configured");
-                    return [
-                        {
-                            "result" => "error",
-                            "msg"    => "CloudFlare is disabled until Net::SSLeay is installed on this server."
-                        }
-                    ];
-                }
-
-                if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
-                    if ($cf_debug_mode) {
-                        $logger->info("Using user token");
-                    }
-                    my $login_args = {
-                        "host"  => $cf_host_name,
-                        "uri"   => $cf_host_uri,
-                        "port"  => $cf_host_port,
-                        "query" => {
-                            "act"       => "user_lookup",
-                            "host_key"  => $cf_host_key,
-                            "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
-                        },
-                    };
-
-                    my $result = $json_load_function->( __https_post_req->($login_args) );
-                    $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-                    $logger->info($result);
-
-                    $serializer_function->($result);
-                }
-                else {
-                    if ($cf_debug_mode) {
-                        $logger->info("Using user email");
-                    }
-                    my $login_args = {
-                        "host"  => $cf_host_name,
-                        "uri"   => $cf_host_uri,
-                        "port"  => $cf_host_port,
-                        "query" => {
-                            "act"              => "user_lookup",
-                            "host_key"         => $cf_host_key,
-                            "cloudflare_email" => $cf_global_data->{"cloudflare_email"},
-                        },
-                    };
-
-                    my $result = $json_load_function->( __https_post_req->($login_args) );
-                    $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-
-                    $serializer_function->($result);
-                }
+            if ( !$cf_host_key ) {
+                $logger->info("Missing cf_host_key! Define this in $cf_config_file.");
+                return [];
             }
-            else {
-                exit;
+
+            if ( !$has_ssl ) {
+                $logger->info("No SSL Configured");
+                return [
+                    {
+                        "result" => "error",
+                        "msg"    => "CloudFlare is disabled until Net::SSLeay is installed on this server."
+                    }
+                ];
+            }
+
+            if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } && !$cf_global_data->{"cloudflare_email"} ) {
+                if ($cf_debug_mode) {
+                    $logger->info("Using user token");
+                }
+                my $login_args = {
+                    "host"  => $cf_host_name,
+                    "uri"   => $cf_host_uri,
+                    "port"  => $cf_host_port,
+                    "query" => {
+                        "act"       => "user_lookup",
+                        "host_key"  => $cf_host_key,
+                        "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
+                    },
+                };
+
+                my $result = $json_load_function->( __https_post_req->($login_args) );
+                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+                $logger->info($result);
+
+                $serializer_function->($result);
+            }
+
+            elsif ( $cf_global_data->{"cloudflare_email"} ) {
+                if ($cf_debug_mode) {
+                    $logger->info("Using user email");
+                }
+                my $login_args = {
+                    "host"  => $cf_host_name,
+                    "uri"   => $cf_host_uri,
+                    "port"  => $cf_host_port,
+                    "query" => {
+                        "act"              => "user_lookup",
+                        "host_key"         => $cf_host_key,
+                        "cloudflare_email" => $cf_global_data->{"cloudflare_email"},
+                    },
+                };
+
+                my $result = $json_load_function->( __https_post_req->($login_args) );
+                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+
+                $serializer_function->($result);
             }
         },
 
