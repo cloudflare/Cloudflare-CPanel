@@ -101,7 +101,7 @@ touch /usr/local/cpanel/etc/cloudflare_data.yaml
 chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
 
 ## Start the updator going, also copies the AdminBin stuff
-cp bin/* /usr/local/cpanel/bin/
+cp -f bin/* /usr/local/cpanel/bin/
 iscf=`crontab -l | grep cloudflare`
 if [ "$iscf" == "" ]; then
     crontab -l > c.cur
@@ -112,11 +112,19 @@ fi
 ## Change cfadmin script to root only.
 chmod 700 /usr/local/cpanel/bin/cfadmin
 
-cd src
-make
-make install
-make clean
-cd ..
+## Pluggable cpwrap config file for 11.38
+chmod 700 /usr/local/cpanel/bin/cfadmin.conf
+
+# Wrapper is not needed on 11.38
+if [ -e "/usr/local/cpanel/bin/admin" ]; then
+  rm -fv /usr/local/cpanel/bin/cfwrap
+else
+  cd src
+  make
+  make install
+  make clean
+  cd ..
+fi
 
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
