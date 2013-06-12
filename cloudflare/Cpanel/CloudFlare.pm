@@ -366,7 +366,7 @@ sub api2_get_railguns {
 
     my $getrailgun_args = {
         "host" => $cf_user_name,
-        "uri" => "/api/v2/railgun/zone_get_actives",
+        "uri" => "/api/v2/railgun/zone_get_actives_list",
         "port" => $cf_host_port,
         "query" => {
             "tkn" => $OPTS{"user_api_key"},
@@ -393,8 +393,7 @@ sub api2_zone_get_active_railgun {
                  "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
     }
 
-    ## Otherwise, pull this users stats.
-    my $stats_args = {
+    my $rg_args = {
         "host" => $cf_user_name,
         "uri" => "/api/v2/railgun/zone_conn_get_active",
         "port" => $cf_host_port,
@@ -406,7 +405,7 @@ sub api2_zone_get_active_railgun {
         },
     };
 
-    my $result = __https_post_req->($stats_args);
+    my $result = __https_post_req->($rg_args);
     return $json_load_function->($result);
 }
 
@@ -427,20 +426,20 @@ sub api2_set_railgun {
 
     api2_remove_railgun(%OPTS);
 
-    my $stats_args = {
+    my $rg_args = {
         "host" => $cf_user_name,
-        "uri" => "/api/v2/railgun/conn_set",
+        "uri" => "/api/v2/railgun/conn_set_by_tag",
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
             "tkn" => $OPTS{"user_api_key"},
             "email" => $OPTS{"user_email"},
-            "rtkn" => $OPTS{"rtkn"},
+            "tag" => $OPTS{"tag"},
             "mode" => "0",
         },
     };
 
-    my $result = __https_post_req->($stats_args);
+    my $result = __https_post_req->($rg_args);
     return $json_load_function->($result);
 }
 
@@ -487,20 +486,19 @@ sub api2_railgun_mode {
                  "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
     }
 
-    ## Otherwise, pull this users stats.
-    my $stats_args = {
+    my $rg_args = {
         "host" => $cf_user_name,
-        "uri" => "/api/v2/railgun/conn_setmode_" . $OPTS{"mode"},
+        "uri" => "/api/v2/railgun/conn_setmode_" . $OPTS{"mode"} . "_by_tag",
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
             "tkn" => $OPTS{"user_api_key"},
             "email" => $OPTS{"user_email"},
-            "rtkn" => $OPTS{"rtkn"},
+            "tag" => $OPTS{"tag"},
         },
     };
 
-    my $result = __https_post_req->($stats_args);
+    my $result = __https_post_req->($rg_args);
     return $json_load_function->($result);
 }
 

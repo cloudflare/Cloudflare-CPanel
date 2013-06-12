@@ -800,11 +800,11 @@ var set_railgun = function (domain, value) {
         }
     };
 
-    rtoken = YAHOO.util.Dom.get(value).value;
+    tag = YAHOO.util.Dom.get(value).value;
     
     var action = "set_railgun";
     
-    if (rtoken == "remove")
+    if (tag == "remove")
          action = "remove_railgun";
     
     // send the AJAX request
@@ -815,7 +815,7 @@ var set_railgun = function (domain, value) {
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_email" : USER_EMAIL,
         "user_api_key" : USER_API_KEY,
-        "rtkn" : rtoken,
+        "tag" : tag,
         "homedir" : USER_HOME_DIR
 	};
 
@@ -850,7 +850,7 @@ var set_railgun_mode = function (domain, value, mode) {
         }
     };
 
-    rtoken = YAHOO.util.Dom.get(value).value;
+    tag = YAHOO.util.Dom.get(value).value;
     
     var action = "enabled";
     
@@ -865,7 +865,7 @@ var set_railgun_mode = function (domain, value, mode) {
 		"zone_name" : YAHOO.util.Dom.get("domain").value,
         "user_email" : USER_EMAIL,
         "user_api_key" : USER_API_KEY,
-        "rtkn" : rtoken,
+        "tag" : tag,
         "mode" : action,
         "homedir" : USER_HOME_DIR
 	};
@@ -1188,14 +1188,14 @@ var get_stats = function(domain) {
                                                                                            
                           for( var i = 0; i < railgunList.length; i++ )
                           {                       
-                              rg_html += '<option value="' + railgunList[i].railgun_api_key + '" '; 
-                              if ( (activeRailgun != null) && (activeRailgun.railgun_id == railgunList[i].railgun_id) )
+                              rg_html += '<option value="' + railgunList[i].railgun_tag + '" '; 
+                              if ( (activeRailgun != null) && (activeRailgun.railgun_pubname == railgunList[i].railgun_pubname) )
                               { 
                                  rg_html += 'selected' 
                                  preSelected = true;
                               }                           
                               
-                              rg_html += '>' + railgunList[i].railgun_name; 
+                              rg_html += '>' + railgunList[i].railgun_pubname; 
                               
                               if (railgunList[i].railgun_mode == "0")
                                  {
@@ -1278,7 +1278,7 @@ var get_stats = function(domain) {
                            	};
                     
                              connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
-                  }, 1000);
+                  }, 500);
                   
                   
                 
