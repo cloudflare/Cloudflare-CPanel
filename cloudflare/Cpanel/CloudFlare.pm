@@ -167,7 +167,7 @@ sub api2_zone_set {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', %OPTS );
 
-    __load_data_file( $OPTS{"homedir"} );
+    __load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -251,6 +251,7 @@ sub api2_zone_set {
     }
 
     ## Save the updated global data arg.
+    __verify_file_with_user(); 
     Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
 
     return $result;
@@ -261,7 +262,7 @@ sub api2_zone_delete {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', %OPTS );
 
-    __load_data_file( $OPTS{"homedir"} );
+    __load_data_file( $OPTS{"homedir"} , $OPTS{"user"});
     my $domain = "." . $OPTS{"zone_name"} . ".";
     $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
 
@@ -298,7 +299,10 @@ sub api2_zone_delete {
         }
     }
 
+    
+    
     ## Save the updated global data arg.
+    __verify_file_with_user();
     Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
 
     return $result;
@@ -307,10 +311,11 @@ sub api2_zone_delete {
 sub api2_fetchzone {
     my $raw = __fetchzone(@_);
     my $results = [];
-    my %OPTS    = @_;
+    my %OPTS    = @_;    
 
-    __load_data_file($OPTS{"homedir"});
+    __load_data_file($OPTS{"homedir"} , $OPTS{"user"});
     my $domain = $OPTS{'domain'}.".";
+
 
     foreach my $res (@{$raw->{"record"}}) {
         if ((($res->{"type"} eq "CNAME") || ($res->{"type"} eq "A")) &&
@@ -328,6 +333,7 @@ sub api2_fetchzone {
         }
     }
 
+    __verify_file_with_user();
     Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
 
     return $results;
@@ -504,7 +510,7 @@ sub api2_railgun_mode {
 
 sub api2 {
     my $func = shift;
-
+    $logger->info($func);
     my %API;
 
     $API{'user_create'}{'func'}                        = 'api2_user_create';
@@ -542,6 +548,9 @@ sub __load_data_file {
     my $home_dir = shift;
     my $user = shift;
     $cf_data_file = $home_dir . "/" . $cf_data_file_name;
+
+    __verify_file_with_user();
+
     if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
         if ($cf_debug_mode) {
             $logger->info("Successfully loaded cf data -- $cf_data_file");
@@ -563,6 +572,29 @@ sub __load_data_file {
         chmod 0600, $cf_data_file;
     }
 }
+
+sub __verify_file_with_user{
+ 
+    if ( -l $cf_data_file )
+    {
+        $logger->info("Symlink found. Removing cloudflare_data.yaml");
+        unlink($cf_data_file);
+    }
+
+    if ( (stat($cf_data_file))[4] != $< )
+    {
+        if ( -e $cf_data_file)
+        {
+            $logger->info("Permissions incorrect on inode. Removing cloudflare_data.yaml");
+            unlink($cf_data_file);
+        }
+        else
+        {
+            $logger->info("cloudflare_data.yaml does not exist.");
+        }
+    }
+}
+
 
 sub __fetchzone {
     my %OPTS    = @_;

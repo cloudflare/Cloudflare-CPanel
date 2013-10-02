@@ -27,7 +27,7 @@ SET cf_user = Api2.exec('CloudFlare','user_lookup', {'user' => CPANEL.CPDATA.USE
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 
 FOR domain_data = base_domains_result.0.res;
-        SET temp = Api2.exec('CloudFlare','fetchzone', {'domain'=> domain_data.domain, 'homedir' => CPANEL.homedir});
+        SET temp = Api2.exec('CloudFlare','fetchzone', {'domain'=> domain_data.domain, 'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 END;
 SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 
