@@ -1,8 +1,3 @@
-/**
-* Copywrite 2011 CloudFlare, Inc.
-*
-* @author ian@cloudflare.com
-*/
 
 var OPEN_HELP = -1;
 var VALID = [];
@@ -1107,6 +1102,7 @@ var get_stats = function(domain) {
                     html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
                     html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
                     html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
+                    html += '<option value="eoff"'+((security == "Essentially Off")? 'selected': '')+'>Essentially Off</option>'
                     html += '<option value="help"'+((security == "I'm under attack!")? 'selected': '')+'>I\'m under attack!</option>'
                     html += '</select></td><td>&nbsp;</td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'seclvl\')"></td></tr>';

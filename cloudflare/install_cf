@@ -129,13 +129,11 @@ fi
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
     rm -f mod_cloudflare*
-    wget --no-check-certificate https://raw.github.com/cloudflare/mod_cloudflare/master/mod_cloudflare.c
-    apxs -i -a -c mod_cloudflare.c
-    /usr/local/cpanel/bin/apache_conf_distiller --update 
-    /scripts/restartsrv_httpd
+    $mod_cf_install = `/usr/bin/perl <(curl -s https://www.cloudflare.com/static/misc/mod_cloudflare/cloudflare.pl) install`
     echo "
 
-==> mod_cloudflare installed.
+==> mod_cloudflare: $mod_cf_install
+==> You may need to customize your EasyApache profile to include Mod CloudFlare
 "
 
 fi
