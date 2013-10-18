@@ -1,4 +1,4 @@
-{ 
+{
   "host_key":"DEFAULT_KEY_REPLACE_ME",
   "host_formal_name":"DEFAULT_HOST_FORMAL_NAME",
   "host_name":"api.cloudflare.com",
@@ -8,5 +8,5 @@
   "host_port":"443",
   "host_prefix":"cloudflare-resolve-to",
   "cloudflare_on_message":"It worked! CloudFlare is being activated for your site. This will take up to 5 minutes. In the meantime, you can choose your CloudFlare Settings below.",
-  "cp_version":"4.4"
+  "cp_version":"4.5"
 }
