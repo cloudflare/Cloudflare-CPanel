@@ -20,6 +20,7 @@ use Cpanel::DataStore ();
 use Cpanel::LoadFile  ();
 use Socket            ();
 use Digest::MD5       ();
+use Cpanel::AccessIds (); 
 
 my $logger = Cpanel::Logger->new();
 my $locale;
@@ -45,6 +46,9 @@ my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 my $serializer_function    = __get_serializer_function();
 my $json_load_function     = __get_json_load_function();
 my $json_loadfile_function = __get_json_loadfile_function();
+my $save_ref = sub {  
+    my ($cf_data_file) = @_;
+    Cpanel::DataStore::store_ref( $cf_data_file ); };
 
 __PACKAGE__->run unless caller;
 
@@ -98,10 +102,10 @@ sub run {
                 
                 __verify_file_with_user($OPTS{"user"});
 
-                Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
-                my $gid = (getpwuid ( int($uid) ) )[3];
-                chown $uid, $gid, $cf_data_file;
+                Cpanel::AccessIds::do_as_user( $OPTS{"user"}, $save_ref->($cf_data_file) );
+                
 
+                
                 ## Otherwise, try to create this user.
                 my $args = {
                     "host"  => $cf_host_name,
@@ -373,8 +377,7 @@ sub __load_data_file {
             $logger->info("Failed to load cf data -- storing blank data at $cf_data_file");
         }
 
-        $< = getpwnam($user);
-        Cpanel::DataStore::store_ref( $cf_data_file, $cf_global_data );
+        Cpanel::AccessIds::do_as_user( $user, $save_ref->($cf_data_file) );
         chmod 0600, $cf_data_file;
     }
 
