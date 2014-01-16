@@ -48,7 +48,7 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 <div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare Account</div>
 
 <p class="cf_description">
-Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.  
+Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
 </p><p class="cf_description">
 To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
 </p><p class="cf_description">
@@ -62,7 +62,7 @@ Remember: You can activate and deactivate CloudFlare for each website by togglin
 <p class="cf_description">
 Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
 </p><p class="cf_description">
-CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designed as "on" or "off" CloudFlare by using an orange and gray cloud. 
+CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designed as "on" or "off" CloudFlare by using an orange and gray cloud.
 </p>
 <p class="cf_description" id="cf_def_show">
 Have SSL on your website? You have two options. <a href="javascript:void(0);" onclick="return handleLearnMore(true);">Read more ...</a>
@@ -95,7 +95,7 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
     <td><a href="javascript:void(0);" onclick="return enable_domain('[% domain_data.domain %]');">[Edit]</a></td>
     <td>[% domain_data.domain %]</td>
 
-[% IF domain_data.cloudflare -%]        
+[% IF domain_data.cloudflare -%]
     <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
     <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
     <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
@@ -153,7 +153,7 @@ CloudFlare accelerates and protects any website online. On average, a website on
 <b>Limitations of the CloudFlare system:</b>
 
 <ul>
-<li>Currently, requests must be directed to www.$domain instead of $domain. 
+<li>Currently, requests must be directed to www.$domain instead of $domain.
 <li>CloudFlare may affect internal statistic programs that read directly from Apache logs. (CloudFlare will not affect web-based analytic programs that use JavaScript like Google Analytics.) While your logs will reflect fewer requests to your server and therefore lower load, the experience to your visitors should be unaffected.
 <li>CloudFlare caches static content from your site. While this reduces the load on your server, it means that if you make a change to an existing static file, like an image, there may be a delay before the change appears. While you are updating your site, you can put CloudFlare in ‘Development Mode’ so changes appear immediately.
 </ul>
@@ -172,7 +172,7 @@ CloudFlare accelerates and protects any website online. On average, a website on
 
 <input type="hidden" id="USER_user" name="USER_user" value="[% CPANEL.CPDATA.USER %]" />
 
-<h4>Sign up for CloudFlare now</h4>
+<h4>Sign Up / Log In</h4>
 <div class="highlight">
 <table cellspacing="0" cellpadding="3" style="margin-bottom: 5px">
 
@@ -189,13 +189,13 @@ CloudFlare accelerates and protects any website online. On average, a website on
           <td class="col1">&nbsp;</td>
           <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>.</td>
 		  <td class="col3"><input class="input_checkbox" type="checkbox" id="USER_tos"></td>
-		  
+
           <td><div id="USER_tops_error"></div></td>
 	</tr>
 
 	<tr>
 		<td class="col1"></td>
-		<td colspan="2">        
+		<td colspan="2">
             <div id="add_USER_record_button"><input type="submit" class="input-button" value="Signup Now!" id="USER_submit" /></div>
             <span id="add_USER_record_status"></span>
         </td>
