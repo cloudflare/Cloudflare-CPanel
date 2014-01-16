@@ -25,7 +25,7 @@ use Cpanel::AccessIds ();
 my $logger = Cpanel::Logger->new();
 my $locale;
 my $cf_config_file        = "/usr/local/cpanel/etc/cloudflare.json";
-my $cf_host_key_file	  = "/root/.cpanel/datastore/cf_api"
+my $cf_host_key_file	  = "/root/.cpanel/datastore/cf_api";
 my $cf_data_file_name     = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
