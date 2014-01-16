@@ -57,7 +57,6 @@ sub CloudFlare_init {
     $json_loadfile_function ||= __get_json_loadfile_function();
     my $data = $json_loadfile_function->($cf_config_file);
 
-    $cf_host_key = $data->{"host_key"};
     $cf_host_name = $data->{"host_name"};
     $cf_host_uri = $data->{"host_uri"};
     $cf_host_port = $data->{"host_port"};

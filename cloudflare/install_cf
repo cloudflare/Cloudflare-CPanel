@@ -64,18 +64,13 @@ fi
 ## Lastly register the plugin with Cpanel
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
 
-## Updating to swap out the default key for an actual one.
+## Populate config file.
 cp etc/cloudflare.json.back etc/cloudflare.json
 
 if [ "$formal_name" == "" ]; then
     formal_name="your web hosting provider"
 fi
 
-# Generate the random key for getting the api key.
-date=`date "+%s"`
-local_tkn=$( echo "$host_key$date" | md5sum | md5sum )
-
-sed -i -e "s/$DEFAULT_HOST_KEY/$local_tkn/" etc/cloudflare.json 
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
 
 ## Delete the keywrap, it doesn't need to be there anymore
