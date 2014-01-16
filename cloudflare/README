@@ -20,8 +20,8 @@ https://github.com/cloudflare/CloudFlare-Tools.
 
 Edit API key:
 
-If you need to, update your API key by editing the file /usr/local/cpanel/etc/cloudflare.json, updating 
-the value host_key.
+If you need to, update your API key by editing the file /root/.cpanel/datastore/cf_api, updating 
+with your correct host key.
 
 Edit CloudFlare prefix:
 
