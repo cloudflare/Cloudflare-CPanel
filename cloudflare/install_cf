@@ -93,7 +93,7 @@ touch /usr/local/cpanel/etc/cloudflare_local.tmpl
 ## Also data file -- world readible, for the web server.
 ## @TODO -- figure out what user this users.
 touch /usr/local/cpanel/etc/cloudflare_data.yaml
-chmod 666 /usr/local/cpanel/etc/cloudflare_data.yaml
+chmod 644 /usr/local/cpanel/etc/cloudflare_data.yaml
 
 ## Start the updator going, also copies the AdminBin stuff
 cp -f bin/* /usr/local/cpanel/bin/
