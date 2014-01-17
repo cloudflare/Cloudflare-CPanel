@@ -67,14 +67,24 @@ sub run {
 
     my ( $uid, $action, @args ) = split( / /, $theargs );
 
-
     $logger->info($action);
 
-
-
     my %temp = @args;
-    $cf_data_file = $temp{"homedir"} . "/" . $cf_data_file_name;
-    
+    my $temp_homedir = ( stat($temp{"homedir"}) )[4];
+    my $temp_user = getpwnam($temp{"user"});
+
+    $logger->info("Homedir: " . $temp_homedir . " User: " . $temp_user);
+
+    if ( $uid != $temp_user) {
+        die "User mismatch";
+    }
+
+    if ( $temp_user == $temp_homedir ) {
+        $cf_data_file = $temp{"homedir"} . "/" . $cf_data_file_name;
+    }
+    else {
+        die "Permissions mismatch.";
+    }    
     # This command hash contains all the logic for the actions to be run as root
     # to add a new escalated action, add a new key with a value of a coderef to this hash
     my %commands = (
