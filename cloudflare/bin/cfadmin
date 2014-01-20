@@ -73,6 +73,11 @@ sub run {
 
     my $temp_homedir_owner = ( stat($temp{"homedir"}) )[4];
 
+    if ( defined($temp{"user"}) && exists($temp{"user"}) && $uid != getpwnam($temp{"user"}) ) {
+        $logger->info("User mismatch. Bailing out.");
+        die "User mismatch";
+    }
+    
     $logger->info("Homedir Owner: " . $temp_homedir_owner);
 
     if ( $uid == $temp_homedir_owner ) {
