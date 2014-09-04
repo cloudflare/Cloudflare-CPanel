@@ -132,14 +132,16 @@ if [ "$mod_cf" == "mod_cf" ]; then
 
 fi
 #Install the module to the paper_lantern theme, once everything else is installed. Pretty messy, but it should work.
-/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
+if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
+then
+		/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
 
-cp -R /usr/local/cpanel/base/frontend/x3/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
-cp -R /usr/local/cpanel/base/frontend/x3/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
-cp -R /usr/local/cpanel/base/frontend/x3/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
-cp -R /usr/local/cpanel/base/frontend/x3/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
-cp -R /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
-
+		cp -R /usr/local/cpanel/base/frontend/x3/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
+		cp -R /usr/local/cpanel/base/frontend/x3/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
+		cp -R /usr/local/cpanel/base/frontend/x3/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
+		cp -R /usr/local/cpanel/base/frontend/x3/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
+		cp -R /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
+fi
 
 echo "
 
