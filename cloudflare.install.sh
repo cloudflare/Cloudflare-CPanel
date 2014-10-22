@@ -22,8 +22,7 @@ echo "Finalizing install..."
 ## Clean up files created by this install script
 echo "Removing temporary files..."
 cd ../../
-rm -rf "cloudflare-CloudFlare-CPanel-${commit_hash}"
 rm -rf "cloudflare.tmp.tar.gz"
 
-echo "Verify Host Key & Name:"
+echo "Verify Host Name:"
 cat /usr/local/cpanel/etc/cloudflare.json
