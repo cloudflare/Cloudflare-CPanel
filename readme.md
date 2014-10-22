@@ -10,10 +10,6 @@ Step 1. Access cPanel for the server using root user by:
 
 Step 2. Download necessary files and run installation
 
-```
-wget https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh \
-&& chmod +x cloudflare.install.sh \
-&& ./cloudflare.install.sh HOST_API_KEY 'YOUR_COMPANY_NAME'
-```
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) $HOST_API_KEY '$YOUR_COMPANY_NAME'`
 
 NOTE: Be sure to replace HOST_API_KEY and YOUR_COMPANY_NAME with the appropriate values
