@@ -37,15 +37,17 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 	<ul id="Notifications"></ul>
 </div>
 
-<div class="body-content">
+<div class="cloudflare-content">
 <div class="yui-skin-sam">
 
 [% IF cf_user.response.user_key -%]
 
 
+<img src="../images/cloudflare/cf-logo.png" class="cloudflare-logo" />
+
 [% IF base_domains_result.0.has_cf -%]
 
-<div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare Account</div>
+<h1>Account Settings</h1>
 
 <p class="cf_description">
 Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
@@ -57,7 +59,7 @@ Remember: You can activate and deactivate CloudFlare for each website by togglin
 
 [% ELSE %]
 
-<div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>Activate CloudFlare</div>
+<h1>Activate CloudFlare</h1>
 
 <p class="cf_description">
 Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
@@ -115,11 +117,11 @@ If you have SSL on your website, you have two options. If your SSL is on a separ
 
 </div><!-- end add_record_and_zone_table -->
 
-</div><!-- end body-content div -->
+</div><!-- end cloudflare-content div -->
 
 [% ELSE -%]
 
-<div class="h1Title"><div class="spriteicon_img_mini" id="icon-cloudflare"></div>CloudFlare</div>
+<h1>CloudFlare</h1>
 
 <p class="cf_description">
 CloudFlare accelerates and protects any website online. On average, a website on CloudFlare:
