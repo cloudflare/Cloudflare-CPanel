@@ -38,178 +38,179 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 </div>
 
 <div class="cloudflare-content">
-<div class="yui-skin-sam">
+	<div class="yui-skin-sam">
 
-[% IF cf_user.response.user_key -%]
+		<img src="../images/cloudflare/cf-logo.png" class="cloudflare-logo" />
+
+		[% IF cf_user.response.user_key -%]
 
 
-<img src="../images/cloudflare/cf-logo.png" class="cloudflare-logo" />
+			[% IF base_domains_result.0.has_cf -%]
 
-[% IF base_domains_result.0.has_cf -%]
+				<h1>Account Settings</h1>
 
-<h1>Account Settings</h1>
+				<p class="cf_description">
+				Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
+				</p><p class="cf_description">
+				To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
+				</p><p class="cf_description">
+				Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
+				</p>
 
-<p class="cf_description">
-Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
-</p><p class="cf_description">
-To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
-</p><p class="cf_description">
-Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
-</p>
+			[% ELSE %]
 
-[% ELSE %]
+				<h1>Activate CloudFlare</h1>
 
-<h1>Activate CloudFlare</h1>
+				<p class="cf_description">
+				Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
+				</p><p class="cf_description">
+				CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designated as "on" or "off" CloudFlare by using an orange and gray cloud.
+				</p>
+				<p class="cf_description" id="cf_def_show">
+				Have SSL on your website? You have two options. <a href="javascript:void(0);" onclick="return handleLearnMore(true);">Read more ...</a>
+				</p>
+				<p id="cf_def_noshow">
+				If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
+				<br />
+				<a href="javascript:void(0);" onclick="return handleLearnMore(false);">[hide]</a>
+				</p>
 
-<p class="cf_description">
-Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
-</p><p class="cf_description">
-CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designed as "on" or "off" CloudFlare by using an orange and gray cloud.
-</p>
-<p class="cf_description" id="cf_def_show">
-Have SSL on your website? You have two options. <a href="javascript:void(0);" onclick="return handleLearnMore(true);">Read more ...</a>
-</p>
-<p id="cf_def_noshow">
-If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
-<br />
-<a href="javascript:void(0);" onclick="return handleLearnMore(false);">[hide]</a>
-</p>
+			[% END %]
 
-[% END %]
+			<h4>My Websites</h4>
 
-[% INCLUDE /usr/local/cpanel/etc/cloudflare_local.tmpl %]
+			[% INCLUDE /usr/local/cpanel/etc/cloudflare_local.tmpl %]
 
-<input type="hidden" id="domain" />
+			<input type="hidden" id="domain" />
 
-<div class="highlight">
-<table cellspacing="0" cellpadding="3" width="700" border="0">
+			<div class="highlight">
+				<table class="table" width="700">
+					<thead>
+						<tr style="text-align:left;">
+						        <th>&nbsp;</th>
+						        <th>Site</th>
+						        <th>Status</th>
+						        <th>&nbsp;</th>
+						        <th align="center">CloudFlare Status</th>
+						</tr>
+					</thead>
 
-<tr style="text-align:left;">
-        <th>&nbsp;</th>
-        <th>Site</th>
-        <th>Status</th>
-        <th>&nbsp;</th>
-        <th align="center">CloudFlare Status</th>
-</tr>
+					<tbody>
+					[% FOR domain_data = base_domains_result.0.res -%]
+						<tr>
+						    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return enable_domain('[% domain_data.domain %]');">Edit</a></td>
+						    <td>[% domain_data.domain %]</td>
 
-[% FOR domain_data = base_domains_result.0.res -%]
-<tr>
-    <td><a href="javascript:void(0);" onclick="return enable_domain('[% domain_data.domain %]');">[Edit]</a></td>
-    <td>[% domain_data.domain %]</td>
+						[% IF domain_data.cloudflare -%]
+						    <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
+						    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+						[% ELSE -%]
+						    <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
+						    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+						[% END -%]
+						</tr>
+					[% END -%]
+					</tbody>
+				</table>
+			</div>
 
-[% IF domain_data.cloudflare -%]
-    <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
-    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
-    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
-[% ELSE -%]
-    <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
-    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
-    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
-[% END -%]
-</tr>
-[% END -%]
-</table>
-</div>
+			<div id="user_records_div"></div>
 
-<div id="user_records_div"></div>
+			<div id="help_div"></div>
 
-<div id="help_div"></div>
+		[% ELSE -%]
 
-</div><!-- end add_record_and_zone_table -->
+			<h1>CloudFlare</h1>
 
-</div><!-- end cloudflare-content div -->
+			<p class="cf_description">
+			CloudFlare accelerates and protects any website online. On average, a website on CloudFlare:
+			</p>
 
-[% ELSE -%]
+			<ul>
+			<li>Loads 30% faster
+			<li>Uses 60% less bandwidth
+			<li>Has 65% fewer requests
+			<li>And, is way more secure.
+			</ul>
 
-<h1>CloudFlare</h1>
+			<p>
+			<div id="cf_def_show"><a href="javascript:void(0);" onclick="return handleLearnMore(true);">Learn More ...</a></div>
+			<br />
+			</p>
 
-<p class="cf_description">
-CloudFlare accelerates and protects any website online. On average, a website on CloudFlare:
-</p>
+			<div id="cf_def_noshow">
+			<b>Advantages of the CloudFlare system:</b>
 
-<ul>
-<li>Loads 30% faster
-<li>Uses 60% less bandwidth
-<li>Has 65% fewer requests
-<li>And, is way more secure.
-</ul>
+			<ul>
+			<li><b>Site Performance Improvement:</b> CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
+			<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html" target="_blank">here</a>.
+			<li><b>Spam Comments Protection:</b> CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
+			<li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
+			<li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
+			<li><b>Lower CPU Usage:</b> As fewer requests hit our server, this lowers the overall CPU usage of your account.
+			<li><b>New Statistics Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
+			</ul>
 
-<p>
-<div id="cf_def_show"><a href="javascript:void(0);" onclick="return handleLearnMore(true);">Learn More ...</a></div>
-<br />
-</p>
+			<b>Limitations of the CloudFlare system:</b>
 
-<div id="cf_def_noshow">
-<b>Advantages of the CloudFlare system:</b>
+			<ul>
+			<li>Currently, requests must be directed to www.$domain instead of $domain.
+			<li>CloudFlare may affect internal statistic programs that read directly from Apache logs. (CloudFlare will not affect web-based analytic programs that use JavaScript like Google Analytics.) While your logs will reflect fewer requests to your server and therefore lower load, the experience to your visitors should be unaffected.
+			<li>CloudFlare caches static content from your site. While this reduces the load on your server, it means that if you make a change to an existing static file, like an image, there may be a delay before the change appears. While you are updating your site, you can put CloudFlare in ‘Development Mode’ so changes appear immediately.
+			</ul>
 
-<ul>
-<li><b>Site Performance Improvement:</b> CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
-<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html" target="_blank">here</a>.
-<li><b>Spam Comments Protection:</b> CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
-<li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
-<li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
-<li><b>Lower CPU Usage:</b> As fewer requests hit our server, this lowers the overall CPU usage of your account.
-<li><b>New Statistics Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
-</ul>
+			<p>
+			<a href="javascript:void(0);" onclick="return handleLearnMore(false);">[hide]</a>
+			</p>
 
-<b>Limitations of the CloudFlare system:</b>
+			</div>
 
-<ul>
-<li>Currently, requests must be directed to www.$domain instead of $domain.
-<li>CloudFlare may affect internal statistic programs that read directly from Apache logs. (CloudFlare will not affect web-based analytic programs that use JavaScript like Google Analytics.) While your logs will reflect fewer requests to your server and therefore lower load, the experience to your visitors should be unaffected.
-<li>CloudFlare caches static content from your site. While this reduces the load on your server, it means that if you make a change to an existing static file, like an image, there may be a delay before the change appears. While you are updating your site, you can put CloudFlare in ‘Development Mode’ so changes appear immediately.
-</ul>
+			<h4>Who can use CloudFlare:</h4>
+			<ul>
+			<li>CloudFlare is suitable for all websites, including dynamic websites. Signing up takes less than two minutes. If you do not like the service, it takes even less time to un-signup.
+			<li>Note: This service is a collaboration between CloudFlare and [% base_domains_result.0.hoster %]. We encourage you to send any bug reports to support@cloudflare.com.
+			</ul>
 
-<p>
-<a href="javascript:void(0);" onclick="return handleLearnMore(false);">[hide]</a>
-</p>
+			<input type="hidden" id="USER_user" name="USER_user" value="[% CPANEL.CPDATA.USER %]" />
 
-</div>
+			<br/>
+			<h4>Sign Up / Log In</h4>
+			<div class="highlight">
+			<table class="table">
 
-<h4>Who can use CloudFlare:</h4>
-<ul>
-<li>CloudFlare is suitable for all websites, including dynamic websites. Signing up takes less than two minutes. If you do not like the service, it takes even less time to un-signup.
-<li>Note: This service is a collaboration between CloudFlare and [% base_domains_result.0.hoster %]. We encourage you to send any bug reports to support@cloudflare.com.
-</ul>
+				<tr>
+			          <td class="col1">Your Email: </td>
+				  <td class="col2"><input class="input_text" type="text" id="USER_email" name="USER_email" value=""/></td>
+				  <td><div id="USER_email_error"></div></td>
+				</tr>
+				<tr id="cf_pass_noshow">
+			          <td class="col1">Password: </td>
+			          <td class="col2"><input class="input_text" type="password" id="USER_pass"></td>
+				</tr>
+				<tr>
+			          <td class="col1">&nbsp;</td>
+			          <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>.</td>
+					  <td class="col3"><input class="input_checkbox" type="checkbox" id="USER_tos"></td>
 
-<input type="hidden" id="USER_user" name="USER_user" value="[% CPANEL.CPDATA.USER %]" />
+			          <td><div id="USER_tops_error"></div></td>
+				</tr>
 
-<br/>
-<h4>Sign Up / Log In</h4>
-<div class="highlight">
-<table cellspacing="0" cellpadding="3" style="margin-bottom: 5px">
+				<tr>
+					<td class="col1"></td>
+					<td colspan="2">
+			            <div id="add_USER_record_button"><input type="submit" class="input-button" value="Signup Now!" id="USER_submit" /></div>
+			            <span id="add_USER_record_status"></span>
+			        </td>
+				</tr>
+			</table>
 
-	<tr>
-          <td class="col1">Your Email: </td>
-	  <td class="col2"><input class="input_text" type="text" id="USER_email" name="USER_email" value=""/></td>
-	  <td><div id="USER_email_error"></div></td>
-	</tr>
-	<tr id="cf_pass_noshow">
-          <td class="col1">Password: </td>
-          <td class="col2"><input class="input_text" type="password" id="USER_pass"></td>
-	</tr>
-	<tr>
-          <td class="col1">&nbsp;</td>
-          <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>.</td>
-		  <td class="col3"><input class="input_checkbox" type="checkbox" id="USER_tos"></td>
+			<div id="add_USER_status_bar" style="margin:0 -5px" class="cjt_status_bar"></div>
+		[% END -%]
+	</div>
+</div> <!-- end cloudflare-content div -->
 
-          <td><div id="USER_tops_error"></div></td>
-	</tr>
-
-	<tr>
-		<td class="col1"></td>
-		<td colspan="2">
-            <div id="add_USER_record_button"><input type="submit" class="input-button" value="Signup Now!" id="USER_submit" /></div>
-            <span id="add_USER_record_status"></span>
-        </td>
-	</tr>
-</table>
-
-<div id="add_USER_status_bar" style="margin:0 -5px" class="cjt_status_bar"></div>
-</div>
-</div>
-
-[% END -%]
 
 <script type="text/javascript">
 //<![CDATA[

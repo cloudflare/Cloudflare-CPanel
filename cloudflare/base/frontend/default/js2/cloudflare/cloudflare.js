@@ -51,7 +51,7 @@ var signup_to_cf = function() {
     var tos = YAHOO.util.Dom.get("USER_tos").checked,
         signup_welcome, signup_info, creating_account;
     if (!tos) {
-		CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
+		console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
         return false;
     }
 
@@ -75,7 +75,7 @@ var signup_to_cf = function() {
 				var data = YAHOO.lang.JSON.parse(o.responseText);
 				if (data.cpanelresult.error) {
                     YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-					CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
+					console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
 				}
                 else if (data.cpanelresult.data[0].result == 'success') {
 
@@ -83,7 +83,7 @@ var signup_to_cf = function() {
                     signup_info = get_lang_string('signup_info', {email: email});
 
                     YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-                    CPANEL.widgets.status_bar("add_USER_status_bar", "success", signup_welcome, signup_info);
+                    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "success", signup_welcome, signup_info);
                     // After 10 sec, reload the page
                     setTimeout('window.location.reload(true)', 10000);
 				}
@@ -92,22 +92,22 @@ var signup_to_cf = function() {
                     if (data.cpanelresult.data[0].err_code == 124) {
                         YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "table-row");
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-					    CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
+					    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
                     } else {
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-					    CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+					    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     }
 				}
 			}
 			catch (e) {
                 YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-				CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
 			YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "block");
 			YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-			CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.ajax_error, CPANEL.lang.ajax_try_again);
+			console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.ajax_error, CPANEL.lang.ajax_try_again);
         }
     };
     
@@ -163,12 +163,12 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
                     update_user_records_table(function() {
-                        CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
                                                   CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                     });
                 } else if (data.cpanelresult.data[0].result == "error") {
                     update_user_records_table(function() {
-                        CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
                                                   CPANEL.lang.json_error, 
                                                   data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     });
@@ -179,7 +179,7 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
 			}
 			catch (e) {
                 update_user_records_table(function() {
-                    CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                    console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
                                               CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			    });
             }
@@ -309,19 +309,24 @@ var build_dnszone_row_markup = function(type, rec_num, record) {
 
 // Builds the Zone List.
 var build_dnszone_table_markup = function(records) {
-	// set the initial row stripe
-	var row_toggle = 'rowA';
     var domain = YAHOO.util.Dom.get("domain").value;
 
-	// loop through the dnszone accounts and build the table
-	var html  = '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
-        html += '<tr class="dt_header_row">';
-        html += 	'<th>type</th>';
-        html += 	'<th>name</th>';
-        html += 	'<th colspan="2">record</th>';
-        html += 	'<th>CloudFlare status</th>';
-        html += '</tr>';
+    if (records.length < 1) {
+        return '';
+    }
 
+    var html = '<h4>Website Records</h4>';
+
+	// loop through the dnszone accounts and build the table
+	html += '<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
+    html += '<thead>';
+    html += '<tr class="dt_header_row">';
+    html += 	'<th>type</th>';
+    html += 	'<th>name</th>';
+    html += 	'<th colspan="2">record</th>';
+    html += 	'<th>CloudFlare status</th>';
+    html += '</tr>';
+    html += '</thead>';
 
     // Setup cache data (NUM_RECS, CF_RECS, REC_TEXT, WWW_DOM_INFO)
     build_dnszone_cache(records);
@@ -331,18 +336,15 @@ var build_dnszone_table_markup = function(records) {
         // CNAME records
         if (records[i]['type'].match(/^(CNAME)$/)) {
 
-            html += '<tr id="info_row_' + i + '" class="dt_info_row ' + row_toggle + '">';
+            html += '<tr id="info_row_' + i + '" class="dt_info_row">';
             html += build_dnszone_row_markup("CNAME", i, records[i]);
             html += '</tr>';
         
-            html += '<tr id="module_row_' + i + '" class="dt_module_row ' + row_toggle + '"><td colspan="7">';
+            html += '<tr id="module_row_' + i + '" class="dt_module_row"><td colspan="7">';
             html += 	'<div id="dnszone_table_edit_div_' + i + '" class="dt_module"></div>';
             html += 	'<div id="dnszone_table_delete_div_' + i + '" class="dt_module"></div>';
             html += 	'<div id="status_bar_' + i + '" class="cjt_status_bar"></div>';
             html += '</td></tr>';
-
-            // alternate row stripes
-		    row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
         }
 	}
 
@@ -350,7 +352,7 @@ var build_dnszone_table_markup = function(records) {
         // A, records
         if (records[i]['type'].match(/^(A)$/)) {
 
-            html += '<tr id="info_row_a_' + i + '" class="dt_info_row ' + row_toggle + '">';
+            html += '<tr id="info_row_a_' + i + '" class="dt_info_row">';
             html += '<td id="name_value_a_' + i + '">' + records[i]['type'] + '</td>';
             html += '<td id="type_value_a_' + i + '">' + records[i]['name'].substring(0, records[i]['name'].length - 1) + '</td>';
             
@@ -365,11 +367,8 @@ var build_dnszone_table_markup = function(records) {
             html += '</td>';
             html += '</tr>';
 
-            html += '<tr id="module_row_a_' + i + '" class="dt_module_row ' + row_toggle + '"><td colspan="7">';
+            html += '<tr id="module_row_a_' + i + '" class="dt_module_row"><td colspan="7">';
             html += '</td></tr>';
-
-            // alternate row stripes
-		    row_toggle = (row_toggle == 'rowA') ? row_toggle = 'rowB' : 'rowA';
         }
     }
 
@@ -446,7 +445,7 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
 			    }
 			}
 			catch (e) {
-				CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				console.log('here!');CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -508,7 +507,7 @@ var update_user_records_table = function(cb_lambda) {
 			    }
 			}
 			catch (e) {
-				CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				console.log(e);CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -554,7 +553,7 @@ var refresh_records = function(cb_lambda) {
 			    }
 			}
 			catch (e) {
-				CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				console.log('here!');CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -583,12 +582,12 @@ var push_all_off = function () {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
                     update_user_records_table(function() {
-                        CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
                                                   CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                     });
                 } else if (data.cpanelresult.data[0].result == "error") {
                     update_user_records_table(function() {
-                        CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
                                                   CPANEL.lang.json_error, 
                                                   data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     });
@@ -599,7 +598,7 @@ var push_all_off = function () {
 			}
 			catch (e) {
                 update_user_records_table(function() {
-                    CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                    console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
                                               CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			    });
             }
@@ -957,126 +956,134 @@ var get_stats = function(domain) {
                     var html;
 
                     if (start > end) {
-                        html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</b></p>";
+                        html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</h4>";
                         html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
                     } else {
                         var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
                         var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
                         if (start_fm === end_fm) {
-                            html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
-                                " &middot; " + start_fm + "</b></p>";
+                            html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
+                                " &middot; " + start_fm + "</h4>";
                         } else {
-                            html = "<p><b>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
+                            html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
                                 " &middot; " + start_fm 
-                                + " to "+ end_fm + "</b></p>";
+                                + " to "+ end_fm + "</h4>";
                         }
     
-                    html += '<table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0">';
-                    html += '<tr class="dt_header_row">';
-                    html += 	'<th width="100">&nbsp;</th>';
-                    html += 	'<th>regular traffic</th>';
-                    html += 	'<th>crawlers/bots</th>';
-                    html += 	'<th>threats</th>';
-                    html += 	'<th>info</th>';
-                    html += '</tr>';
+                        html += '<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0">';
+                        html += '<thead>';
+                        html += '<tr class="dt_header_row">';
+                        html += 	'<th width="100">&nbsp;</th>';
+                        html += 	'<th>regular traffic</th>';
+                        html += 	'<th>crawlers/bots</th>';
+                        html += 	'<th>threats</th>';
+                        html += 	'<th>info</th>';
+                        html += '</tr>';
+                        html += '</thead>';
 
-                    html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td width="100">Page Views</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'visits\')"></td>';
-                    html += '</tr>';
+                        html += '<tbody>';
+                        html += '<tr class="dt_module_row rowA">';
+                        html += 	'<td width="100">Page Views</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
+                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'visits\')"></i></span></td>';
+                        html += '</tr>';
 
-                    html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="100">Unique Visitors</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
-                    html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'uniques\')"></td>';
-                    html += '</tr>';
-                    html += '</table>';
-                    
-                    html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
-                    html += '<tr><td>';
-                    
-                    var total_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user), 
-                        numberFormat);
-                    var saved_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare), numberFormat);
-                    var percent_reqs = (parseInt(stats.requestsServed.cloudflare) / parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user) * 100); 
-                    if (isNaN(percent_reqs)) {
-                        percent_reqs = 0;
-                    }
-
-                    var total_bw = parseFloat(stats.bandwidthServed.cloudflare) + parseFloat(stats.bandwidthServed.user);
-                    var saved_bw = parseFloat(stats.bandwidthServed.cloudflare);
-                    var percent_bw = (saved_bw / total_bw) * 100.;
-                    if (isNaN(percent_bw)) {
-                        percent_bw = 0;
-                    }
-                  
-                    var total_units_bw = " KB";
-                    var saved_units_bw = " KB";
-                    if (total_bw >= 102.4) {
-                        total_bw /= 1024.0;
-                        total_units_bw = " MB";
-                    }
-                    if (saved_bw >= 102.4) {
-                        saved_bw /= 1024.0;
-                        saved_units_bw = " MB";
-                    }
-                    total_bw = YAHOO.util.Number.format(total_bw, numberFormatFloat);
-                    saved_bw = YAHOO.util.Number.format(saved_bw, numberFormatFloat);
-                    
-                    var without_time = 0;
-                    var cloudflare_time = 0;
-                    var percent_time = 0;
- 
-                    if (stats.pageLoadTime) {
-                        without_time = parseFloat(stats.pageLoadTime.without);
-                        cloudflare_time = parseFloat(stats.pageLoadTime.cloudflare);
-                        percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100) + '%';
-                    }
-                    html += '</tr></td>';
-                    html += '</table></p>';
-
-
-                    html += '<div id="analytics-stats">';
-
-                        /**
-                    if (percent_time) {
-			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
-			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
-
-
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>';
-
-
-                    html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
-                    
-                    } else {
-                    html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pageload\')"></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
-                    }
-*/
-
-                    html += '<div class="analytics-speed-column" id="analytics-speed-request"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Requests Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'hits\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table></div>';
-
-                    html += '<div class="analytics-speed-column analytics-right-rail">';
-                    
-                    html += '<div class="analytics-speed-column" id="analytics-speed-bandwidth"><h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Bandwidth Saved <image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'bandwidth\')"></span></h4> <table><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table> </div>';
-                                
-                    html += '</div>';
-                    html += '</div>';    
-                    
-                    html += '<div id="analytics-cta-row"><div id="analytics-cta" class="ctaButton"><a class="inner" href="http://www.cloudflare.com/analytics.html" target="_blank"><span class="label">See more statistics</span></a></div></div>';
+                        html += '<tr class="dt_module_row rowB">';
+                        html += 	'<td width="100">Unique Visitors</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
+                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
+                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'uniques\')"></td>';
+                        html += '</tr>';
+                        html += '</tbody>';
+                        html += '</table>';
                         
-                    html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/pro-settings.html\" target=\"_blank\">Pro service</a>.</p>";
+                        html += '<p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
+                        html += '<tr><td>';
+                        
+                        var total_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user), 
+                            numberFormat);
+                        var saved_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare), numberFormat);
+                        var percent_reqs = (parseInt(stats.requestsServed.cloudflare) / parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user) * 100); 
+                        if (isNaN(percent_reqs)) {
+                            percent_reqs = 0;
+                        }
+
+                        var total_bw = parseFloat(stats.bandwidthServed.cloudflare) + parseFloat(stats.bandwidthServed.user);
+                        var saved_bw = parseFloat(stats.bandwidthServed.cloudflare);
+                        var percent_bw = (saved_bw / total_bw) * 100.;
+                        if (isNaN(percent_bw)) {
+                            percent_bw = 0;
+                        }
+                      
+                        var total_units_bw = " KB";
+                        var saved_units_bw = " KB";
+                        if (total_bw >= 102.4) {
+                            total_bw /= 1024.0;
+                            total_units_bw = " MB";
+                        }
+                        if (saved_bw >= 102.4) {
+                            saved_bw /= 1024.0;
+                            saved_units_bw = " MB";
+                        }
+                        total_bw = YAHOO.util.Number.format(total_bw, numberFormatFloat);
+                        saved_bw = YAHOO.util.Number.format(saved_bw, numberFormatFloat);
+                        
+                        var without_time = 0;
+                        var cloudflare_time = 0;
+                        var percent_time = 0;
+     
+                        if (stats.pageLoadTime) {
+                            without_time = parseFloat(stats.pageLoadTime.without);
+                            cloudflare_time = parseFloat(stats.pageLoadTime.cloudflare);
+                            percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100) + '%';
+                        }
+                        html += '</tr></td>';
+                        html += '</table></p>';
+
+
+                        html += '<div id="analytics-stats">';
+
+                            /**
+                        if (percent_time) {
+    			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
+    			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
+
+
+                        html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>';
+
+
+                        html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
+                        
+                        } else {
+                        html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
+                        }
+    */
+                            html += '<div class="columns two">';
+                                html += '<div class="column">';
+                                    html += '<h4>Requests Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'hits\')"></i></span></h4>';
+                                    html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table>';
+                                html += '</div>';
+                                html += '<div class="column">';
+                                    html += '<h4>Bandwidth Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'bandwidth\')"></i></span></h4>';
+                                    html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table>';
+                                html += '</div>';    
+                            html += '</div>';
+                        html += '</div>';    
+                        
+                        html += '<p><a href="http://www.cloudflare.com/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>';
+                        
+                        html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
+
+                        html += '<hr />';
 
                     } // END if (end < start)
 
                     html += '<A NAME="infobox"></A>'
-                    html += '<p id="cf-settings"><b>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</b></p>';
-                    html += '<p><table id="table_dns_zone" class="dynamic_table" border="0" cellspacing="0" cellpadding="0">';
+                    html += '<h4>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</h4>';
+                    html += '<p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
                     
                     var security    = stats.userSecuritySetting;
                     var cachelvl    = stats.cache_lvl;
@@ -1093,7 +1100,7 @@ var get_stats = function(domain) {
                     html += '<option value="free"'+((!stats.pro_zone)? 'selected': '')+'>Free</option>'
                     html += '<option value="pro"'+((stats.pro_zone)? 'selected': '')+'>CloudFlare Pro</option>'
                     html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'pro\')"></td></tr>';
+                    html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pro\')"></i></span></td></tr>';
  
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">CloudFlare security setting</td>';
@@ -1105,23 +1112,23 @@ var get_stats = function(domain) {
                     html += '<option value="eoff"'+((security == "Essentially Off")? 'selected': '')+'>Essentially Off</option>'
                     html += '<option value="help"'+((security == "I'm under attack!")? 'selected': '')+'>I\'m under attack!</option>'
                     html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'seclvl\')"></td></tr>';
+                    html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'seclvl\')"></i></span></td></tr>';
                     html += '<tr class="dt_module_row rowB">';
                     if (dev_mode > server_time) {
                         html += 	'<td width="280">Development Mode will end at</td><td>' 
                             + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
-                            '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">here</a> to disable</td>';
-                        html += '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
+                            '</td><td><a href="javascript:void(0);" class="btn btn-success" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">Disable</a></td>';
+                        html += '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'devmode\')"></i></span></td>';
                     } else {
                         html += 	'<td width="280">Development Mode</td><td>Off'
-                            + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">here</a> to enable</td>';
-                        html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" onclick="showHelp(\'devmode\')"></td>';
+                            + '</td><td><a href="javascript:void(0);" class="btn btn-danger" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">Enable</a></td>';
+                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'devmode\')"></i></span></td>';
                     }
                     html += '</tr>';
                     
                     html += '<tr class="dt_module_row rowA">';
                     html += 	'<td width="280">Cache Purge</td><td>&nbsp;'
-                        + '</td><td>Click <a href="javascript:void(0);" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">here</a> to purge</td>';
+                        + '</td><td><a href="javascript:void(0);" class="btn btn-danger" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">Purge</a></td>';
                     html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'fpurge_ts\')"></td>';
                     html += '</tr>';
 
@@ -1156,7 +1163,7 @@ var get_stats = function(domain) {
                     html += '</tr>'
 
                     html += '</table></p>';
-                    html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics.html\" target=\"_blank\">CloudFlare</a>.</p>";
+                    html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics\" target=\"_blank\">CloudFlare</a>.</p>";
 
 
 

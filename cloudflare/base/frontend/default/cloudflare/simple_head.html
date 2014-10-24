@@ -1,8 +1,7 @@
 
 
 <!-- Looping jquery in for fun -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7/jquery.min.js"></script> 
-<link href='//fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
 
 <!-- Individual YUI CSS files --> 
 <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/yui/2.9.0/build/container/assets/skins/sam/container.css"> 
@@ -16,9 +15,10 @@
 <script type="text/javascript" src="../js2/cloudflare/dn-plus-lightbox.min.js"></script>
 
 <!-- Our own -->
-<link rel="stylesheet" type="text/css" href="../css2/cloudflare/cloudflare.css" />
-<script type="text/javascript" src="../js2-min/cloudflare/cloudflare-min.js"></script>
-<!--<script type="text/javascript" src="../js2/cloudflare/cloudflare.js"></script>-->
+<link rel="stylesheet" type="text/css" href="./css/cf.core.css" />
+<!--<link rel="stylesheet" type="text/css" href="../css2/cloudflare/cloudflare.css" />-->
+<!--<script type="text/javascript" src="../js2-min/cloudflare/cloudflare-min.js"></script>-->
+<script type="text/javascript" src="../js2/cloudflare/cloudflare.js"></script>
 
 <style type="text/css">
 
@@ -41,7 +41,11 @@ img.cloudflare-logo {
    margin: 10px;
 }
 
-.h1Title {
+.cloudflare-content i:hover {
+  cursor: pointer;
+}
+
+/*.h1Title {
   margin: 5px 0 3px;
 }
 
@@ -134,7 +138,6 @@ padding: 5px 0 0 10px;
 padding: 8px 0 0 1px;
 }
 
-/* line 97, ../../sass/page/website-speed-test.scss */
 .ctaButton {
   display: inline-block;
   position: relative;
@@ -148,12 +151,10 @@ padding: 8px 0 0 1px;
   -khtml-border-radius: 35px;
   border-radius: 35px;
 }
-/* line 19, ../../sass/partial/_ui.scss */
 .ctaButton.big {
   border-width: 13px;
   padding-right: 130px;
 }
-/* line 32, ../../sass/partial/_ui.scss */
 .ctaButton > span.caption {
   display: block;
   position: absolute;
@@ -165,7 +166,6 @@ padding: 8px 0 0 1px;
   font-style: italic;
   line-height: 13px;
 }
-/* line 49, ../../sass/partial/_ui.scss */
 .ctaButton > a.inner {
   display: block;
   position: relative;
@@ -186,7 +186,6 @@ padding: 8px 0 0 1px;
   -khtml-border-radius: 25px;
   border-radius: 25px;
 }
-/* line 63, ../../sass/partial/_ui.scss */
 .ctaButton > a.inner:hover {
   background: #7bca00;
   background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(0%, #87de00), color-stop(100%, #65a600));
@@ -197,7 +196,6 @@ padding: 8px 0 0 1px;
   -o-box-shadow: #5b9700 0 1px 0 0;
   box-shadow: #5b9700 0 1px 0 0;
 }
-/* line 83, ../../sass/partial/_ui.scss */
 .ctaButton > a.inner > span.label {
   font-size: 18px;
   line-height: 22px;
@@ -205,7 +203,6 @@ padding: 8px 0 0 1px;
   color: #eff7e4;
   text-shadow: #4c7d00 0 1px 0px;
 }
-/* line 102, ../../sass/page/website-speed-test.scss */
 .ctaButton.plain {
   display: inline-block;
   position: relative;
@@ -220,7 +217,6 @@ padding: 8px 0 0 1px;
   -khtml-border-radius: 35px;
   border-radius: 35px;
 }
-/* line 32, ../../sass/partial/_ui.scss */
 .ctaButton.plain > span.caption {
   display: block;
   position: absolute;
@@ -232,7 +228,6 @@ padding: 8px 0 0 1px;
   font-style: italic;
   line-height: 13px;
 }
-/* line 49, ../../sass/partial/_ui.scss */
 .ctaButton.plain > a.inner {
   display: block;
   position: relative;
@@ -250,18 +245,16 @@ padding: 8px 0 0 1px;
   -khtml-border-radius: 25px;
   border-radius: 25px;
 }
-/* line 75, ../../sass/partial/_ui.scss */
 .ctaButton.plain > a.inner:hover {
   background: #F9F2E7;
 }
-/* line 83, ../../sass/partial/_ui.scss */
 .ctaButton.plain > a.inner > span.label {
   font-size: 18px;
   line-height: 22px;
   font-weight: bold;
   color: inherit;
   text-shadow: none;
-}
+}*/
 
 <?cp Branding::spritelist(.spriteicon_img_mini {width:48px;height:48px;float:left;margin-right:25px;background: url\{leftparenthesis}%\{rightparenthesis};} %,spriteurl,images::#icon-${img}_mini {background-position\{colon}0 -${cssposition}px;width\{colon}${width}px;height\{colon}${height}px; }:) imgtype=icon,subtype=img,,format=png,img=cloudflare ?>
 </style>
