@@ -286,7 +286,7 @@ var build_dnszone_row_markup = function(type, rec_num, record) {
         html += '<td id="type_value_' + rec_num + '">' + record['name'].substring(0, record['name'].length - 1) + '</td>';
         
         if (record['type'] == 'CNAME') {
-            html += '<td colspan="2" id="value_value_hehe_' + rec_num + '">points to ' + record['cname'] + '</td>';
+            html += '<td colspan="2" id="value_value_hehe_' + rec_num + '"><span class="text-nonessential">points to</span> ' + record['cname'] + '</td>';
         }
     
         // action links
@@ -295,11 +295,11 @@ var build_dnszone_row_markup = function(type, rec_num, record) {
         if (record['cloudflare'] == 1) {                
             html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
                 + '" onclick="toggle_record_off(' + rec_num + ', \'' + record['name'] + '\', '
-                + record['line']+' )"><img src="../images/cloudflare/solo_cloud-55x25.png" class="cf_enabled" /></span>';    
+                + record['line']+' )"><img src="../images/cloudflare/icon-cloud-on.png" class="cf_enabled" /></span>';    
         } else {
             html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
                 + '" onclick="toggle_record_on(' + rec_num + ', \'' + record['name'] + '\', '
-                + record['line']+' )"><img src="../images/cloudflare/solo_cloud_off-55x25.png" class="cf_disabled'+rec_num+'"/></span>';
+                + record['line']+' )"><img src="../images/cloudflare/icon-cloud-bypass.png" class="cf_disabled'+rec_num+'"/></span>';
         }
         html += '</td>';
     }
@@ -363,7 +363,7 @@ var build_dnszone_table_markup = function(records) {
 
 		    // action links
             html += '<td>';
-            html +=	'<a href="javascript:void(0);" onclick="show_a_help('+i+',\''+ records[i]['name'] +'\')">Want to run on CloudFlare?</a>';
+            html +=	'<a href="javascript:void(0);" class="btn" onclick="show_a_help('+i+',\''+ records[i]['name'] +'\')">Run on CloudFlare</a>';
             html += '</td>';
             html += '</tr>';
 
@@ -377,13 +377,13 @@ var build_dnszone_table_markup = function(records) {
     // Set the global is CF powered text.
     if (NUM_RECS > 0) {
         if (is_domain_cf_powered(records)) { 
-            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
-            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
-            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
+            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
         } else {
-            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\')" />';
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
         }
     }
 
@@ -420,13 +420,13 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
                     // Set the global is CF powered text.
                     if (NUM_RECS > 0) {
                         if (is_domain_cf_powered(data.cpanelresult.data)) { 
-                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Powered by CloudFlare";
-                            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
-                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/solo_cloud-55x25.png" onclick="toggle_all_off(\''+domain+'\')" />';
+                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
+                            YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
                         } else {
-                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "Not Powered by CloudFlare"; 
+                            YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
                             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/solo_cloud_off-55x25.png" onclick="toggle_www_on(\''+domain+'\')" />';
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
                         }
                     }
 
@@ -1082,8 +1082,8 @@ var get_stats = function(domain) {
                     } // END if (end < start)
 
                     html += '<A NAME="infobox"></A>'
-                    html += '<h4>Cloudflare Settings for ' + YAHOO.util.Dom.get("domain").value + '</h4>';
-                    html += '<p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
+                    html += '<h4>CloudFlare Settings for ' + YAHOO.util.Dom.get("domain").value + '</h4>';
+                    html += '<fieldset id="table_dns_zone" class="form-horizontal">';
                     
                     var security    = stats.userSecuritySetting;
                     var cachelvl    = stats.cache_lvl;
@@ -1094,75 +1094,89 @@ var get_stats = function(domain) {
 			        var local_time  = new Date();
 			        var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;                    
 
-                    html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="280">CloudFlare Account Type</td>';
-                    html += 	'<td><select name="AccountType" id="AccountType" onChange="change_cf_accnt()">';
-                    html += '<option value="free"'+((!stats.pro_zone)? 'selected': '')+'>Free</option>'
-                    html += '<option value="pro"'+((stats.pro_zone)? 'selected': '')+'>CloudFlare Pro</option>'
-                    html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pro\')"></i></span></td></tr>';
- 
-                    html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td width="280">CloudFlare security setting</td>';
-                    html += 	'<td><select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="change_cf_setting(\''
+                    html += '<div class="control-group">';
+                    html += 	'<div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pro\')"></i></span></label></div>';
+                    html += 	'<div class="controls">';
+                    html +=         '<select name="AccountType" id="AccountType" onChange="change_cf_accnt()">';
+                    html +=             '<option value="free"'+((!stats.pro_zone)? 'selected': '')+'>Free</option>'
+                    html +=             '<option value="pro"'+((stats.pro_zone)? 'selected': '')+'>CloudFlare Pro</option>'
+                    html +=         '</select>';
+                    html +=     '</div>';
+                    html += '</div>';
+                    
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'seclvl\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
+                    html += 	   '<select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="change_cf_setting(\''
                         + domain+'\', \'sec_lvl\', \'' + 'SecurityLevelSetting' + '\')">';
-                    html += '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
-                    html += '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
-                    html += '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
-                    html += '<option value="eoff"'+((security == "Essentially Off")? 'selected': '')+'>Essentially Off</option>'
-                    html += '<option value="help"'+((security == "I'm under attack!")? 'selected': '')+'>I\'m under attack!</option>'
-                    html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'seclvl\')"></i></span></td></tr>';
-                    html += '<tr class="dt_module_row rowB">';
+                    html +=             '<option value="high"'+((security == "High")? 'selected': '')+'>High</option>'
+                    html +=             '<option value="med"'+((security == "Medium")? 'selected': '')+'>Medium</option>'
+                    html +=             '<option value="low"'+((security == "Low")? 'selected': '')+'>Low</option>'
+                    html +=             '<option value="eoff"'+((security == "Essentially Off")? 'selected': '')+'>Essentially Off</option>'
+                    html +=             '<option value="help"'+((security == "I'm under attack!")? 'selected': '')+'>I\'m under attack!</option>'
+                    html +=         '</select>';
+                    html +=     '</div>';
+                    html += '</div>';
+
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Development Mode <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'devmode\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
                     if (dev_mode > server_time) {
-                        html += 	'<td width="280">Development Mode will end at</td><td>' 
-                            + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
-                            '</td><td><a href="javascript:void(0);" class="btn btn-success" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">Disable</a></td>';
-                        html += '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'devmode\')"></i></span></td>';
+                        html += 	'<a href="javascript:void(0);" class="btn btn-success" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 0)">Disable</a> ';
+                        html +=     '<span class="label label-danger">Ends at ' 
+                                    + YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"}) + 
+                                    '</span>';
                     } else {
-                        html += 	'<td width="280">Development Mode</td><td>Off'
-                            + '</td><td><a href="javascript:void(0);" class="btn btn-danger" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">Enable</a></td>';
-                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'devmode\')"></i></span></td>';
+                        html += 	'<a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="change_cf_setting(\''+domain+'\', \'devmode\', 1)">Enable</a> ';
+                        html +=     '<span class="label label-success">Currently Off</span>';
                     }
-                    html += '</tr>';
+                    html +=     '</div>';
+                    html += '</div>';
                     
-                    html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td width="280">Cache Purge</td><td>&nbsp;'
-                        + '</td><td><a href="javascript:void(0);" class="btn btn-danger" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">Purge</a></td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'fpurge_ts\')"></td>';
-                    html += '</tr>';
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Cache Purge <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'fpurge_ts\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
+                    html += 	   '<a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="change_cf_setting(\''+domain+'\', \'fpurge_ts\', 1)">Purge</a>';
+                    html +=     '</div>';
+                    html += '</div>';
 
-                    html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="280">Always Online</td>';
-                    html += 	'<td><select name="AlwaysOnline" id="AlwaysOnline" onChange="change_cf_setting(\''
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Always Online <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'ob\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
+                    html += 	   '<select name="AlwaysOnline" id="AlwaysOnline" onChange="change_cf_setting(\''
                         + domain+'\', \'ob\', \'' + 'AlwaysOnline' + '\')">';
-                    html += '<option value="0"'+((ob == "0")? 'selected': '')+'>Off</option>'
-                    html += '<option value="1"'+((ob == "1")? 'selected': '')+'>On</option>'
-                    html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'ob\')"></td></tr>';
+                    html +=             '<option value="0"'+((ob == "0")? 'selected': '')+'>Off</option>'
+                    html +=             '<option value="1"'+((ob == "1")? 'selected': '')+'>On</option>'
+                    html +=         '</select>';
+                    html +=     '</div>';
+                    html += '</div>';
                     
-                    html += '<tr class="dt_module_row rowA">';
-                    html += 	'<td width="280">Automatic IPv6</td>';
-                    html += 	'<td><select name="AutomaticIPv6" id="AutomaticIPv6" onChange="change_cf_setting(\''
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Automatic IPv6 <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'ipv46\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
+                    html += 	   '<select name="AutomaticIPv6" id="AutomaticIPv6" onChange="change_cf_setting(\''
                         + domain+'\', \'ipv46\', \'' + 'AutomaticIPv6' + '\')">';
-                    html += '<option value="0"'+((ip46lvl == "0")? 'selected': '')+'>Off</option>'
-                    html += '<option value="3"'+((ip46lvl == "3")? 'selected': '')+'>Full</option>'
-                    html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'ipv46\')"></td></tr>';
+                    html +=             '<option value="0"'+((ip46lvl == "0")? 'selected': '')+'>Off</option>'
+                    html +=             '<option value="3"'+((ip46lvl == "3")? 'selected': '')+'>Full</option>'
+                    html +=         '</select>';
+                    html +=     '</div>';
+                    html += '</div>';
                     
-                    html += '<tr class="dt_module_row rowB">';
-                    html += 	'<td width="280">CloudFlare caching level</td>';
-                    html += 	'<td><select name="CachingLevel" id="CachingLevel" onChange="change_cf_setting(\''
+                    html += '<div class="control-group">';
+                    html +=     '<div class="control-label"><label>Caching Level <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'cache_lvl\')"></i></span></label></div>';
+                    html +=     '<div class="controls">';
+                    html += 	   '<select name="CachingLevel" id="CachingLevel" onChange="change_cf_setting(\''
                         + domain+'\', \'cache_lvl\', \'' + 'CachingLevel' + '\')">';
-                    html += '<option value="agg"'+((cachelvl == "agg")? 'selected': '')+'>Aggressive</option>'
-                    html += '<option value="basic"'+((cachelvl == "basic")? 'selected': '')+'>Basic</option>'
-                    html += '</select></td><td>&nbsp;</td>';
-                    html +=     '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'cache_lvl\')"></td></tr>';
+                    html +=             '<option value="agg"'+((cachelvl == "agg")? 'selected': '')+'>Aggressive</option>'
+                    html +=             '<option value="basic"'+((cachelvl == "basic")? 'selected': '')+'>Basic</option>'
+                    html +=         '</select>';
+                    html +=     '</div>';
+                    html += '</div>';
        
-                    html += '<tr id="rglist" class="dt_module_row rowA">'; 
-                    html += '</tr>'
+                    html += '<div id="rglist" class="control-group">'; 
+                    html += '</div>'
 
-                    html += '</table></p>';
+                    html += '</fieldset>';
                     html += "<p>For more statistics and settings, sign into your account at <a href=\"https://www.cloudflare.com/analytics\" target=\"_blank\">CloudFlare</a>.</p>";
 
 
@@ -1180,9 +1194,9 @@ var get_stats = function(domain) {
                            
                           railgunList = data;
                                                 
-                          rg_html +=     '<td width="280">Railgun</td>';
-                       
-                          rg_html +=     '<td><select name="Railgun" id="Railgun" onChange="set_railgun(\''+ domain+'\',' + '\'Railgun\')">';
+                          rg_html +=     '<div class="control-label"><label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'railgun\')"></i></span></label></div>';
+                          rg_html +=     '<div class="controls">';
+                          rg_html +=        '<select name="Railgun" id="Railgun" onChange="set_railgun(\''+ domain+'\',' + '\'Railgun\')">';
                                                     
                           rg_html += '<option value="remove">Railgun Not Selected</option>';
                                                     
@@ -1209,29 +1223,19 @@ var get_stats = function(domain) {
                               rg_html += '</option>';
                            }
                                                                         
-                          rg_html += '</select></td>';
+                          rg_html += '</select>';
                           
                           if (preSelected) 
                           {
                               if(!suppress)
                               {
-                                 rg_html += '<td>'
+                                 rg_html += ' '
                                  rg_html += '<select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode(\''+ domain+'\',' + '\'Railgun\', \'RailgunStatus\')">';
                                  rg_html += '<option value="0">Off</option>'
                                  rg_html += '<option value="1"' + ( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) + '>On</option>';
-                                 rg_html += '</select></td>';
+                                 rg_html += '</select>';
                               }
-                              else
-                              {
-                                 rg_html += '<td>&nbsp;</td>';
-                              }
-                          }
-                          else
-                          {
-                              rg_html += '<td>&nbsp;</td>'
-                          }
-                                                    
-                          rg_html += '<td style="text-align:center;"><image src="../images/cloudflare/Info_16x16.png" width="13" height="13" class="info-icon" onclick="showHelp(\'railgun\')"></td></tr>'                     
+                          }               
                         
                           YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
                         }

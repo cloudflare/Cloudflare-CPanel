@@ -102,13 +102,13 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 						    <td>[% domain_data.domain %]</td>
 
 						[% IF domain_data.cloudflare -%]
-						    <td id="cf_powered_[% domain_data.domain %]">Powered by CloudFlare</td>
+						    <td id="cf_powered_[% domain_data.domain %]"><span class="label label-success">Powered by CloudFlare</span></td>
 						    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
-						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud-55x25.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/icon-cloud-on.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 						[% ELSE -%]
-						    <td id="cf_powered_[% domain_data.domain %]">Not Powered by CloudFlare</td>
+						    <td id="cf_powered_[% domain_data.domain %]"><span class="label">Not Powered by CloudFlare</span></td>
 						    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
-						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/solo_cloud_off-55x25.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 						[% END -%]
 						</tr>
 					[% END -%]
@@ -178,35 +178,50 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 			<br/>
 			<h4>Sign Up / Log In</h4>
 			<div class="highlight">
-			<table class="table">
+				<fieldset class="form-horizontal">
+					<div class="control-group">
+						<div class="control-label">
+							<label>Your Email:</label>
+						</div>
+						<div class="controls">
+							<input class="input_large" type="text" id="USER_email" name="USER_email" value="" />
+						</div>
+					</div>
 
-				<tr>
-			          <td class="col1">Your Email: </td>
-				  <td class="col2"><input class="input_text" type="text" id="USER_email" name="USER_email" value=""/></td>
-				  <td><div id="USER_email_error"></div></td>
-				</tr>
-				<tr id="cf_pass_noshow">
-			          <td class="col1">Password: </td>
-			          <td class="col2"><input class="input_text" type="password" id="USER_pass"></td>
-				</tr>
-				<tr>
-			          <td class="col1">&nbsp;</td>
-			          <td class="col2">I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>.</td>
-					  <td class="col3"><input class="input_checkbox" type="checkbox" id="USER_tos"></td>
+					<div id="USER_email_error"></div>
 
-			          <td><div id="USER_tops_error"></div></td>
-				</tr>
+					<div class="control-group">
+						<div class="control-label">
+							<label>Password:</label>
+						</div>
+						<div class="controls">
+							<input class="input_large" type="password" id="USER_pass" />
+						</div>
+					</div>
 
-				<tr>
-					<td class="col1"></td>
-					<td colspan="2">
-			            <div id="add_USER_record_button"><input type="submit" class="input-button" value="Signup Now!" id="USER_submit" /></div>
-			            <span id="add_USER_record_status"></span>
-			        </td>
-				</tr>
-			</table>
+					<div class="control-group">
+						<div class="controls">
+							<label class="checkbox">
+								<input class="input_checkbox" type="checkbox" id="USER_tos">
+								I have read and agree to abide by CloudFlare's <a href="https://www.cloudflare.com/terms.html" target="_blank">Terms of Service</a>
+							</label>
+						</div>
+					</div>
 
-			<div id="add_USER_status_bar" style="margin:0 -5px" class="cjt_status_bar"></div>
+					<div id="USER_tops_error"></div>
+
+					<div class="control-group">
+						<div class="controls">
+							<label class="checkbox">
+								<div id="add_USER_record_button"><input type="submit" class="btn btn-success" value="Signup Now!" id="USER_submit" /></div>
+			            		<span id="add_USER_record_status"></span>
+							</label>
+						</div>
+					</div>
+
+					<div id="add_USER_status_bar" style="margin:0 -5px" class="cjt_status_bar"></div>
+				</fieldset>
+			</div>
 		[% END -%]
 	</div>
 </div> <!-- end cloudflare-content div -->
