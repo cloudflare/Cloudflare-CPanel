@@ -3,11 +3,13 @@ module.exports = function( grunt ) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
-      build: {
-      	files: {
-      		'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.core.js': 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare.core.min.js',
-      		'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.js': 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare-min.js'
-      	}
+      core: {
+        src: 'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.core.js',
+        dest: 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare.core.min.js'
+      },
+      alt: {
+        src: 'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.js',
+        dest: 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare-min.js'
       }
     }
   });
