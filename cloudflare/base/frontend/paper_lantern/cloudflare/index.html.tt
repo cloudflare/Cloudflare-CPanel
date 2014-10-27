@@ -1,5 +1,4 @@
-
-[% PANEL.CPVAR.dprefix = '../' %]
+[% SET CPANEL.CPVAR.dprefix = "../" %]
 
 [%
 IF FORM.itemsperpage;
