@@ -34,6 +34,6 @@ END;
 [% END #wrapper -%]
 
 [% BLOCK js_block %]
-<script type="text/javascript" src="../js2-min/cloudflare/cloudflare.core.min.js"></script>
+<script type="text/javascript" src="./js/cloudflare.core.min.js"></script>
 [% END %]
 

@@ -295,11 +295,11 @@ var build_dnszone_row_markup = function(type, rec_num, record) {
         if (record['cloudflare'] == 1) {                
             html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
                 + '" onclick="toggle_record_off(' + rec_num + ', \'' + record['name'] + '\', '
-                + record['line']+' )"><img src="../images/cloudflare/icon-cloud-on.png" class="cf_enabled" /></span>';    
+                + record['line']+' )"><img src="./images/icon-cloud-on.png" class="cf_enabled" /></span>';    
         } else {
             html +=		'<span class="action_link" id="cloudflare_table_edit_' + rec_num
                 + '" onclick="toggle_record_on(' + rec_num + ', \'' + record['name'] + '\', '
-                + record['line']+' )"><img src="../images/cloudflare/icon-cloud-bypass.png" class="cf_disabled'+rec_num+'"/></span>';
+                + record['line']+' )"><img src="./images/icon-cloud-bypass.png" class="cf_disabled'+rec_num+'"/></span>';
         }
         html += '</td>';
     }
@@ -379,11 +379,11 @@ var build_dnszone_table_markup = function(records) {
         if (is_domain_cf_powered(records)) { 
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
-            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
         } else {
             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
+            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
         }
     }
 
@@ -422,11 +422,11 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
                         if (is_domain_cf_powered(data.cpanelresult.data)) { 
                             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
                             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats(\''+domain+'\');">Statistics and Settings</a>';
-                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-on.png" onclick="toggle_all_off(\''+domain+'\')" />';
                         } else {
                             YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
                             YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
+                            YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-bypass.png" onclick="toggle_www_on(\''+domain+'\')" />';
                         }
                     }
 

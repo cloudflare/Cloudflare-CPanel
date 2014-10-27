@@ -40,7 +40,7 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 <div class="cloudflare-content">
 	<div class="yui-skin-sam">
 
-		<img src="../images/cloudflare/cf-logo.png" class="cloudflare-logo" />
+		<img src="./images/cf-logo.png" class="cloudflare-logo" />
 
 		[% IF cf_user.response.user_key -%]
 
@@ -104,11 +104,11 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 						[% IF domain_data.cloudflare -%]
 						    <td id="cf_powered_[% domain_data.domain %]"><span class="label label-success">Powered by CloudFlare</span></td>
 						    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
-						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/icon-cloud-on.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-on.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
 						[% ELSE -%]
 						    <td id="cf_powered_[% domain_data.domain %]"><span class="label">Not Powered by CloudFlare</span></td>
 						    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
-						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="../images/cloudflare/icon-cloud-bypass.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+						    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-bypass.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
 						[% END -%]
 						</tr>
 					[% END -%]

@@ -4,12 +4,12 @@ module.exports = function( grunt ) {
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
       core: {
-        src: 'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.core.js',
-        dest: 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare.core.min.js'
+        src: 'cloudflare/base/frontend/cf_base/cloudflare/js/cloudflare.core.js',
+        dest: 'cloudflare/base/frontend/cf_base/cloudflare/js/cloudflare.core.min.js'
       },
       alt: {
-        src: 'cloudflare/base/frontend/universal/js2/cloudflare/cloudflare.js',
-        dest: 'cloudflare/base/frontend/universal/js2-min/cloudflare/cloudflare-min.js'
+        src: 'cloudflare/base/frontend/cf_base/cloudflare/js/cloudflare.js',
+        dest: 'cloudflare/base/frontend/cf_base/cloudflare/js/cloudflare-min.js'
       }
     }
   });

@@ -45,8 +45,7 @@ fi
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
 ## Now the JS/CSS/Images
-cp -r base/frontend/cf_base/js2/cloudflare /usr/local/cpanel/base/frontend/x3/js2/
-cp -r base/frontend/cf_base/js2-min/cloudflare /usr/local/cpanel/base/frontend/x3/js2-min/
+cp -r base/frontend/cf_base/js/cloudflare /usr/local/cpanel/base/frontend/x3/js/
 cp -r base/frontend/cf_base/css2/cloudflare /usr/local/cpanel/base/frontend/x3/css2/
 cp -r base/frontend/cf_base/images/cloudflare /usr/local/cpanel/base/frontend/x3/images/
 
@@ -139,8 +138,7 @@ if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
 		/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
 
-		cp -r base/frontend/cf_base/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
-        cp -r base/frontend/cf_base/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
+        cp -r base/frontend/cf_base/js/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js/
         cp -r base/frontend/cf_base/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
         cp -r base/frontend/cf_base/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
 
@@ -149,6 +147,12 @@ then
 
         ## Finally add the Paper Lantern specific files
         cp -r base/frontend/paper_lantern/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
+
+        ## Remove index.html file so that index.html.tt file is used instead
+        if [[ -f /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/index.html ]]
+        then
+            rm /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/index.html
+        fi
 fi
 
 echo "
