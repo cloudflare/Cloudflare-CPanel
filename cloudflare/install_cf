@@ -45,13 +45,13 @@ fi
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
 ## Now the JS/CSS/Images
-cp -r base/frontend/universal/js2/cloudflare /usr/local/cpanel/base/frontend/x3/js2/
-cp -r base/frontend/universal/js2-min/cloudflare /usr/local/cpanel/base/frontend/x3/js2-min/
-cp -r base/frontend/universal/css2/cloudflare /usr/local/cpanel/base/frontend/x3/css2/
-cp -r base/frontend/universal/images/cloudflare /usr/local/cpanel/base/frontend/x3/images/
+cp -r base/frontend/cf_base/js2/cloudflare /usr/local/cpanel/base/frontend/x3/js2/
+cp -r base/frontend/cf_base/js2-min/cloudflare /usr/local/cpanel/base/frontend/x3/js2-min/
+cp -r base/frontend/cf_base/css2/cloudflare /usr/local/cpanel/base/frontend/x3/css2/
+cp -r base/frontend/cf_base/images/cloudflare /usr/local/cpanel/base/frontend/x3/images/
 
 ## And the HTML files
-cp -r base/frontend/universal/cloudflare /usr/local/cpanel/base/frontend/x3/
+cp -r base/frontend/cf_base/cloudflare /usr/local/cpanel/base/frontend/x3/
 
 ## Finally add the X3 specific files
 cp -r base/frontend/x3/cloudflare /usr/local/cpanel/base/frontend/x3/
@@ -139,13 +139,13 @@ if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
 		/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
 
-		cp -r base/frontend/universal/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
-        cp -r base/frontend/universal/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
-        cp -r base/frontend/universal/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
-        cp -r base/frontend/universal/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
+		cp -r base/frontend/cf_base/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
+        cp -r base/frontend/cf_base/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
+        cp -r base/frontend/cf_base/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
+        cp -r base/frontend/cf_base/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
 
         ## And the HTML files
-        cp -r base/frontend/universal/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
+        cp -r base/frontend/cf_base/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
 
         ## Finally add the Paper Lantern specific files
         cp -r base/frontend/paper_lantern/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
