@@ -1,0 +1,40 @@
+
+[% PANEL.CPVAR.dprefix = '../' %]
+
+[%
+IF FORM.itemsperpage;
+    CPANEL.CPVAR.itemsperpage = FORM.itemsperpage;
+END;
+IF !FORM.itemsperpage || !CPANEL.CPVAR.itemsperpage;
+    CPANEL.CPVAR.itemsperpage = 10;
+END;
+%]
+
+[% js_code = PROCESS js_block %]
+
+[% WRAPPER '_assets/master.html.tt'
+    page_js = js_code
+    app_key = 'CloudFlare'
+ -%]
+
+	[% INCLUDE simple_head.html %]
+
+	<!-- Override to deal with Paper Lantern conflict -->
+	<style>
+		.cloudflare-content h4, .cloudflare-content .btn, .cloudflare-content .label, .cloudflare-content label, .cloudflare-content input, .cloudflare-content select, .cloudflare-content textarea, .cloudflare-content .switch, .cloudflare-content .form-horizontal .control-label {
+			font-size: 1em;
+			line-height: 1em;
+		}
+		.cloudflare-content input, .cloudflare-content select {
+			height: 2em;
+		}
+	</style>
+
+	[% INCLUDE simple.tmpl %]
+
+[% END #wrapper -%]
+
+[% BLOCK js_block %]
+<script type="text/javascript" src="../js2-min/cloudflare/cloudflare.core.min.js"></script>
+[% END %]
+
