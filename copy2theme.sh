@@ -22,10 +22,6 @@ if [[ !(-d "/usr/local/cpanel/base/frontend/${alternate_theme}/" ) ]]; then
 	exit 0
 fi
 
-cp -R "/usr/local/cpanel/base/frontend/${base_theme}/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/"
-cp -R "/usr/local/cpanel/base/frontend/${base_theme}/css2/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/css2/"
-cp -R "/usr/local/cpanel/base/frontend/${base_theme}/images/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/images/"
-cp -R "/usr/local/cpanel/base/frontend/${base_theme}/js2/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/js2/"
-cp -R "/usr/local/cpanel/base/frontend/${base_theme}/js2-min/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/js2-min/"
+ln -sf "/usr/local/cloudflare_cpanel/${base_theme}/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/cloudflare"
 
 echo "Success: CloudFlare plugin successfully copied to ${alternate_theme}."
