@@ -45,6 +45,19 @@ fi
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
 ## Shift all our base files into our location
+if [[ !(-d /usr/local/cloudflare_cpanel) ]]; then
+    mkdir /usr/local/cloudflare_cpanel
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/cf_base) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/cf_base
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/x3) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/x3
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/paper_lantern) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/paper_lantern
+fi
+
 cp -r base/frontend/cf_base/cloudflare /usr/local/cloudflare_cpanel/cf_base/
 cp -r base/frontend/x3/cloudflare /usr/local/cloudflare_cpanel/x3/
 cp -r base/frontend/paper_lantern/cloudflare /usr/local/cloudflare_cpanel/paper_lantern/
