@@ -44,6 +44,50 @@ fi
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
+## Clean up current instances of the updated version
+if [[ -d /usr/local/cloudflare_cpanel ]]; then
+    rm -rf /usr/local/cloudflare_cpanel
+fi
+
+## -- START CLEANUP -- clean up old instances of the plugin (or old symlinks if they exist)
+if [[ !(-L /usr/local/cpanel/base/frontend/x3/cloudflare/) && -d /usr/local/cpanel/base/frontend/x3/cloudflare/ ]]; then
+    rm -rf /usr/local/cpanel/base/frontend/x3/cloudflare/
+fi
+
+    ## Remove old asset folders
+    if [[ -d /usr/local/cpanel/base/frontend/x3/css2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/css2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/js2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/js2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/images/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/images/cloudflare/
+    fi
+
+if [[ !(-L /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/) && -d /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/ ]]; then
+    rm -rf /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/
+fi
+    
+    ## Remove old asset folders
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/
+    fi
+
+## -- END CLEANUP -- ##
+
 ## Shift all our base files into our location
 if [[ !(-d /usr/local/cloudflare_cpanel) ]]; then
     mkdir /usr/local/cloudflare_cpanel
@@ -73,54 +117,15 @@ do
   fi
 done
 
-## -- START CLEANUP -- clean up old instances of the plugin (or old symlinks if they exist)
-if [[ -d /usr/local/cpanel/base/frontend/x3/cloudflare/ ]]; then
-    rm -rf /usr/local/cpanel/base/frontend/x3/cloudflare/
-fi
-
-    ## Remove old asset folders
-    if [[ -d /usr/local/cpanel/base/frontend/x3/css2/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/x3/css2/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/x3/js2/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/x3/js2/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/x3/images/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/x3/images/cloudflare/
-    fi
-
-if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/ ]]; then
-    rm -rf /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/
-fi
-    
-    ## Remove old asset folders
-    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/
-    fi
-    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/ ]]; then
-        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/
-    fi
-
-## -- END CLEANUP -- ##
-
 ## Create symlinks in the themes, linking back to the base files
 if [[ -d /usr/local/cpanel/base/frontend/x3/ ]]
 then
-    ln -sf "/usr/local/cloudflare_cpanel/x3/cloudflare/" "/usr/local/cpanel/base/frontend/x3/cloudflare"
+    ln -sf "/usr/local/cloudflare_cpanel/x3/cloudflare" "/usr/local/cpanel/base/frontend/x3/cloudflare"
 fi
 
 if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
-    ln -sf "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare/" "/usr/local/cpanel/base/frontend/paper_lantern/cloudflare"
+    ln -sf "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare" "/usr/local/cpanel/base/frontend/paper_lantern/cloudflare"
 fi
 
 ## Update Net/SSLeay.pm so that cpanel will work.
