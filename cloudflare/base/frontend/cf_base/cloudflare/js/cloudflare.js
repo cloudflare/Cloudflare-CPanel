@@ -90,7 +90,7 @@ var signup_to_cf = function() {
 				else {
                     YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "block");
                     if (data.cpanelresult.data[0].err_code == 124) {
-                        YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "table-row");
+                        YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "block");
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
 					    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
                     } else {
