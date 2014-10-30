@@ -132,8 +132,7 @@ fi
 ## START Hack to clean up index.html file from paper lantern
 cpversion=`/usr/local/cpanel/cpanel -V`
 cpversion=${cpversion:0:5} #should return something like '11.44'
-echo $cpversion
-if [$cpversion >= "11.45"]
+if [[ !( ("$cpversion" == "11.42") || ("$cpversion" == "11.44") ) ]]
 then
     echo "Removing old index.html file"
     rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/index.html
