@@ -207,6 +207,18 @@ else
   cd ..
 fi
 
+## Add a post update script for cPanel in general to reinstall Cloudflare extension, since we do a version check on install
+if [[ ! -f /scripts/postupcp ]]
+then
+    echo "#!/bin/bash" >> /scripts/postupcp
+    chmod +x /scripts/postupcp
+fi
+
+cfonupgrade=`grep -F "Cloudflare-CPanel" /scripts/postupcp`
+if [ "$cfonupgrade" == "" ]; then
+    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh" >> /scripts/postupcp
+fi
+
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
     rm -f mod_cloudflare*
