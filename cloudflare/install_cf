@@ -128,6 +128,18 @@ then
     ln -sf "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare" "/usr/local/cpanel/base/frontend/paper_lantern/cloudflare"
 fi
 
+## For cPanel versions > 11.44, we no longer need a index.html file in Paper Lantern and instead can use the new index.html.tt file.
+## START Hack to clean up index.html file from paper lantern
+cpversion=`/usr/local/cpanel/cpanel -V`
+cpversion=${cpversion:0:5} #should return something like '11.44'
+echo $cpversion
+if [$cpversion >= "11.45"]
+then
+    echo "Removing old index.html file"
+    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/index.html
+fi
+## End Hack for paper lantern
+
 ## Update Net/SSLeay.pm so that cpanel will work.
 line62=`sed 62q /usr/local/cpanel/perl/Net/SSLeay.pm | tail -1`
 
