@@ -111,9 +111,8 @@ for f in /usr/local/cloudflare_cpanel/cf_base/cloudflare/*
 do
   # take action on each file. $f store current file name
   if [[ -d "$f" || -f "$f" ]]; then
-    base=basename "$f"
-    ln -sf "$f" "/usr/local/cloudflare_cpanel/x3/cloudflare/$base"
-    ln -sf "$f" "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare/$base"
+    ln -sf "$f" "/usr/local/cloudflare_cpanel/x3/cloudflare/"
+    ln -sf "$f" "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare/"
   fi
 done
 
