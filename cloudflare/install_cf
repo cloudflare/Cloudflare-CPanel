@@ -44,14 +44,100 @@ fi
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
 
-## Now the JS/CSS/Images
-cp -r base/frontend/default/js2/cloudflare /usr/local/cpanel/base/frontend/default/js2/
-cp -r base/frontend/default/js2-min/cloudflare /usr/local/cpanel/base/frontend/default/js2-min/
-cp -r base/frontend/default/css2/cloudflare /usr/local/cpanel/base/frontend/default/css2/
-cp -r base/frontend/default/images/cloudflare /usr/local/cpanel/base/frontend/default/images/
+## Clean up current instances of the updated version
+if [[ -d /usr/local/cloudflare_cpanel ]]; then
+    rm -rf /usr/local/cloudflare_cpanel
+fi
 
-## And the HTML files
-cp -r base/frontend/default/cloudflare /usr/local/cpanel/base/frontend/default/
+## -- START CLEANUP -- clean up old instances of the plugin (or old symlinks if they exist)
+if [[ !(-L /usr/local/cpanel/base/frontend/x3/cloudflare/) && -d /usr/local/cpanel/base/frontend/x3/cloudflare/ ]]; then
+    rm -rf /usr/local/cpanel/base/frontend/x3/cloudflare/
+fi
+
+    ## Remove old asset folders
+    if [[ -d /usr/local/cpanel/base/frontend/x3/css2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/css2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/js2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/js2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/x3/images/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/x3/images/cloudflare/
+    fi
+
+if [[ !(-L /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/) && -d /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/ ]]; then
+    rm -rf /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/
+fi
+    
+    ## Remove old asset folders
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/css2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/js2-min/cloudflare/
+    fi
+    if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/ ]]; then
+        rm -rf /usr/local/cpanel/base/frontend/paper_lantern/images/cloudflare/
+    fi
+
+## -- END CLEANUP -- ##
+
+## Shift all our base files into our location
+if [[ !(-d /usr/local/cloudflare_cpanel) ]]; then
+    mkdir /usr/local/cloudflare_cpanel
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/cf_base) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/cf_base
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/x3) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/x3
+fi
+if [[ !(-d /usr/local/cloudflare_cpanel/paper_lantern) ]]; then
+    mkdir /usr/local/cloudflare_cpanel/paper_lantern
+fi
+
+cp -r base/frontend/cf_base/cloudflare /usr/local/cloudflare_cpanel/cf_base/
+cp -r base/frontend/x3/cloudflare /usr/local/cloudflare_cpanel/x3/
+cp -r base/frontend/paper_lantern/cloudflare /usr/local/cloudflare_cpanel/paper_lantern/
+
+## Create symlinks for each template base back to cf_base
+for f in /usr/local/cloudflare_cpanel/cf_base/cloudflare/*
+do
+  # take action on each file. $f store current file name
+  if [[ -d "$f" || -f "$f" ]]; then
+    base=basename "$f"
+    ln -sf "$f" "/usr/local/cloudflare_cpanel/x3/cloudflare/$base"
+    ln -sf "$f" "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare/$base"
+  fi
+done
+
+## Create symlinks in the themes, linking back to the base files
+if [[ -d /usr/local/cpanel/base/frontend/x3/ ]]
+then
+    ln -sf "/usr/local/cloudflare_cpanel/x3/cloudflare" "/usr/local/cpanel/base/frontend/x3/cloudflare"
+fi
+
+if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
+then
+    ln -sf "/usr/local/cloudflare_cpanel/paper_lantern/cloudflare" "/usr/local/cpanel/base/frontend/paper_lantern/cloudflare"
+fi
+
+## For cPanel versions > 11.44, we no longer need a index.html file in Paper Lantern and instead can use the new index.html.tt file.
+## START Hack to clean up index.html file from paper lantern
+cpversion=`/usr/local/cpanel/cpanel -V`
+cpversion=${cpversion:0:5} #should return something like '11.44'
+if [[ !( ("$cpversion" == "11.42") || ("$cpversion" == "11.44") ) ]]
+then
+    echo "Removing old index.html file"
+    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/index.html
+fi
+## End Hack for paper lantern
 
 ## Update Net/SSLeay.pm so that cpanel will work.
 line62=`sed 62q /usr/local/cpanel/perl/Net/SSLeay.pm | tail -1`
@@ -121,6 +207,18 @@ else
   cd ..
 fi
 
+## Add a post update script for cPanel in general to reinstall Cloudflare extension, since we do a version check on install
+if [[ ! -f /scripts/postupcp ]]
+then
+    echo "#!/bin/bash" >> /scripts/postupcp
+    chmod +x /scripts/postupcp
+fi
+
+cfonupgrade=`grep -F "cloudflare_update" /scripts/postupcp`
+if [ "$cfonupgrade" == "" ]; then
+    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh force" >> /scripts/postupcp
+fi
+
 ## mod_cloudflare?
 if [ "$mod_cf" == "mod_cf" ]; then
     rm -f mod_cloudflare*
@@ -135,12 +233,6 @@ fi
 if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
 		/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
-
-		cp -R /usr/local/cpanel/base/frontend/x3/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/
-		cp -R /usr/local/cpanel/base/frontend/x3/css2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/css2/
-		cp -R /usr/local/cpanel/base/frontend/x3/images/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/images/
-		cp -R /usr/local/cpanel/base/frontend/x3/js2/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2/
-		cp -R /usr/local/cpanel/base/frontend/x3/js2-min/cloudflare /usr/local/cpanel/base/frontend/paper_lantern/js2-min/
 fi
 
 echo "
