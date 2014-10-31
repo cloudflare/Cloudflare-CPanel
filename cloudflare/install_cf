@@ -214,7 +214,7 @@ then
     chmod +x /scripts/postupcp
 fi
 
-cfonupgrade=`grep -F "Cloudflare-CPanel" /scripts/postupcp`
+cfonupgrade=`grep -F "cloudflare_update" /scripts/postupcp`
 if [ "$cfonupgrade" == "" ]; then
     echo "sh /usr/local/cpanel/bin/cloudflare_update.sh force" >> /scripts/postupcp
 fi
