@@ -216,7 +216,7 @@ fi
 
 cfonupgrade=`grep -F "Cloudflare-CPanel" /scripts/postupcp`
 if [ "$cfonupgrade" == "" ]; then
-    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh" >> /scripts/postupcp
+    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh force" >> /scripts/postupcp
 fi
 
 ## mod_cloudflare?
