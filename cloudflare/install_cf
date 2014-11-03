@@ -153,7 +153,14 @@ if [[ "$line62" =~ 'use 5.' ]]; then
     sed -i -e '62,1d' /usr/local/cpanel/perl/Net/SSLeay.pm
 fi
 
-## Lastly register the plugin with Cpanel
+## Lastly register the plugin buttons with Cpanel
+cp dynamicui_cloudflare.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare.conf
+    ## the group requires mutliple icon images, so duplicate our current icon for all locations
+    cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare1.jpg
+    cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare2.jpg
+    cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare3.jpg
+    cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare4.jpg
+
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
 
 ## Populate config file.
