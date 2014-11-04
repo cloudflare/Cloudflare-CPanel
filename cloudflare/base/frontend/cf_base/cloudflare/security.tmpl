@@ -1,0 +1,90 @@
+<p>
+	CloudFlare leverages the knowledge of a diverse community of websites to power a new type of security service. Online threats range from nuisances like comment spam and excessive bot crawling to malicious attacks like SQL injection and denial of service (DOS) attacks. CloudFlare provides security protection against all of these types of threats and more to keep your website safe.
+</p>
+
+<p>
+	<a href="https://www.cloudflare.com/features-security" target="_blank">Learn More at CloudFlare</a>
+</p>
+
+<hr />
+
+<h1>TODO: Set up this page to handle just the security settings for each zone.</h1>
+
+[% IF cf_user.response.user_key -%]
+
+	[% IF base_domains_result.0.has_cf -%]
+
+		<h1>Account Settings</h1>
+
+		<p class="cf_description">
+		Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
+		</p><p class="cf_description">
+		To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
+		</p><p class="cf_description">
+		Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
+		</p>
+
+	[% ELSE %]
+
+		<h1>Activate CloudFlare</h1>
+
+		<p class="cf_description">
+		Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
+		</p><p class="cf_description">
+		CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designated as "on" or "off" CloudFlare by using an orange and gray cloud.
+		</p>
+		<p class="cf_description" id="cf_def_show">
+		Have SSL on your website? You have two options. <a href="javascript:void(0);" onclick="return handleLearnMore(true);">Read more ...</a>
+		</p>
+		<p id="cf_def_noshow">
+		If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
+		<br />
+		<a href="javascript:void(0);" onclick="return handleLearnMore(false);">[hide]</a>
+		</p>
+
+	[% END %]
+
+	<h4>My Websites</h4>
+
+	[% INCLUDE /usr/local/cpanel/etc/cloudflare_local.tmpl %]
+
+	<input type="hidden" id="domain" />
+
+	<div class="highlight">
+		<table class="table" width="700">
+			<thead>
+				<tr style="text-align:left;">
+				        <th>&nbsp;</th>
+				        <th>Site</th>
+				        <th>Status</th>
+				        <th>&nbsp;</th>
+				        <th align="center">CloudFlare Status</th>
+				</tr>
+			</thead>
+
+			<tbody>
+			[% FOR domain_data = base_domains_result.0.res -%]
+				<tr>
+				    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return enable_domain('[% domain_data.domain %]');">Edit</a></td>
+				    <td>[% domain_data.domain %]</td>
+
+				[% IF domain_data.cloudflare -%]
+				    <td id="cf_powered_[% domain_data.domain %]"><span class="label label-success">Powered by CloudFlare</span></td>
+				    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" class="btn btn-info" onclick="return get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
+				    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-on.png"onclick="toggle_all_off('[% domain_data.domain %]')" /></td>
+				[% ELSE -%]
+				    <td id="cf_powered_[% domain_data.domain %]"><span class="label">Not Powered by CloudFlare</span></td>
+				    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
+				    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-bypass.png" onclick="toggle_www_on('[% domain_data.domain %]')" /></td>
+				[% END -%]
+				</tr>
+			[% END -%]
+			</tbody>
+		</table>
+	</div>
+
+	<div id="user_records_div"></div>
+
+	<div id="help_div"></div>
+
+[% END -%]
