@@ -46,12 +46,34 @@ var get_lang_string = function(keyname, args) {
     }
     return '';
 }
+
+var hide_error = {};
+var display_error = function(id_selector, type, header, message) {
+    var $wrapper = jQuery('#' + id_selector);
+
+    // remove any old alert classes
+    var prefix = "alert-";
+    var classes = $wrapper[0].className.split(" ").filter(function(c) {
+        return c.lastIndexOf(prefix, 0) !== 0;
+    });
+    $wrapper[0].className = $.trim(classes.join(" "));
+
+    $wrapper.addClass('alert-' + type);
+
+    $wrapper.html('<h4>' + header + '</h4><p>' + message + '</p>');
+
+    $wrapper.slideDown();
+
+    // automatically hide error message after 8 seconds
+    hide_error[id_selector] = setTimeout(function() { $wrapper.slideUp(); }, 8000);
+};
+
 var signup_to_cf = function() {
 
     var tos = YAHOO.util.Dom.get("USER_tos").checked,
         signup_welcome, signup_info, creating_account;
     if (!tos) {
-		console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
+		display_error("add_USER_status_bar", "error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
         return false;
     }
 
@@ -75,7 +97,7 @@ var signup_to_cf = function() {
 				var data = YAHOO.lang.JSON.parse(o.responseText);
 				if (data.cpanelresult.error) {
                     YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-					console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
+					display_error("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
 				}
                 else if (data.cpanelresult.data[0].result == 'success') {
 
@@ -83,7 +105,7 @@ var signup_to_cf = function() {
                     signup_info = get_lang_string('signup_info', {email: email});
 
                     YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-                    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "success", signup_welcome, signup_info);
+                    display_error("add_USER_status_bar", "success", signup_welcome, signup_info);
                     // After 10 sec, reload the page
                     setTimeout('window.location.reload(true)', 10000);
 				}
@@ -92,22 +114,22 @@ var signup_to_cf = function() {
                     if (data.cpanelresult.data[0].err_code == 124) {
                         YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "block");
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-					    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
+					    display_error("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
                     } else {
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-					    console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+					    display_error("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     }
 				}
 			}
 			catch (e) {
                 YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-				console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				display_error("add_USER_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
 			YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "block");
 			YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-			console.log('here!');CPANEL.widgets.status_bar("add_USER_status_bar", "error", CPANEL.lang.ajax_error, CPANEL.lang.ajax_try_again);
+			display_error("add_USER_status_bar", "error", CPANEL.lang.ajax_error, CPANEL.lang.ajax_try_again);
         }
     };
     
@@ -163,12 +185,12 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
                     update_user_records_table(function() {
-                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                        display_error("status_bar_" + rec_num, "error", 
                                                   CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                     });
                 } else if (data.cpanelresult.data[0].result == "error") {
                     update_user_records_table(function() {
-                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                        display_error("status_bar_" + rec_num, "error", 
                                                   CPANEL.lang.json_error, 
                                                   data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     });
@@ -179,7 +201,7 @@ var update_zones = function(rec_num, orig_state, old_rec, old_line) {
 			}
 			catch (e) {
                 update_user_records_table(function() {
-                    console.log('here!');CPANEL.widgets.status_bar("status_bar_" + rec_num, "error", 
+                    display_error("status_bar_" + rec_num, "error", 
                                               CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			    });
             }
@@ -445,7 +467,7 @@ var update_user_records_rows = function(row_nums, cb_lambda) {
 			    }
 			}
 			catch (e) {
-				console.log('here!');CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -507,7 +529,7 @@ var update_user_records_table = function(cb_lambda) {
 			    }
 			}
 			catch (e) {
-				console.log(e);CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				console.log(e);display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -553,7 +575,7 @@ var refresh_records = function(cb_lambda) {
 			    }
 			}
 			catch (e) {
-				console.log('here!');CPANEL.widgets.status_bar("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
+				display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			}
         },
         failure : function(o) {
@@ -582,12 +604,12 @@ var push_all_off = function () {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
                 if (data.cpanelresult.error) {
                     update_user_records_table(function() {
-                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                        display_error("status_bar_" + 0, "error", 
                                                   CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                     });
                 } else if (data.cpanelresult.data[0].result == "error") {
                     update_user_records_table(function() {
-                        console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                        display_error("status_bar_" + 0, "error", 
                                                   CPANEL.lang.json_error, 
                                                   data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     });
@@ -598,7 +620,7 @@ var push_all_off = function () {
 			}
 			catch (e) {
                 update_user_records_table(function() {
-                    console.log('here!');CPANEL.widgets.status_bar("status_bar_" + 0, "error", 
+                    display_error("status_bar_" + 0, "error", 
                                               CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
 			    });
             }
