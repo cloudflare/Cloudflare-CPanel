@@ -39,8 +39,8 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 
 <div class="cloudflare-content">
 	<div class="yui-skin-sam">
-		[% INCLUDE brand.tmpl %]
-		[% INCLUDE "${CPANEL.CPVAR.pagename}.tmpl" %]
+		[% INCLUDE tmpl/brand.tmpl %]
+		[% INCLUDE "tmpl/${CPANEL.CPVAR.pagename}.tmpl" %]
 	</div>
 </div> <!-- end cloudflare-content div -->
 
