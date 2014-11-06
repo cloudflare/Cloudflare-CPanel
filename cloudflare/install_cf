@@ -160,6 +160,7 @@ cp dynamicui_cloudflare.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynami
     cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare2.jpg
     cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare3.jpg
     cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare4.jpg
+    cp base/frontend/x3/branding/cloudflare.jpg /usr/local/cpanel/base/frontend/x3/branding/cloudflare5.jpg
 
 /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
 
