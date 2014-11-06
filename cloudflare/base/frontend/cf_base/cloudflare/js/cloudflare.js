@@ -901,6 +901,7 @@ var get_stats = function(domain) {
         success : function(o) {
             try {
                 var data = YAHOO.lang.JSON.parse(o.responseText);
+                console.log(data);
                 if (data.cpanelresult.error) {
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                 } else if (data.cpanelresult.data[0].result == "error") {
@@ -966,142 +967,143 @@ var get_stats = function(domain) {
 
 
 
+                    if (typeof data.cpanelresult.data[0].response.result != undefined) {
+                        // Display stats here.
+                        var result = data.cpanelresult.data[0].response.result;
+                        var stats = result.objs[0];
 
-                    // Display stats here.
-                    var result = data.cpanelresult.data[0].response.result;
-                    var stats = result.objs[0];
+                        var numberFormat = {decimalPlaces:0, decimalSeparator:".", thousandsSeparator:","};
+                        var numberFormatFloat = {decimalPlaces:2, decimalSeparator:".", thousandsSeparator:","};
+                        var start = new Date(parseInt(result.timeZero));
+                        var end = new Date(parseInt(result.timeEnd));
+                        var html;
 
-                    var numberFormat = {decimalPlaces:0, decimalSeparator:".", thousandsSeparator:","};
-                    var numberFormatFloat = {decimalPlaces:2, decimalSeparator:".", thousandsSeparator:","};
-                    var start = new Date(parseInt(result.timeZero));
-                    var end = new Date(parseInt(result.timeEnd));
-                    var html;
-
-                    if (start > end) {
-                        html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</h4>";
-                        html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
-                    } else {
-                        var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
-                        var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
-                        if (start_fm === end_fm) {
-                            html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
-                                " &middot; " + start_fm + "</h4>";
+                        if (start > end) {
+                            html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value + "</h4>";
+                            html += "<p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
                         } else {
-                            html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
-                                " &middot; " + start_fm 
-                                + " to "+ end_fm + "</h4>";
-                        }
-    
-                        html += '<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0">';
-                        html += '<thead>';
-                        html += '<tr class="dt_header_row">';
-                        html += 	'<th width="100">&nbsp;</th>';
-                        html += 	'<th>regular traffic</th>';
-                        html += 	'<th>crawlers/bots</th>';
-                        html += 	'<th>threats</th>';
-                        html += 	'<th>info</th>';
-                        html += '</tr>';
-                        html += '</thead>';
+                            var start_fm = YAHOO.util.Date.format(start, {format:"%B %e, %Y"});
+                            var end_fm = YAHOO.util.Date.format(end, {format:"%B %e, %Y"});
+                            if (start_fm === end_fm) {
+                                html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
+                                    " &middot; " + start_fm + "</h4>";
+                            } else {
+                                html = "<h4>Basic Statistics for " + YAHOO.util.Dom.get("domain").value +
+                                    " &middot; " + start_fm 
+                                    + " to "+ end_fm + "</h4>";
+                            }
+        
+                            html += '<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0">';
+                            html += '<thead>';
+                            html += '<tr class="dt_header_row">';
+                            html += 	'<th width="100">&nbsp;</th>';
+                            html += 	'<th>regular traffic</th>';
+                            html += 	'<th>crawlers/bots</th>';
+                            html += 	'<th>threats</th>';
+                            html += 	'<th>info</th>';
+                            html += '</tr>';
+                            html += '</thead>';
 
-                        html += '<tbody>';
-                        html += '<tr class="dt_module_row rowA">';
-                        html += 	'<td width="100">Page Views</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
-                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'visits\')"></i></span></td>';
-                        html += '</tr>';
+                            html += '<tbody>';
+                            html += '<tr class="dt_module_row rowA">';
+                            html += 	'<td width="100">Page Views</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.regular), numberFormat)+'</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.crawler), numberFormat)+'</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.pageviews.threat), numberFormat)+'</td>';
+                            html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'visits\')"></i></span></td>';
+                            html += '</tr>';
 
-                        html += '<tr class="dt_module_row rowB">';
-                        html += 	'<td width="100">Unique Visitors</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
-                        html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
-                        html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'uniques\')"></td>';
-                        html += '</tr>';
-                        html += '</tbody>';
-                        html += '</table>';
-                        
-                        html += '<p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
-                        html += '<tr><td>';
-                        
-                        var total_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user), 
-                            numberFormat);
-                        var saved_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare), numberFormat);
-                        var percent_reqs = (parseInt(stats.requestsServed.cloudflare) / parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user) * 100); 
-                        if (isNaN(percent_reqs)) {
-                            percent_reqs = 0;
-                        }
+                            html += '<tr class="dt_module_row rowB">';
+                            html += 	'<td width="100">Unique Visitors</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.regular), numberFormat)+'</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.crawler), numberFormat)+'</td>';
+                            html += 	'<td style="text-align:center;">'+YAHOO.util.Number.format(parseInt(stats.trafficBreakdown.uniques.threat), numberFormat)+'</td>';
+                            html +=     '<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'uniques\')"></td>';
+                            html += '</tr>';
+                            html += '</tbody>';
+                            html += '</table>';
+                            
+                            html += '<p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
+                            html += '<tr><td>';
+                            
+                            var total_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user), 
+                                numberFormat);
+                            var saved_reqs = YAHOO.util.Number.format(parseInt(stats.requestsServed.cloudflare), numberFormat);
+                            var percent_reqs = (parseInt(stats.requestsServed.cloudflare) / parseInt(stats.requestsServed.cloudflare + stats.requestsServed.user) * 100); 
+                            if (isNaN(percent_reqs)) {
+                                percent_reqs = 0;
+                            }
 
-                        var total_bw = parseFloat(stats.bandwidthServed.cloudflare) + parseFloat(stats.bandwidthServed.user);
-                        var saved_bw = parseFloat(stats.bandwidthServed.cloudflare);
-                        var percent_bw = (saved_bw / total_bw) * 100.;
-                        if (isNaN(percent_bw)) {
-                            percent_bw = 0;
-                        }
-                      
-                        var total_units_bw = " KB";
-                        var saved_units_bw = " KB";
-                        if (total_bw >= 102.4) {
-                            total_bw /= 1024.0;
-                            total_units_bw = " MB";
-                        }
-                        if (saved_bw >= 102.4) {
-                            saved_bw /= 1024.0;
-                            saved_units_bw = " MB";
-                        }
-                        total_bw = YAHOO.util.Number.format(total_bw, numberFormatFloat);
-                        saved_bw = YAHOO.util.Number.format(saved_bw, numberFormatFloat);
-                        
-                        var without_time = 0;
-                        var cloudflare_time = 0;
-                        var percent_time = 0;
-     
-                        if (stats.pageLoadTime) {
-                            without_time = parseFloat(stats.pageLoadTime.without);
-                            cloudflare_time = parseFloat(stats.pageLoadTime.cloudflare);
-                            percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100) + '%';
-                        }
-                        html += '</tr></td>';
-                        html += '</table></p>';
-
-
-                        html += '<div id="analytics-stats">';
-
-                            /**
-                        if (percent_time) {
-    			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
-    			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
+                            var total_bw = parseFloat(stats.bandwidthServed.cloudflare) + parseFloat(stats.bandwidthServed.user);
+                            var saved_bw = parseFloat(stats.bandwidthServed.cloudflare);
+                            var percent_bw = (saved_bw / total_bw) * 100.;
+                            if (isNaN(percent_bw)) {
+                                percent_bw = 0;
+                            }
+                          
+                            var total_units_bw = " KB";
+                            var saved_units_bw = " KB";
+                            if (total_bw >= 102.4) {
+                                total_bw /= 1024.0;
+                                total_units_bw = " MB";
+                            }
+                            if (saved_bw >= 102.4) {
+                                saved_bw /= 1024.0;
+                                saved_units_bw = " MB";
+                            }
+                            total_bw = YAHOO.util.Number.format(total_bw, numberFormatFloat);
+                            saved_bw = YAHOO.util.Number.format(saved_bw, numberFormatFloat);
+                            
+                            var without_time = 0;
+                            var cloudflare_time = 0;
+                            var percent_time = 0;
+         
+                            if (stats.pageLoadTime) {
+                                without_time = parseFloat(stats.pageLoadTime.without);
+                                cloudflare_time = parseFloat(stats.pageLoadTime.cloudflare);
+                                percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100) + '%';
+                            }
+                            html += '</tr></td>';
+                            html += '</table></p>';
 
 
-                        html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>';
+                            html += '<div id="analytics-stats">';
+
+                                /**
+                            if (percent_time) {
+        			var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
+        			var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:'+without_time+','+cloudflare_time+'&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,'+max_time;
 
 
-                        html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
-                        
-                        } else {
-                        html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
-                        }
-    */
-                            html += '<div class="columns two">';
-                                html += '<div class="column">';
-                                    html += '<h4>Requests Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'hits\')"></i></span></h4>';
-                                    html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table>';
+                            html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>';
+
+
+                            html += '<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="'+chart_api+'">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">'+percent_time+'</span> faster.</h5></td></tr></table></div>';
+                            
+                            } else {
+                            html += '<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'pageload\')"></i></span></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>';
+                            }
+        */
+                                html += '<div class="columns two">';
+                                    html += '<div class="column">';
+                                        html += '<h4>Requests Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'hits\')"></i></span></h4>';
+                                        html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_reqs+','+(100.0 - percent_reqs)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">'+saved_reqs+'</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">'+total_reqs+'</span> total requests</div>  </td></tr></table>';
+                                    html += '</div>';
+                                    html += '<div class="column">';
+                                        html += '<h4>Bandwidth Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'bandwidth\')"></i></span></h4>';
+                                        html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table>';
+                                    html += '</div>';    
                                 html += '</div>';
-                                html += '<div class="column">';
-                                    html += '<h4>Bandwidth Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp(\'bandwidth\')"></i></span></h4>';
-                                    html += '<table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:'+percent_bw+','+(100.0 - percent_bw)+'" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">'+saved_bw + saved_units_bw+'</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">'+total_bw + total_units_bw + '</span> total bandwidth</div>  </td></tr></table>';
-                                html += '</div>';    
-                            html += '</div>';
-                        html += '</div>';    
-                        
-                        html += '<p><a href="http://www.cloudflare.com/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>';
-                        
-                        html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
+                            html += '</div>';    
+                            
+                            html += '<p><a href="http://www.cloudflare.com/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>';
+                            
+                            html += "<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href=\"https://www.cloudflare.com/plans\" target=\"_blank\">Pro service</a>.</p>";
 
-                        html += '<hr />';
+                            html += '<hr />';
 
-                    } // END if (end < start)
+                        } // END if (end < start)
+                    } // END of check for stats
 
                     html += '<A NAME="infobox"></A>'
                     html += '<h4>CloudFlare Settings for ' + YAHOO.util.Dom.get("domain").value + '</h4>';
@@ -1314,10 +1316,11 @@ var get_stats = function(domain) {
                 }
 		    }
 		    catch (e) {
+                console.log(e);
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
             }
         },
-        failure : function(o) {            
+        failure : function(o) {    
             YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
         }
     };

@@ -1,0 +1,152 @@
+[%
+USE Api2;
+USE date;
+USE Dumper;
+USE format;
+
+SET stats = Api2.exec('CloudFlare','zone_get_stats', {'homedir' => CPANEL.homedir, 'user_email' => cf_user.response.cloudflare_email, 'user_api_key' => cf_user.response.user_api_key, 'zone_name' => base_domains_result.0.res.1.domain});
+
+SET result = stats.0.response.result;
+SET stats = result.objs.0;
+SET start = result.timeZero / 1000;
+SET end = result.timeEnd / 1000;
+
+SET numberFormat = format('%d');
+SET numberFormatFloat = format('%.2f');
+-%]
+
+## TODO: Don't push this live without a domain switcher!
+
+[% IF (start > end) %]
+    <h4>Basic Statistics for [% base_domains_result.0.res.1.domain %]</h4>
+    <p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>
+[% ELSE %]
+    [%
+        SET start_fm = date.format(start, "%B %e, %Y");
+        SET end_fm = date.format(end, "%B %e, %Y");
+    %]
+    [% IF (start_fm == end_fm) %]
+        <h4>Basic Statistics for [% base_domains_result.0.res.1.domain %]<br />[% start_fm %]</h4>
+    [% ELSE %]
+        <h4>Basic Statistics for [% base_domains_result.0.res.1.domain %]<br />[% start_fm %] to [% end_fm %]</h4>
+    [% END %]
+
+    <table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0">
+    <thead>
+    <tr class="dt_header_row">
+    	<th width="100">&nbsp;</th>
+    	<th>regular traffic</th>
+    	<th>crawlers/bots</th>
+    	<th>threats</th>
+    	<th>info</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr class="dt_module_row rowA">
+    	<td width="100">Page Views</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.pageviews.regular).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.pageviews.crawler).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.pageviews.threat).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('visits')"></i></span></td>
+    </tr>
+
+    <tr class="dt_module_row rowB">
+    	<td width="100">Unique Visitors</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.uniques.regular).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.uniques.crawler).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;">[% numberFormat(stats.trafficBreakdown.uniques.threat).chunk(-3).join(',') %]</td>
+    	<td style="text-align:center;"><span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('uniques')"></td>
+    </tr>
+    </tbody>
+    </table>
+    
+    <p><table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">
+    <tr><td>
+    [% 
+    SET total_reqs = numberFormat(stats.requestsServed.cloudflare + stats.requestsServed.user);
+    SET saved_reqs = numberFormat(stats.requestsServed.cloudflare);
+    %]
+
+    [% IF stats.requestsServed.cloudflare + stats.requestsServed.user == 0 %]
+        [% SET percent_reqs = 0; %]
+    [% ELSE %]
+        [% SET percent_reqs = (numberFormat(stats.requestsServed.cloudflare) / numberFormat(stats.requestsServed.cloudflare + stats.requestsServed.user) * 100);  %]
+    [% END %]
+
+    [%
+    SET total_bw = stats.bandwidthServed.cloudflare + stats.bandwidthServed.user;
+    SET saved_bw = numberFormatFloat(stats.bandwidthServed.cloudflare);
+    %]
+
+    [% IF total_bw == 0 %]
+        [% SET percent_bw = 0; %]
+    [% ELSE %]
+        [% SET percent_bw = (saved_bw / total_bw) * 100; %]
+    [% END %]
+  
+    [% SET total_units_bw = " KB";
+    SET saved_units_bw = " KB";
+    IF (total_bw >= 102.4) %]
+        [% 
+        total_bw = total_bw / 1024.0;
+        total_units_bw = " MB"; 
+        %]
+    [% END %]
+    [% IF (saved_bw >= 102.4) %]
+        [% 
+        saved_bw = saved_bw / 1024.0;
+        saved_units_bw = " MB"; 
+        %]
+    [% END %]
+
+    [% 
+    SET total_bw = numberFormatFloat(total_bw);
+    SET saved_bw = numberFormatFloat(saved_bw);
+    
+    SET without_time = 0;
+    SET cloudflare_time = 0;
+    SET percent_time = 0;
+
+    IF (stats.pageLoadTime) %]
+        [% 
+        without_time = numberFormatFloat(stats.pageLoadTime.without);
+        cloudflare_time = numberFormatFloat(stats.pageLoadTime.cloudflare);
+        percent_time = Math.floor((1 - (cloudflare_time / without_time)) * 100)  %]%'; 
+        %]
+    [% END %]
+    </tr></td>
+    </table></p>
+
+<!--       /**
+if (percent_time) {
+var max_time = 1.10 * Math.max(cloudflare_time, without_time); 
+var chart_api = 'https://chart.googleapis.com/chart?cht=bvs&chco=505151|e67300&chs=200x172&chbh=90,10,10&chd=t:[% without_time %],[% cloudflare_time %]&chxt=x&chxl=0:|Without%20CloudFlare|With%20CloudFlare&chds=0,5&chm=N%20*f*%20sec.,000000,0,-1,11&chds=0,' + max_time;
+
+
+<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('pageload')"></i></span></span></h4>
+
+
+<table><tr><td> <span class="analytics-chart" id="analytics-speed-time-chart">  <img src="[% chart_api %]">  </span> </td></tr><tr><td><h5>CloudFlare makes your sites load about <span class="analytics-speed-info-percentFaster">[% percent_time %]</span> faster.</h5></td></tr></table></div>
+
+} else {
+<div class="analytics-speed-column" id="analytics-speed-time"> <h4 class="analytics-chartTitle"><span class="analytics-chartTitle-inner">Page Load Time <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('pageload')"></i></span></span></h4>The page load time comparison is currently gathering data.</td></tr></table></div>
+}
+*/ -->
+
+<div class="columns two">
+    <div class="column">
+        <h4>Requests Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('hits')"></i></span></h4>
+        <table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-requs-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:[% percent_reqs %],[% (100.0 - percent_reqs) %]" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-reqs-savedByCF">[% saved_reqs.chunk(-3).join(',') %]</span> requests saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-reqs-total">[% total_reqs.chunk(-3).join(',') %]</span> total requests</div>  </td></tr></table>
+    </div>
+    <div class="column">
+        <h4>Bandwidth Saved <span class="text-info"><i class="icon icon-info-sign" onclick="showHelp('bandwidth')"></i></span></h4>
+        <table class="table"><tr><td> <div class="analytics-chart" id="analytics-speed-bandwidth-chart"> <img src="https://chart.googleapis.com/chart?cht=p&chco=ed7200|505151&chs=80x80&chd=t:[% percent_bw %],[% (100.0 - percent_bw) %]" width="80" height="80"> </div> </td><td> <div class="analytics-speed-savedByCF"><span id="analytics-speed-bandwidth-savedByCF">[% saved_bw.chunk(-3).join(',') + saved_units_bw %]</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">[% total_bw.chunk(-3).join(',') + total_units_bw  %]</span> total bandwidth</div>  </td></tr></table>
+    </div>    
+</div> 
+
+<p><a href="http://www.cloudflare.com/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>
+
+<p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>
+
+[% END %]
