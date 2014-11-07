@@ -2,6 +2,9 @@
 
 <!-- Looping jquery in for fun -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+<script>
+var CF_jQuery = jQuery.noConflict();
+</script>
 
 <!-- Individual YUI CSS files --> 
 <link rel="stylesheet" type="text/css" href="https://ajax.googleapis.com/ajax/libs/yui/2.9.0/build/container/assets/skins/sam/container.css"> 
@@ -13,11 +16,14 @@
 <!-- Info lightbox -->
 <link rel="stylesheet" type="text/css" href="./css/lightbox-plus-ui.min.css" />
 <script type="text/javascript" src="./js/dn-plus-lightbox.min.js"></script>
+<script type="text/javascript" src="./js/underscore.js"></script>
 
 <!-- Our own -->
 <link rel="stylesheet" type="text/css" href="./css/cloudflare.css" />
 <link rel="stylesheet" type="text/css" href="./css/cf.core.css" />
 <script type="text/javascript" src="./js/cloudflare.js"></script>
+<script type="text/javascript" src="./js/cloudflare.lang.js"></script>
+<script type="text/javascript" src="./js/templates.js"></script>
 
 <style type="text/css">
 
@@ -55,6 +61,10 @@ img.cloudflare-logo {
 
 #cf_def_noshow, #cf_pass_noshow {
     display: none;
+}
+
+div.dt_module {
+  display:none;
 }
 
 <?cp Branding::spritelist(.spriteicon_img_mini {width:48px;height:48px;float:left;margin-right:25px;background: url\{leftparenthesis}%\{rightparenthesis};} %,spriteurl,images::#icon-${img}_mini {background-position\{colon}0 -${cssposition}px;width\{colon}${width}px;height\{colon}${height}px; }:) imgtype=icon,subtype=img,,format=png,img=cloudflare ?>

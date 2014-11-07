@@ -635,11 +635,13 @@ sub __https_post_req {
         if ($cf_debug_mode) {
             $logger->info("Response: " . $response);
         }
-        if ($response == "HTTP/1.1 200 OK") {
+        if ($response != "HTTP/1.1 200 OK") {
             $logger->info("Error Page: " . "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error header received: $response\"}");
             return "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error header received: $response\"}";
         } else {
-            $logger->info("Page: " . $page);
+            if ($cf_debug_mode) {
+                $logger->info("Page: " . $page);
+            }
             return $page;
         }
     }
