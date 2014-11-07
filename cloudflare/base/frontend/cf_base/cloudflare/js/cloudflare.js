@@ -172,17 +172,6 @@ console.log(settings);
          
     },
 
-    handleLearnMore: function (show) {
-        if (show) {
-            YAHOO.util.Dom.setStyle('cf_def_show', 'display', "none"); 
-            YAHOO.util.Dom.setStyle('cf_def_noshow', 'display', "block"); 
-        } else {
-            YAHOO.util.Dom.setStyle('cf_def_show', 'display', "block"); 
-            YAHOO.util.Dom.setStyle('cf_def_noshow', 'display', "none"); 
-        }
-        return false;
-    },
-
     update_zones: function(rec_num, orig_state, old_rec, old_line) {
         var tooltip = '', records;
 
@@ -1145,13 +1134,19 @@ console.log(settings);
             this.update_user_records_table();
         }
 
-        // make all methods available on the base object
-        var CF = this;
-        $.each(this.prototype, function(index, value) {
-            if (typeof value == "function") {
-                CF[index] = value;
+        // add toggle listener
+        CloudFlare.$(document).on('click', '.toggle', function() {
+            $target = $('#' + $(this).attr('data-target'));
+            $target.removeClass('hide');
+            
+            if ($(this).hasClass('show')) {
+                $target.show();
+            } else if ($(this).hasClass('hide-only')) {
+                $target.hide();
+            } else {
+                $target.toggle();
             }
-        })
+        });
 
         return this;
     }

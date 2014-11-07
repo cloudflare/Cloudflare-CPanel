@@ -21,10 +21,10 @@
 </div>
 
 <p>
-<div id="cf_def_show"><a href="javascript:void(0);" onclick="return CloudFlare.handleLearnMore(true);">Learn More ...</a></div>
+<div id="cf_def_show"><a href="javascript:void(0);" class="toggle show" data-target="cf_def_noshow">Learn More ...</a></div>
 </p>
 
-<div id="cf_def_noshow">
+<div id="cf_def_noshow" class="hide">
 	<b>Advantages of the CloudFlare system:</b>
 
 	<ul>
@@ -46,7 +46,7 @@
 	</ul>
 
 	<p>
-	<a href="javascript:void(0);" onclick="return CloudFlare.handleLearnMore(false);">[hide]</a>
+	<a href="javascript:void(0);" class="toggle hide-only" data-target="cf_def_noshow">[hide]</a>
 	</p>
 </div>
 
@@ -76,12 +76,12 @@
 		CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designated as "on" or "off" CloudFlare by using an orange and gray cloud.
 		</p>
 		<p class="cf_description" id="cf_def_show">
-		Have SSL on your website? You have two options. <a href="javascript:void(0);" onclick="return CloudFlare.handleLearnMore(true);">Read more ...</a>
+		Have SSL on your website? You have two options. <a href="javascript:void(0);" class="toggle show" data-target="cf_def_noshow2">Read more ...</a>
 		</p>
-		<p id="cf_def_noshow">
+		<p id="cf_def_noshow2" class="hide">
 		If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
 		<br />
-		<a href="javascript:void(0);" onclick="return CloudFlare.handleLearnMore(false);">[hide]</a>
+		<a href="javascript:void(0);" class="toggle hide-only" data-target="cf_def_noshow2">[hide]</a>
 		</p>
 
 	[% END %]
