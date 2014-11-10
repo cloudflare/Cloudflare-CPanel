@@ -433,7 +433,7 @@ __p += '\n                        <td colspan="2" id="value_value_hehe_a_' +
 ((__t = ( records[i]['address'] )) == null ? '' : __t) +
 '</td>    \n                    ';
  } ;
-__p += ' \n\n                    <td>    \n                        <a href="javascript:void(0);" class="btn" onclick="show_a_help(' +
+__p += ' \n\n                    <td>    \n                        <a href="javascript:void(0);" class="btn" onclick="CloudFlare.show_a_help(' +
 ((__t = ( i )) == null ? '' : __t) +
 ',\'' +
 ((__t = ( records[i]['name'] )) == null ? '' : __t) +
