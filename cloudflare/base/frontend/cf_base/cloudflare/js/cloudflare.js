@@ -37,7 +37,6 @@ _.extend(CloudFlare, {
     // args is optional, only for strings which need params
     // CF_LANG is loaded from cloudflare.lang.js
     get_lang_string: function(keyname, args) {
-
         var translation = CF_LANG[keyname],
             args = args || {};
 
@@ -50,6 +49,8 @@ _.extend(CloudFlare, {
     },
 
     display_error: function(type, header, message) {
+        $ = CloudFlare.$;
+
         var $wrapper = $('#cloudflare-error');
 
         if ($wrapper.length > 0) {
@@ -59,10 +60,33 @@ _.extend(CloudFlare, {
                 message: message
             });
 
-            $wrapper.append(html).delay(8000).queue(function() { $(this).slideUp();console.log($(this)); });;
+            $(html).appendTo($wrapper).delay(8000).queue(function() { console.log($(this)); $(this).slideUp(); });
         } else {
             alert(message);
         }
+    },
+
+    showHelp: function(type) {
+        var message = CF_LANG.help[type] || "Error loading help message";
+
+        if ('DN' in window) {
+
+            var help_lightbox;
+            if ('CF' in window && 'lightbox' in window.CF) {
+                help_lightbox = window.CF.lightbox;
+                help_lightbox.cfg.contentString = message;
+            } else {
+                window.CF = window.CF || {};
+                window.CF.lightbox = help_lightbox = new DN.Lightbox({
+                    contentString: message,
+                    animate: false,
+                    maxWidth: 500
+                });
+            }
+            help_lightbox.show.call(help_lightbox, this);
+        }
+
+        return false;
     },
 
     ajax: function(data, callback, target, settings) {
@@ -83,9 +107,16 @@ console.log(data);
             url: CPANEL.urls.json_api(),
             data: data,
             success: function(resp) {
-                console.log(resp);
-                if (callback.success && typeof callback.success == "function") {
-                    callback.success(resp);
+                try {
+                    console.log(resp);
+                    var data = $.parseJSON(o.responseText);
+                    if (callback.success && typeof callback.success == "function") {
+                        callback.success(resp);
+                    }
+                } catch (e) {
+                    if (callback.error && typeof callback.error == "function") {
+                        callback.error(resp);
+                    }
                 }
             },
             error: function(resp) {
@@ -168,15 +199,15 @@ console.log(settings);
         $("#add_USER_record_status").html(CPANEL.icons.ajax + " " + creating_account);
     },
 
-    add_validation: function() {
-         
-    },
+    /* TODO: Add validation */
+    add_validation: function() {},
 
     update_zones: function(rec_num, orig_state, old_rec, old_line) {
         var tooltip = '', records;
 
         var callback = {
             success : function(o) {
+                console.log(o);
                 try {
                     var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
@@ -202,7 +233,8 @@ console.log(settings);
                     });
                 }
             },
-            failure : function(o) {            
+            failure : function(o) {
+                console.log(o);
                 YAHOO.util.Dom.get("status_bar_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
@@ -266,63 +298,25 @@ console.log(settings);
     },
 
     build_dnszone_cache: function(records) {
-
         NUM_RECS = records.length;
         var tooltip_zone_cf_on = this.get_lang_string('tooltip_zone_cf_on'),
             tooltip_zone_cf_off = this.get_lang_string('tooltip_zone_cf_off');
         for (var i=0; i<records.length; i++) {
-
             // CNAME records
             if (records[i]['type'].match(/^(CNAME)$/)) {
-                if (records[i]['cloudflare'] == 1) {                
-
+                if (records[i]['cloudflare'] == 1) {
                     // Add the zone to our list of CF zones.
                     this.CF_RECS[records[i]['name']] = records[i]['line'];
                     this.REC_TEXT[i] = tooltip_zone_cf_on;
-
-                    if (records[i]['name'].match(/^(www\.)/)) {
-                        this.WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];                  
-                    }
                 } else {
-
                     this.REC_TEXT[i] = tooltip_zone_cf_off;
+                }
 
-                    if (records[i]['name'].match(/^(www\.)/)) {
-                        this.WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
-                    }
+                if (records[i]['name'].match(/^(www\.)/)) {
+                    this.WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
                 }
             }
         }
-    },
-
-    build_dnszone_row_markup: function(type, rec_num, record) {
-        var html = '';
-
-        if (type == "CNAME") {
-
-            html += '<td id="name_value_' + rec_num + '">' + record['type'] + '</td>';
-            html += '<td id="type_value_' + rec_num + '">' + record['name'].substring(0, record['name'].length - 1) + '</td>';
-            
-            if (record['type'] == 'CNAME') {
-                html += '<td colspan="2" id="value_value_hehe_' + rec_num + '"><span class="text-nonessential">points to</span> ' + record['cname'] + '</td>';
-            }
-        
-            // action links
-            html += '<td>';
-        
-            if (record['cloudflare'] == 1) {                
-                html +=     '<span class="action_link" id="cloudflare_table_edit_' + rec_num
-                    + '" onclick="CloudFlare.toggle_record_off(' + rec_num + ', \'' + record['name'] + '\', '
-                    + record['line']+' )"><img src="./images/icon-cloud-on.png" class="cf_enabled" /></span>';    
-            } else {
-                html +=     '<span class="action_link" id="cloudflare_table_edit_' + rec_num
-                    + '" onclick="CloudFlare.toggle_record_on(' + rec_num + ', \'' + record['name'] + '\', '
-                    + record['line']+' )"><img src="./images/icon-cloud-bypass.png" class="cf_disabled'+rec_num+'"/></span>';
-            }
-            html += '</td>';
-        }
-
-        return html;
     },
 
     // Builds the Zone List.
@@ -333,76 +327,15 @@ console.log(settings);
             return '';
         }
 
-        var html = '<h4>Website Records</h4>';
-
-        // loop through the dnszone accounts and build the table
-        html += '<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">';
-        html += '<thead>';
-        html += '<tr class="dt_header_row">';
-        html +=     '<th>type</th>';
-        html +=     '<th>name</th>';
-        html +=     '<th colspan="2">record</th>';
-        html +=     '<th>CloudFlare status</th>';
-        html += '</tr>';
-        html += '</thead>';
-
         // Setup cache data (NUM_RECS, CF_RECS, REC_TEXT, WWW_DOM_INFO)
         this.build_dnszone_cache(records);
 
-        for (var i=0; i<records.length; i++) {
-             
-            // CNAME records
-            if (records[i]['type'].match(/^(CNAME)$/)) {
-
-                html += '<tr id="info_row_' + i + '" class="dt_info_row">';
-                html += this.build_dnszone_row_markup("CNAME", i, records[i]);
-                html += '</tr>';
-            
-                html += '<tr id="module_row_' + i + '" class="dt_module_row"><td colspan="7">';
-                html +=     '<div id="dnszone_table_edit_div_' + i + '" class="dt_module"></div>';
-                html +=     '<div id="dnszone_table_delete_div_' + i + '" class="dt_module"></div>';
-                html +=     '<div id="status_bar_' + i + '" class="cjt_status_bar"></div>';
-                html += '</td></tr>';
-            }
-        }
-
-        for (var i=0; i<records.length; i++) {
-            // A, records
-            if (records[i]['type'].match(/^(A)$/)) {
-
-                html += '<tr id="info_row_a_' + i + '" class="dt_info_row">';
-                html += '<td id="name_value_a_' + i + '">' + records[i]['type'] + '</td>';
-                html += '<td id="type_value_a_' + i + '">' + records[i]['name'].substring(0, records[i]['name'].length - 1) + '</td>';
-                
-                // A
-                if (records[i]['type'] == 'A') {
-                    html += '<td colspan="2" id="value_value_hehe_a_' + i + '">' + records[i]['address'] + '</td>';
-                } 
-
-                // action links
-                html += '<td>';
-                html += '<a href="javascript:void(0);" class="btn" onclick="show_a_help('+i+',\''+ records[i]['name'] +'\')">Run on CloudFlare</a>';
-                html += '</td>';
-                html += '</tr>';
-
-                html += '<tr id="module_row_a_' + i + '" class="dt_module_row"><td colspan="7">';
-                html += '</td></tr>';
-            }
-        }
-
-        html += '</table>';
+        html = CFT['zones']({records: records});
 
         // Set the global is CF powered text.
         if (this.NUM_RECS > 0) {
-            if (this.is_domain_cf_powered(records)) { 
-                YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
-                YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return CloudFlare.get_stats(\''+domain+'\');">Statistics and Settings</a>';
-                YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-on.png" onclick="CloudFlare.toggle_all_off(\''+domain+'\')" />';
-            } else {
-                YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
-                YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-                YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on(\''+domain+'\')" />';
-            }
+            zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain});
+            $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
         }
 
         return html;
@@ -424,7 +357,7 @@ console.log(settings);
                         CloudFlare.build_dnszone_cache(data.cpanelresult.data);
                         for (var i=0, l=row_nums.length; i<l; i++) {
                             var v = row_nums[i];
-                            var row_html = CloudFlare.build_dnszone_row_markup("CNAME", v, data.cpanelresult.data[v]);
+                            var row_html = CFT['zone_record']({type: "CNAME", rec_num: v, record: data.cpanelresult.data[v]});
 
                             $('#info_row_' + v).html(row_html);
 
@@ -437,15 +370,8 @@ console.log(settings);
 
                         // Set the global is CF powered text.
                         if (CloudFlare.NUM_RECS > 0) {
-                            if (CloudFlare.is_domain_cf_powered(data.cpanelresult.data)) { 
-                                YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label label-success\">Powered by CloudFlare</span>";
-                                YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = '<a href="javascript:void(0);" class="btn btn-info" onclick="return CloudFlare.get_stats(\''+domain+'\');">Statistics and Settings</a>';
-                                YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-on.png" onclick="CloudFlare.toggle_all_off(\''+domain+'\')" />';
-                            } else {
-                                YAHOO.util.Dom.get("cf_powered_" + domain).innerHTML = "<span class=\"label\">Not Powered by CloudFlare</span>"; 
-                                YAHOO.util.Dom.get("cf_powered_stats" + domain).innerHTML = "&nbsp;"; 
-                                YAHOO.util.Dom.get("cf_powered_check" + domain).innerHTML = '<img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on(\''+domain+'\')" />';
-                            }
+                            zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain});
+                            $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
                         }
 
                         // Call the cb, if it is set.
@@ -654,8 +580,8 @@ console.log(settings);
         this.reset_form();
         this.ACTIVE_DOMAIN = domain;
         var lambda = function() {
-            if (this.WWW_DOM_INFO[2]) {
-                this.toggle_record_on(this.WWW_DOM_INFO[0], this.WWW_DOM_INFO[1], this.sWWW_DOM_INFO[2]);
+            if (CloudFlare.WWW_DOM_INFO[2]) {
+                CloudFlare.toggle_record_on(CloudFlare.WWW_DOM_INFO[0], CloudFlare.WWW_DOM_INFO[1], CloudFlare.WWW_DOM_INFO[2]);
             }
         }
         this.update_user_records_table(lambda);
@@ -746,44 +672,6 @@ console.log(settings);
         }
         YAHOO.util.Dom.get("module_row_a_" + rec_num).innerHTML = '<td colspan="7"><div style="padding: 20px">A type records cannot be directly routed though the CloudFlare network. Instead, click <a href="../zoneedit/advanced.html">here</a> and either switch the type of ' + rec_name + ' to CNAME, or else make a new CNAME record pointing to ' + rec_name + '</div></td>';
         OPEN_HELP = rec_num;
-
-        return false;
-    },
-
-    showHelp: function(type) {
-
-        var help_contents = {
-            "devmode" : "CloudFlare makes your website load faster by caching static resources like images, CSS and Javascript. If you are editing cachable content (like images, CSS, or JS) and want to see the changes right away, you should enter <b>Development mode</b>. This will bypass CloudFlare's cache. Development mode will automatically toggle off after <b>3 hours</b>. Hint: Press shift-reload if you do not see your changes immediate. If you forget to enter Development mode, you should log in to your CloudFlare.com account and use Cache Purge.",
-            "seclvl" : " CloudFlare provides security for your website and you can adjust your security setting for each website. A <b>low</b> security setting will challenge only the most threatening visitors. A <b>high</b> security setting will challenge all visitors that have exhibited threatening behavior within the last 14 days. We recommend starting with a high or medium setting.",
-            "uniques" : "Visitors are classified by regular traffic, search engine crawlers and threats. Unique visitors is defined by unique IP addresses.",
-            "visits" : "Traffic is classified by regular, search engine crawlers and threats. Page Views is defined by the number of requests to your site which return HTML.",
-            "pageload" : "CloudFlare visits the home page of your website from several locations around the world from shared hosting. We do the same request twice: once through the CloudFlare system, and once directly to your site, so bypassing the CloudFlare system. We report both page load times here. CloudFlare improves the performance of your website by caching static resources like images, CSS and Javascript closer to your visitors and by compressing your requests so they are delivered quickly.",
-            "hits" : "CloudFlare sits in front of your server and acts as a proxy, which means your traffic passes through our network. Our network nodes are distributed all over the world. We cache your static resources like images, CSS and Javascript at these nodes and deliver them to your visitors in those regions. By serving certain resources from these nodes, not only do we make your website load faster for your visitors, but we save you requests from your origin server. This means that CloudFlare offsets load so your server can perform optimally. CloudFlare does not cache html.",
-            "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server.",       
-            "fpurge_ts":"Immediately purge all cached resources for your website. This will force CloudFlare to expire all static resources cached prior to the button click and fetch a new version.",
-            "ipv46":"Automatically enable IPv6 networking for all your orange-clouded websites. CloudFlare will listen to <a href='http://en.wikipedia.org/wiki/IPv6'>IPv6</a> even if your host or server only supports IPv4.",
-            "ob":"Automatically enable always online for web pages that lose connectivity or time out. Seamlessly bumps your visitors back to normal browsing when your site comes back online.",
-            "cache_lvl":"Adjust your caching level to modify CloudFlare's caching behavior. The <b>basic</b> setting will cache most static resources (i.e., css, images, and JavaScript). The <b>aggressive</b> setting will cache all static resources, including ones with a query string.<br /><br />Basic: http://example.com/pic.jpg<br />Aggressive: http://example.com/pic.jpg?with=query",
-            "pro":"Choose your CloudFlare plan. Upgrading will make your website even faster, even safer and even smarter. <b>SSL support</b> is included in every plan and will be <b>automatically</b> provisioned. All plans are month to month: no long-term contracts! ",
-            "railgun": "Railgun is a WAN optimization technology that caches dynamic content. It speeds up the delivery of previously non-cached pages, making your site even faster."
-        };
-
-        if ('DN' in window) {
-
-            var help_lightbox;
-            if ('CF' in window && 'lightbox' in window.CF) {
-                help_lightbox = window.CF.lightbox;
-                help_lightbox.cfg.contentString = help_contents[type];
-            } else {
-                window.CF = window.CF || {};
-                window.CF.lightbox = help_lightbox = new DN.Lightbox({
-                    contentString: help_contents[type],
-                    animate: false,
-                    maxWidth: 500
-                });
-            }
-            help_lightbox.show.call(help_lightbox, this);
-        }
 
         return false;
     },
@@ -1138,7 +1026,7 @@ console.log(settings);
         CloudFlare.$(document).on('click', '.toggle', function() {
             $target = $('#' + $(this).attr('data-target'));
             $target.removeClass('hide');
-            
+
             if ($(this).hasClass('show')) {
                 $target.show();
             } else if ($(this).hasClass('hide-only')) {

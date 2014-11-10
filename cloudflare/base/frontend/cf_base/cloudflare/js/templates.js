@@ -238,11 +238,97 @@ __p += '<h1>' +
 return __p
 };
 
+this["CFT"]["zone"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '<tr data-zone="' +
+((__t = ( domain )) == null ? '' : __t) +
+'">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.enable_domain(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\');">Edit</a></td>\n    <td>' +
+((__t = ( domain )) == null ? '' : __t) +
+'</td>\n\n\t';
+ if (cloudflare)  { ;
+__p += '\n\t    <td id="cf_powered_' +
+((__t = ( domain )) == null ? '' : __t) +
+'"><span class="label label-success">Powered by CloudFlare</span></td>\n\t    <td id="cf_powered_stats' +
+((__t = ( domain )) == null ? '' : __t) +
+'"><a href="javascript:void(0);" class="btn btn-info" onclick="return CloudFlare.get_stats(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\');">Statistics and Settings</a></td>\n\t    <td align="center" id="cf_powered_check' +
+((__t = ( domain )) == null ? '' : __t) +
+'"><img src="./images/icon-cloud-on.png"onclick="CloudFlare.toggle_all_off(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\')" /></td>\n\t';
+ } else { ;
+__p += '\n\t    <td id="cf_powered_' +
+((__t = ( domain )) == null ? '' : __t) +
+'"><span class="label">Not Powered by CloudFlare</span></td>\n\t    <td id="cf_powered_stats' +
+((__t = ( domain )) == null ? '' : __t) +
+'">&nbsp;</td>\n\t    <td align="center" id="cf_powered_check' +
+((__t = ( domain )) == null ? '' : __t) +
+'"><img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\')" /></td>\n\t';
+ } ;
+__p += '\n</tr>\n';
+
+}
+return __p
+};
+
 this["CFT"]["zone_record"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '';
+
+ if (type == "CNAME") { ;
+__p += '\n    <td id="name_value_' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'">' +
+((__t = ( record['type'] )) == null ? '' : __t) +
+'</td>\n    <td id="type_value_' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'">';
+ print(record['name'].substring(0, record['name'].length - 1)) ;
+__p += '</td>\n    \n    ';
+ if (record['type'] == 'CNAME') { ;
+__p += '\n        <td colspan="2" id="value_value_hehe_' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'"><span class="text-nonessential">points to</span> ' +
+((__t = ( record['cname'] )) == null ? '' : __t) +
+'</td>\n    ';
+ } ;
+__p += '\n\n    <td>\n        ';
+ if (record['cloudflare'] == 1) {      ;
+__p += '           \n            <span class="action_link" id="cloudflare_table_edit_' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'" onclick="CloudFlare.toggle_record_off(' +
+((__t = ( rec_num )) == null ? '' : __t) +
+', \'' +
+((__t = ( record['name'] )) == null ? '' : __t) +
+'\', \'' +
+((__t = ( record['line'] )) == null ? '' : __t) +
+'\' )">\n                <img src="./images/icon-cloud-on.png" class="cf_enabled" />\n            </span>\n        ';
+ } else { ;
+__p += '\n            <span class="action_link" id="cloudflare_table_edit_' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'" onclick="CloudFlare.toggle_record_on(' +
+((__t = ( rec_num )) == null ? '' : __t) +
+', \'' +
+((__t = ( record['name'] )) == null ? '' : __t) +
+'\', \'' +
+((__t = ( record['line'] )) == null ? '' : __t) +
+'\' )">\n                <img src="./images/icon-cloud-bypass.png" class="cf_disabled' +
+((__t = ( rec_num )) == null ? '' : __t) +
+'"/>\n            </span>\n        ';
+ } ;
+__p += '\n    </td>\n';
+ } ;
+__p += '\n';
 
 }
 return __p
@@ -250,9 +336,62 @@ return __p
 
 this["CFT"]["zones"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '';
+__p += '<h4>Website Records</h4>\n\n<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">    \n    <thead>    \n        <tr class="dt_header_row">    \n            <th>type</th>    \n            <th>name</th>    \n            <th colspan="2">record</th>    \n            <th>CloudFlare status</th>    \n        </tr>    \n    </thead>\n    <tbody>\n        ';
+
+        for (var i=0; i<records.length; i++) {
+            // CNAME records
+            if (records[i]['type'].match(/^(CNAME)$/)) { ;
+__p += '\n                <tr id="info_row_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_info_row">    \n                    ';
+ print(CFT['zone_record']({type: "CNAME", rec_num: i, record: records[i]})) ;
+__p += '\n                </tr>    \n            \n                <tr id="module_row_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_module_row">\n                    <td colspan="7">    \n                        <div id="dnszone_table_edit_div_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_module"></div>    \n                        <div id="dnszone_table_delete_div_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_module"></div>    \n                        <div id="status_bar_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="cjt_status_bar"></div>    \n                    </td>\n                </tr>    \n            ';
+ }
+        }
+
+        for (var i=0; i<records.length; i++) {
+            // A, records
+            if (records[i]['type'].match(/^(A)$/)) { ;
+__p += '\n\n                <tr id="info_row_a_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_info_row">    \n                    <td id="name_value_a_' +
+((__t = ( i )) == null ? '' : __t) +
+'">' +
+((__t = ( records[i]['type'] )) == null ? '' : __t) +
+'</td>    \n                    <td id="type_value_a_' +
+((__t = ( i )) == null ? '' : __t) +
+'">';
+ print(records[i]['name'].substring(0, records[i]['name'].length - 1)) ;
+__p += '</td>    \n                \n                    ';
+ // A
+                    if (records[i]['type'] == 'A') { ;
+__p += '\n                        <td colspan="2" id="value_value_hehe_a_' +
+((__t = ( i )) == null ? '' : __t) +
+'">' +
+((__t = ( records[i]['address'] )) == null ? '' : __t) +
+'</td>    \n                    ';
+ } ;
+__p += ' \n\n                    <td>    \n                        <a href="javascript:void(0);" class="btn" onclick="show_a_help(' +
+((__t = ( i )) == null ? '' : __t) +
+',\'' +
+((__t = ( records[i]['name'] )) == null ? '' : __t) +
+' \')">Run on CloudFlare</a>    \n                    </td>    \n                </tr>    \n\n                <tr id="module_row_a_' +
+((__t = ( i )) == null ? '' : __t) +
+'" class="dt_module_row">\n                    <td colspan="7">    \n                    </td>\n                </tr>    \n            ';
+ }
+        } ;
+__p += '\n    </tbody>\n</table>\n';
 
 }
 return __p

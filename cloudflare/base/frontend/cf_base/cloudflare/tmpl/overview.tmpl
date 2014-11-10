@@ -106,7 +106,7 @@
 
 			<tbody>
 			[% FOR domain_data = base_domains_result.0.res -%]
-				<tr>
+				<tr data-zone="[% domain_data.domain %]">
 				    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.enable_domain('[% domain_data.domain %]');">Edit</a></td>
 				    <td>[% domain_data.domain %]</td>
 

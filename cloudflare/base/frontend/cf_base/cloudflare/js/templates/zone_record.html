@@ -1,0 +1,20 @@
+<% if (type == "CNAME") { %>
+    <td id="name_value_<%= rec_num %>"><%= record['type'] %></td>
+    <td id="type_value_<%= rec_num %>"><% print(record['name'].substring(0, record['name'].length - 1)) %></td>
+    
+    <% if (record['type'] == 'CNAME') { %>
+        <td colspan="2" id="value_value_hehe_<%= rec_num %>"><span class="text-nonessential">points to</span> <%= record['cname'] %></td>
+    <% } %>
+
+    <td>
+        <% if (record['cloudflare'] == 1) {      %>           
+            <span class="action_link" id="cloudflare_table_edit_<%= rec_num %>" onclick="CloudFlare.toggle_record_off(<%= rec_num %>, '<%= record['name'] %>', '<%= record['line'] %>' )">
+                <img src="./images/icon-cloud-on.png" class="cf_enabled" />
+            </span>
+        <% } else { %>
+            <span class="action_link" id="cloudflare_table_edit_<%= rec_num %>" onclick="CloudFlare.toggle_record_on(<%= rec_num %>, '<%= record['name'] %>', '<%= record['line'] %>' )">
+                <img src="./images/icon-cloud-bypass.png" class="cf_disabled<%= rec_num %>"/>
+            </span>
+        <% } %>
+    </td>
+<% } %>
