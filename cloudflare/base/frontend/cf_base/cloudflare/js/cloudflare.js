@@ -100,21 +100,18 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_module" : "CloudFlare",
             "homedir" : USER_HOME_DIR
         });
-console.log(data);
 
-        var errorhandler = function(xhr) {
+        var errorhandler = function(xhr, status) {
             // check if a context was set, and if so display error in that context
             if (typeof this.xhr == "undefined") {
-                console.log('context worked');
                 $(this).html('<div style="padding: 20px">' + CPANEL.icons.error + ' ' + CPANEL.lang.ajax_error + ': ' + CPANEL.lang.ajax_try_again + '</div>');
             }
 
             if (callback.error && typeof callback.error == "function") {
-                console.log('callback running');
                 callback.error(xhr);
             }
             
-            CloudFlare.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again);
+            CloudFlare.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again + '<br>' + status);
         };
 
         // define existing settings
@@ -126,6 +123,7 @@ console.log(data);
                 try {
                     console.log(callback);
                     var data = $.parseJSON(resp);
+                    console.log(data);
                     if (data.cpanelresult.error || data.cpanelresult.data[0].result == "error") {
                         throw "Error response: " + data.cpanelresult.error;
                     } else {
@@ -134,7 +132,8 @@ console.log(data);
                         }
                     }
                 } catch (e) {
-                    errorhandler.apply(this,[xhr]);
+                    console.log(e);
+                    errorhandler.apply(this,[xhr, e.message]);
                 }
             },
             error: errorhandler
@@ -149,6 +148,38 @@ console.log(settings);
         $.ajax(settings);
     },
 
+    init: function() {
+        // initialize object variables
+        this.reset_form();
+
+        // New signups
+        var oUserSub = document.getElementById("USER_submit");
+        YAHOO.util.Event.addListener(oUserSub, "click", this.signup_to_cf);
+        
+        this.add_validation();
+        
+        // load the table
+        if (this.ACTIVE_DOMAIN != null) {
+            this.update_user_records_table();
+        }
+
+        // add toggle listener
+        CloudFlare.$(document).on('click', '.toggle', function() {
+            $target = $('#' + $(this).attr('data-target'));
+            $target.removeClass('hide');
+
+            if ($(this).hasClass('show')) {
+                $target.show();
+            } else if ($(this).hasClass('hide-only')) {
+                $target.hide();
+            } else {
+                $target.toggle();
+            }
+        });
+
+        return this;
+    },
+
     /* -- Start action methods -- */
 
     signup_to_cf: function() {
@@ -160,11 +191,9 @@ console.log(settings);
             return false;
         }
         
-        // TODO: Condense callback
         var callback = {
             success: function(data) {
                 if (data.cpanelresult.data[0].result == 'success') {
-
                     signup_welcome = this.get_lang_string('signup_welcome');
                     signup_info = this.get_lang_string('signup_info', {email: email});
 
@@ -584,18 +613,8 @@ console.log(settings);
         this.ACTIVE_DOMAIN = domain;
         var callback = {
             success: function(data) {
-                try {
-                    if (data.cpanelresult.error) {
-                        YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
-                            + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
-                    } else if (data.cpanelresult.data[0].result == "error") {
-                        YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
-                            + " " + data.cpanelresult.data[0].msg + "</div>";
-                    } else {
-                        get_stats(domain);
-                        return false;
-                    }
-                }
+                get_stats(domain);
+                return false;
             }
         };
 
@@ -624,112 +643,58 @@ console.log(settings);
 
         var callback = {
             success: function(data) {
-                console.log(data);
-                var activeRailgun;     
-                var activeRailgunRequest;                
+                var activeRailgun;
 
-                function getActiveRailguns(domain)
-                {
-
-                    var callback = {
-                        success: function(data) {
-                            activeRailgunRequest = data;                                    
-                            if (data.cpanelresult.data[0].response.railgun_conn.obj == null) {
-                               activeRailgun = null;
-                            } else {
-                               activeRailgun = data.cpanelresult.data[0].response.railgun_conn.obj;
-                            }
+                var callback1 = {
+                    success: function(data) {
+                        console.log(data);
+                        if (data.cpanelresult.data[0].response.railgun_conn.obj == null) {
+                           activeRailgun = null;
+                        } else {
+                           activeRailgun = data.cpanelresult.data[0].response.railgun_conn.obj;
                         }
-                    };
+                    }
+                };
 
-                    CloudFlare.ajax({
-                        "cpanel_jsonapi_func" : "get_active_railguns",
-                        "zone_name" : this.ACTIVE_DOMAIN,
-                        "user_email" : USER_EMAIL,
-                        "user_api_key" : USER_API_KEY
-                    }, callback);                                                          
-                } 
-              
-                getActiveRailguns(domain); 
+                CloudFlare.ajax({
+                    "cpanel_jsonapi_func" : "get_active_railguns",
+                    "zone_name" : CloudFlare.ACTIVE_DOMAIN,
+                    "user_email" : USER_EMAIL,
+                    "user_api_key" : USER_API_KEY
+                }, callback1);
 
+                html = '';
                 if (typeof data.cpanelresult.data[0].response.result != "undefined") {
                     // Display stats here.
                     var result = data.cpanelresult.data[0].response.result;
                     var stats = result.objs[0];
 
-                    html = CFT['statistics']({'stats': stats, 'result': result});
+                    html += CFT['statistics']({'stats': stats, 'result': result, 'domain': domain});
 
-                    html += CFT['performance'](stats);
+                    html += CFT['performance']({'stats': stats, 'domain': domain});
                 } // END of check for stats
 
                 YAHOO.util.Dom.get("user_records_div").innerHTML = html;
 
-                var railgunList;                     
-
-                function process_rg_response(data) {
-                    var rg_html="";
-                       
-                    if (data != null) {
-                           
-                        railgunList = data;
-                                            
-                        rg_html +=     '<div class="control-label"><label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'railgun\')"></i></span></label></div>';
-                        rg_html +=     '<div class="controls">';
-                        rg_html +=        '<select name="Railgun" id="Railgun" onChange="set_railgun(\''+ domain+'\',' + '\'Railgun\')">';
-                                                
-                        rg_html += '<option value="remove">Railgun Not Selected</option>';
-                                                
-                        var suppress = false;
-                        var preSelected = false;    
-                                                                                           
-                        for( var i = 0; i < railgunList.length; i++ ) {                       
-                            rg_html += '<option value="' + railgunList[i].railgun_tag + '" '; 
-                            if ( (activeRailgun != null) && (activeRailgun.railgun_pubname == railgunList[i].railgun_pubname) ) { 
-                                rg_html += 'selected' 
-                                preSelected = true;
-                            }                           
-
-                            rg_html += '>' + railgunList[i].railgun_pubname; 
-
-                            if (railgunList[i].railgun_mode == "0") {
-                                rg_html += ' (Disabled)';
-                                suppress = true;
-                            }   
-
-                            rg_html += '</option>';
-                        }
-                                                                        
-                        rg_html += '</select>';
-                          
-                        if (preSelected) {
-                            if(!suppress) {
-                                rg_html += ' '
-                                rg_html += '<select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode(\''+ domain+'\',' + '\'Railgun\', \'RailgunStatus\')">';
-                                rg_html += '<option value="0">Off</option>'
-                                rg_html += '<option value="1"' + ( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) + '>On</option>';
-                                rg_html += '</select>';
-                            }
-                        }               
-                        
-                        YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
-                    }           
-                }
-
                 setTimeout(function (domain)
                 {
-
-                    var callback = {
+                    var callback2 = {
                         success: function(data) {
-                            process_rg_response(data.cpanelresult.data[0].response.railguns.objs);
+                            console.log(data);
+                            railgunList = data.cpanelresult.data[0].response.railguns.objs;
+                            if (railgunList != null) {
+                                rg_html = CFT['performance']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
+                                YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
+                            } 
                         }
                     };
 
                     CloudFlare.ajax({
                         "cpanel_jsonapi_func" : "get_railguns",
-                        "zone_name" : this.ACTIVE_DOMAIN,
+                        "zone_name" : CloudFlare.ACTIVE_DOMAIN,
                         "user_email" : USER_EMAIL,
                         "user_api_key" : USER_API_KEY
-                    }, callback);                                                         
+                    }, callback2);                                                         
                 }, 500);
             }
         };
@@ -748,41 +713,8 @@ console.log(settings);
             "user_email" : USER_EMAIL,
             "user_api_key" : USER_API_KEY
         }, callback, $('#user_records_div'));
-        YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
 
         return false;
-    },
-
-    init: function() {
-        // initialize object variables
-        this.reset_form();
-
-        // New signups
-        var oUserSub = document.getElementById("USER_submit");
-        YAHOO.util.Event.addListener(oUserSub, "click", this.signup_to_cf);
-        
-        this.add_validation();
-        
-        // load the table
-        if (this.ACTIVE_DOMAIN != null) {
-            this.update_user_records_table();
-        }
-
-        // add toggle listener
-        CloudFlare.$(document).on('click', '.toggle', function() {
-            $target = $('#' + $(this).attr('data-target'));
-            $target.removeClass('hide');
-
-            if ($(this).hasClass('show')) {
-                $target.show();
-            } else if ($(this).hasClass('hide-only')) {
-                $target.hide();
-            } else {
-                $target.toggle();
-            }
-        });
-
-        return this;
     }
 });
 

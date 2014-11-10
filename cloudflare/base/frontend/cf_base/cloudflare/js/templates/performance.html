@@ -1,19 +1,21 @@
 <%
-var dev_mode    = dev_mode * 1000;
+var dev_mode    = stats.dev_mode * 1000;
 var local_time  = new Date();
-var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;                   
+var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;   
+
+console.log(domain);                
 %>
 
 <a NAME="infobox"></a>
-<h4>CloudFlare Settings for <% domain.value %></h4>
+<h4>CloudFlare Settings for <%= domain %></h4>
 <fieldset id="table_dns_zone" class="form-horizontal">
 
 <div class="control-group">
     <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('pro')"></i></span></label></div>
     <div class="controls">
         <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">
-            <option value="free" <% print(((!pro_zone)? 'selected': '')) %>>Free</option>'
-            <option value="pro" <% print(((pro_zone)? 'selected': '')) %>>CloudFlare Pro</option>'
+            <option value="free" <% print(((!stats.pro_zone)? 'selected': '')) %>>Free</option>'
+            <option value="pro" <% print(((stats.pro_zone)? 'selected': '')) %>>CloudFlare Pro</option>'
         </select>
     </div>
 </div>
@@ -21,12 +23,12 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 <div class="control-group">
     <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('seclvl')"></i></span></label></div>
     <div class="controls">
-        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting('<% domain.value %>', 'sec_lvl', 'SecurityLevelSetting')">
-            <option value="high" <% print(((userSecuritySetting == "High")? 'selected': '')) %>>High</option>'
-            <option value="med" <% print(((userSecuritySetting == "Medium")? 'selected': '')) %>>Medium</option>'
-            <option value="low" <% print(((userSecuritySetting == "Low")? 'selected': '')) %>>Low</option>'
-            <option value="eoff" <% print(((userSecuritySetting == "Essentially Off")? 'selected': ''))%>>Essentially Off</option>'
-            <option value="help" <% print(((userSecuritySetting == "I'm under attack!")? 'selected': '')) %>>I'm under attack!</option>'
+        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting('<%= domain %>', 'sec_lvl', 'SecurityLevelSetting')">
+            <option value="high" <% print(((stats.userSecuritySetting == "High")? 'selected': '')) %>>High</option>'
+            <option value="med" <% print(((stats.userSecuritySetting == "Medium")? 'selected': '')) %>>Medium</option>'
+            <option value="low" <% print(((stats.userSecuritySetting == "Low")? 'selected': '')) %>>Low</option>'
+            <option value="eoff" <% print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''))%>>Essentially Off</option>'
+            <option value="help" <% print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) %>>I'm under attack!</option>'
         </select>
     </div>
 </div>
@@ -34,11 +36,11 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 <div class="control-group">
     <div class="control-label"><label>Development Mode <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('devmode')"></i></span></label></div>
     <div class="controls">
-        <% if (dev_mode > currentServerTime) { %>
-            <a href="javascript:void(0);" class="btn btn-success" onclick="CloudFlare.change_cf_setting('<%= domain.value %>', 'devmode', 0)">Disable</a> 
+        <% if (dev_mode > stats.currentServerTime) { %>
+            <a href="javascript:void(0);" class="btn btn-success" onclick="CloudFlare.change_cf_setting('<%= domain %>', 'devmode', 0)">Disable</a> 
             <span class="label label-danger">Ends at <% print(YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"})) %></span>
         <% } else {  %>
-            <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="CloudFlare.change_cf_setting('<%= domain.value %>', 'devmode', 1)">Enable</a> 
+            <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="CloudFlare.change_cf_setting('<%= domain %>', 'devmode', 1)">Enable</a> 
             <span class="label label-success">Currently Off</span>
         <% }  %>
     </div>
@@ -47,16 +49,16 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 <div class="control-group">
     <div class="control-label"><label>Cache Purge <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('fpurge_ts')"></i></span></label></div>
     <div class="controls">
-        <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="change_cf_setting('<%= domain.value %>', 'fpurge_ts', 1)">Purge</a>
+        <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="CloudFlare.change_cf_setting('<%= domain %>', 'fpurge_ts', 1)">Purge</a>
     </div>
 </div>
 
 <div class="control-group">
     <div class="control-label"><label>Always Online <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('ob')"></i></span></label></div>
     <div class="controls">
-        <select name="AlwaysOnline" id="AlwaysOnline" onChange="CloudFlare.change_cf_setting('<% domain.value %>', 'ob', 'AlwaysOnline')">
-            <option value="0" <% print(((ob == "0")? 'selected': '')) %>>Off</option>'
-            <option value="1" <% print(((ob == "1")? 'selected': '')) %>>On</option>'
+        <select name="AlwaysOnline" id="AlwaysOnline" onChange="CloudFlare.change_cf_setting('<%= domain %>', 'ob', 'AlwaysOnline')">
+            <option value="0" <% print(((stats.ob == "0")? 'selected': '')) %>>Off</option>'
+            <option value="1" <% print(((stats.ob == "1")? 'selected': '')) %>>On</option>'
         </select>
     </div>
 </div>
@@ -64,9 +66,9 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 <div class="control-group">
     <div class="control-label"><label>Automatic IPv6 <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('ipv46')"></i></span></label></div>
     <div class="controls">
-        <select name="AutomaticIPv6" id="AutomaticIPv6" onChange="CloudFlare.change_cf_setting('<% domain.value %>', 'ipv46', 'AutomaticIPv6')">
-            <option value="0" <% print(((ipv46 == "0")? 'selected': '')) %>>Off</option>'
-            <option value="3" <% print(((ipv46 == "3")? 'selected': '')) %>>Full</option>'
+        <select name="AutomaticIPv6" id="AutomaticIPv6" onChange="CloudFlare.change_cf_setting('<%= domain %>', 'ipv46', 'AutomaticIPv6')">
+            <option value="0" <% print(((stats.ipv46 == "0")? 'selected': '')) %>>Off</option>'
+            <option value="3" <% print(((stats.ipv46 == "3")? 'selected': '')) %>>Full</option>'
         </select>
     </div>
 </div>
@@ -74,9 +76,9 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 <div class="control-group">
     <div class="control-label"><label>Caching Level <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('cache_lvl')"></i></span></label></div>
     <div class="controls">
-        <select name="CachingLevel" id="CachingLevel" onChange="CloudFlare.change_cf_setting('<% domain.value %>', 'cache_lvl', 'CachingLevel')">
-            <option value="agg" <% print(((cache_lvl == "agg")? 'selected': '')) %>>Aggressive</option>'
-            <option value="basic" <% print(((cache_lvl == "basic")? 'selected': '')) %>>Basic</option>'
+        <select name="CachingLevel" id="CachingLevel" onChange="CloudFlare.change_cf_setting('<%= domain %>', 'cache_lvl', 'CachingLevel')">
+            <option value="agg" <% print(((stats.cache_lvl == "agg")? 'selected': '')) %>>Aggressive</option>'
+            <option value="basic" <% print(((stats.cache_lvl == "basic")? 'selected': '')) %>>Basic</option>'
         </select>
     </div>
 </div>

@@ -6,7 +6,7 @@ var end = new Date(parseInt(result.timeEnd));
 var html;
 %>
 
-<h4>Basic Statistics for <% print(YAHOO.util.Dom.get("domain").value) %>
+<h4>Basic Statistics for <%= domain %>
 <% if (start > end) { %>
     </h4>
     <p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>

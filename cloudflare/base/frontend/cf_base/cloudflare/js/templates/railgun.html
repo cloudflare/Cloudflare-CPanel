@@ -1,0 +1,43 @@
+<div class="control-label">
+    <label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('railgun')"></i></span></label>
+</div>
+
+<div class="controls">
+    <select name="Railgun" id="Railgun" onChange="set_railgun('<%= domain %>','Railgun')">
+        <option value="remove">Railgun Not Selected</option>
+        <%
+        var suppress = false;
+        var preSelected = false;
+        var rg_html;   
+                                                                   
+        for( var i = 0; i < railgunList.length; i++ ) {                       
+            rg_html += '<option value="' + railgunList[i].railgun_tag + '" '; 
+            if ( (activeRailgun != null) && (activeRailgun.railgun_pubname == railgunList[i].railgun_pubname) ) { 
+                rg_html += 'selected' 
+                preSelected = true;
+            }                           
+
+            rg_html += '>' + railgunList[i].railgun_pubname; 
+
+            if (railgunList[i].railgun_mode == "0") {
+                rg_html += ' (Disabled)';
+                suppress = true;
+            }   
+
+            rg_html += '</option>';
+        }
+
+        print(rg_html);
+        %>
+    </select>
+
+    <%
+    if (preSelected) {
+        if(!suppress) { %>
+            <select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode('<%= domain %>',Railgun', 'RailgunStatus')">
+            <option value="0">Off</option>
+            <option value="1"<% print( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) %>>On</option>
+            </select>
+        <% }
+    } %>
+</div>

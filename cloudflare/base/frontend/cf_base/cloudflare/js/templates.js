@@ -33,61 +33,112 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 
 
-var dev_mode    = dev_mode * 1000;
+var dev_mode    = stats.dev_mode * 1000;
 var local_time  = new Date();
-var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;                   
+var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;   
+
+console.log(domain);                
 ;
-__p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Settings for ';
- domain.value ;
-__p += '</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'pro\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">\n            <option value="free" ';
- print(((!pro_zone)? 'selected': '')) ;
+__p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Settings for ' +
+((__t = ( domain )) == null ? '' : __t) +
+'</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'pro\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">\n            <option value="free" ';
+ print(((!stats.pro_zone)? 'selected': '')) ;
 __p += '>Free</option>\'\n            <option value="pro" ';
- print(((pro_zone)? 'selected': '')) ;
-__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'';
- domain.value ;
-__p += '\', \'sec_lvl\', \'SecurityLevelSetting\')">\n            <option value="high" ';
- print(((userSecuritySetting == "High")? 'selected': '')) ;
+ print(((stats.pro_zone)? 'selected': '')) ;
+__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'sec_lvl\', \'SecurityLevelSetting\')">\n            <option value="high" ';
+ print(((stats.userSecuritySetting == "High")? 'selected': '')) ;
 __p += '>High</option>\'\n            <option value="med" ';
- print(((userSecuritySetting == "Medium")? 'selected': '')) ;
+ print(((stats.userSecuritySetting == "Medium")? 'selected': '')) ;
 __p += '>Medium</option>\'\n            <option value="low" ';
- print(((userSecuritySetting == "Low")? 'selected': '')) ;
+ print(((stats.userSecuritySetting == "Low")? 'selected': '')) ;
 __p += '>Low</option>\'\n            <option value="eoff" ';
- print(((userSecuritySetting == "Essentially Off")? 'selected': ''));
+ print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''));
 __p += '>Essentially Off</option>\'\n            <option value="help" ';
- print(((userSecuritySetting == "I'm under attack!")? 'selected': '')) ;
+ print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) ;
 __p += '>I\'m under attack!</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Development Mode <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'devmode\')"></i></span></label></div>\n    <div class="controls">\n        ';
- if (dev_mode > currentServerTime) { ;
+ if (dev_mode > stats.currentServerTime) { ;
 __p += '\n            <a href="javascript:void(0);" class="btn btn-success" onclick="CloudFlare.change_cf_setting(\'' +
-((__t = ( domain.value )) == null ? '' : __t) +
+((__t = ( domain )) == null ? '' : __t) +
 '\', \'devmode\', 0)">Disable</a> \n            <span class="label label-danger">Ends at ';
  print(YAHOO.util.Date.format(new Date(dev_mode), {format: "%D %T"})) ;
 __p += '</span>\n        ';
  } else {  ;
 __p += '\n            <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="CloudFlare.change_cf_setting(\'' +
-((__t = ( domain.value )) == null ? '' : __t) +
+((__t = ( domain )) == null ? '' : __t) +
 '\', \'devmode\', 1)">Enable</a> \n            <span class="label label-success">Currently Off</span>\n        ';
  }  ;
-__p += '\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Cache Purge <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'fpurge_ts\')"></i></span></label></div>\n    <div class="controls">\n        <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="change_cf_setting(\'' +
-((__t = ( domain.value )) == null ? '' : __t) +
-'\', \'fpurge_ts\', 1)">Purge</a>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Always Online <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'ob\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AlwaysOnline" id="AlwaysOnline" onChange="CloudFlare.change_cf_setting(\'';
- domain.value ;
-__p += '\', \'ob\', \'AlwaysOnline\')">\n            <option value="0" ';
- print(((ob == "0")? 'selected': '')) ;
+__p += '\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Cache Purge <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'fpurge_ts\')"></i></span></label></div>\n    <div class="controls">\n        <a href="javascript:void(0);" class="btn btn-danger btn-small" onclick="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'fpurge_ts\', 1)">Purge</a>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Always Online <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'ob\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AlwaysOnline" id="AlwaysOnline" onChange="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'ob\', \'AlwaysOnline\')">\n            <option value="0" ';
+ print(((stats.ob == "0")? 'selected': '')) ;
 __p += '>Off</option>\'\n            <option value="1" ';
- print(((ob == "1")? 'selected': '')) ;
-__p += '>On</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Automatic IPv6 <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'ipv46\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AutomaticIPv6" id="AutomaticIPv6" onChange="CloudFlare.change_cf_setting(\'';
- domain.value ;
-__p += '\', \'ipv46\', \'AutomaticIPv6\')">\n            <option value="0" ';
- print(((ipv46 == "0")? 'selected': '')) ;
+ print(((stats.ob == "1")? 'selected': '')) ;
+__p += '>On</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Automatic IPv6 <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'ipv46\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AutomaticIPv6" id="AutomaticIPv6" onChange="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'ipv46\', \'AutomaticIPv6\')">\n            <option value="0" ';
+ print(((stats.ipv46 == "0")? 'selected': '')) ;
 __p += '>Off</option>\'\n            <option value="3" ';
- print(((ipv46 == "3")? 'selected': '')) ;
-__p += '>Full</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Caching Level <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'cache_lvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="CachingLevel" id="CachingLevel" onChange="CloudFlare.change_cf_setting(\'';
- domain.value ;
-__p += '\', \'cache_lvl\', \'CachingLevel\')">\n            <option value="agg" ';
- print(((cache_lvl == "agg")? 'selected': '')) ;
+ print(((stats.ipv46 == "3")? 'selected': '')) ;
+__p += '>Full</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Caching Level <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'cache_lvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="CachingLevel" id="CachingLevel" onChange="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'cache_lvl\', \'CachingLevel\')">\n            <option value="agg" ';
+ print(((stats.cache_lvl == "agg")? 'selected': '')) ;
 __p += '>Aggressive</option>\'\n            <option value="basic" ';
- print(((cache_lvl == "basic")? 'selected': '')) ;
+ print(((stats.cache_lvl == "basic")? 'selected': '')) ;
 __p += '>Basic</option>\'\n        </select>\n    </div>\n</div>\n\n<div id="rglist" class="control-group"> \n</div>\n\n</fieldset>\n<p>For more statistics and settings, sign into your account at <a href="https://www.cloudflare.com/analytics" target="_blank">CloudFlare</a>.</p>\n';
+
+}
+return __p
+};
+
+this["CFT"]["railgun"] = function(obj) {
+obj || (obj = {});
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
+with (obj) {
+__p += '<div class="control-label">\n    <label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'railgun\')"></i></span></label>\n</div>\n\n<div class="controls">\n    <select name="Railgun" id="Railgun" onChange="set_railgun(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\',\'Railgun\')">\n        <option value="remove">Railgun Not Selected</option>\n        ';
+
+        var suppress = false;
+        var preSelected = false;
+        var rg_html;   
+                                                                   
+        for( var i = 0; i < railgunList.length; i++ ) {                       
+            rg_html += '<option value="' + railgunList[i].railgun_tag + '" '; 
+            if ( (activeRailgun != null) && (activeRailgun.railgun_pubname == railgunList[i].railgun_pubname) ) { 
+                rg_html += 'selected' 
+                preSelected = true;
+            }                           
+
+            rg_html += '>' + railgunList[i].railgun_pubname; 
+
+            if (railgunList[i].railgun_mode == "0") {
+                rg_html += ' (Disabled)';
+                suppress = true;
+            }   
+
+            rg_html += '</option>';
+        }
+
+        print(rg_html);
+        ;
+__p += '\n    </select>\n\n    ';
+
+    if (preSelected) {
+        if(!suppress) { ;
+__p += '\n            <select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\',Railgun\', \'RailgunStatus\')">\n            <option value="0">Off</option>\n            <option value="1"';
+ print( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) ;
+__p += '>On</option>\n            </select>\n        ';
+ }
+    } ;
+__p += '\n</div>\n';
 
 }
 return __p
@@ -116,9 +167,9 @@ var start = new Date(parseInt(result.timeZero));
 var end = new Date(parseInt(result.timeEnd));
 var html;
 ;
-__p += '\n\n<h4>Basic Statistics for ';
- print(YAHOO.util.Dom.get("domain").value) ;
-__p += '\n';
+__p += '\n\n<h4>Basic Statistics for ' +
+((__t = ( domain )) == null ? '' : __t) +
+'\n';
  if (start > end) { ;
 __p += '\n    </h4>\n    <p>Basic statistics update every 24 hours for the free service. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>\n';
  } else { ;
