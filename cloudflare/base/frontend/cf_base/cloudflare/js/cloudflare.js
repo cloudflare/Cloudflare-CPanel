@@ -89,7 +89,7 @@ _.extend(CloudFlare, {
         return false;
     },
 
-    ajax: function(data, callback, target, settings) {
+    ajax: function(data, callback, context, settings) {
         var data = data || {};
         var settings = settings || {};
         var callback = callback || {};
@@ -98,35 +98,49 @@ _.extend(CloudFlare, {
         _.extend(data, {
             "cpanel_jsonapi_version" : 2,
             "cpanel_jsonapi_module" : "CloudFlare",
-            "cpanel_jsonapi_func" : "user_create",
             "homedir" : USER_HOME_DIR
-        })
+        });
 console.log(data);
+
+        var errorhandler = function(xhr) {
+            // check if a context was set, and if so display error in that context
+            if (typeof this.xhr == "undefined") {
+                console.log('context worked');
+                $(this).html('<div style="padding: 20px">' + CPANEL.icons.error + ' ' + CPANEL.lang.ajax_error + ': ' + CPANEL.lang.ajax_try_again + '</div>');
+            }
+
+            if (callback.error && typeof callback.error == "function") {
+                console.log('callback running');
+                callback.error(xhr);
+            }
+            
+            CloudFlare.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again);
+        };
+
         // define existing settings
         _.extend(settings, {
             url: CPANEL.urls.json_api(),
             data: data,
-            success: function(resp) {
+            success: function(resp, status, xhr) {
+                console.log(this);
                 try {
-                    console.log(resp);
-                    var data = $.parseJSON(o.responseText);
+                    console.log(callback);
+                    var data = $.parseJSON(resp);
                     if (callback.success && typeof callback.success == "function") {
-                        callback.success(resp);
+                        callback.success(data);
                     }
                 } catch (e) {
-                    if (callback.error && typeof callback.error == "function") {
-                        callback.error(resp);
-                    }
+                    errorhandler.apply(this,[xhr]);
                 }
             },
-            error: function(resp) {
-                console.log(resp);
-                if (callback.error && typeof callback.error == "function") {
-                    callback.error(resp);
-                }
-                this.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again);
-            }
+            error: errorhandler
         });
+
+        if (context) {
+            settings.context = context;
+            $(context).html('<div style="padding: 20px">' + CPANEL.icons.ajax + ' ' + CPANEL.lang.ajax_loading + '</div>');
+        }
+
 console.log(settings);
         $.ajax(settings);
     },
@@ -134,26 +148,18 @@ console.log(settings);
     /* -- Start action methods -- */
 
     signup_to_cf: function() {
+        /* TODO: Move this to validation system */
         var tos = YAHOO.util.Dom.get("USER_tos").checked,
             signup_welcome, signup_info, creating_account;
         if (!tos) {
             CloudFlare.display_error("error", CPANEL.lang.Error, "Please agree to the Terms of Service before continuing.");
             return false;
         }
-
-        // build the call
-        var api2_call = {
-            "user" : YAHOO.util.Dom.get("USER_user").value,
-            "email" : YAHOO.util.Dom.get("USER_email").value,
-            "password" : YAHOO.util.Dom.get("USER_pass").value,
-        };
         
-        // callback
+        // TODO: Condense callback
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
-                    console.log(o);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
                         CloudFlare.display_error("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.error);
@@ -185,14 +191,19 @@ console.log(settings);
                     CloudFlare.display_error("add_USER_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                 }
             },
-            error : function(o) {
+            error: function(o) {
                 $("#add_USER_record_button").show();
                 $("#add_USER_record_status").html('');
             }
         };
         
         // send the request
-        CloudFlare.ajax(api2_call, callback);
+        CloudFlare.ajax({
+            "cpanel_jsonapi_func" : "user_create",
+            "user" : YAHOO.util.Dom.get("USER_user").value,
+            "email" : YAHOO.util.Dom.get("USER_email").value,
+            "password" : YAHOO.util.Dom.get("USER_pass").value,
+        }, callback, $('#add_USER_status_bar'));
         
         $("#add_USER_record_button").hide();
         creating_account = CloudFlare.get_lang_string('creating_account');
@@ -206,10 +217,8 @@ console.log(settings);
         var tooltip = '', records;
 
         var callback = {
-            success : function(o) {
-                console.log(o);
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         CloudFlare.update_user_records_table(function() {
                             CloudFlare.display_error("status_bar_" + rec_num, "error", 
@@ -232,10 +241,6 @@ console.log(settings);
                                                   CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                     });
                 }
-            },
-            failure : function(o) {
-                console.log(o);
-                YAHOO.util.Dom.get("status_bar_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
         
@@ -248,14 +253,11 @@ console.log(settings);
 
         // send the AJAX request
         var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
             "cpanel_jsonapi_func" : "zone_set",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_key" : USER_ID,
             "subdomains" : cf_zones.join(","),
-            "cf_recs" : YAHOO.lang.JSON.stringify(this.CF_RECS),
-            "homedir" : USER_HOME_DIR
+            "cf_recs" : YAHOO.lang.JSON.stringify(this.CF_RECS)
         };
 
         if (old_rec) {
@@ -263,7 +265,7 @@ console.log(settings);
             api2_call["old_line"] = old_line;
         }
 
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+        CloudFlare.ajax(api2_call, callback, $('#status_bar_' + rec_num));
         YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
     },
 
@@ -346,9 +348,9 @@ console.log(settings);
     update_user_records_rows: function(row_nums, cb_lambda) {
         var domain = this.ACTIVE_DOMAIN;
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
+                    console.log(data);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                     }
@@ -391,22 +393,14 @@ console.log(settings);
                 catch (e) {
                     CloudFlare.display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                 }
-            },
-            failure : function(o) {
-                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
         
-        // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
-            "domain" : this.ACTIVE_DOMAIN,
-            "homedir" : USER_HOME_DIR
-        };
-        
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "domain" : this.ACTIVE_DOMAIN
+        }, callback, $('#user_records_div'));
+
         for(var i=0, l=row_nums.length; i<l; i++) {
             var rec_num = row_nums[i];
             YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
@@ -416,9 +410,9 @@ console.log(settings);
 
     update_user_records_table: function(cb_lambda) {
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
+                    console.log(data);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                     }
@@ -456,31 +450,22 @@ console.log(settings);
                     console.log(CloudFlare);
                     CloudFlare.display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                 }
-            },
-            failure : function(o) {
-                YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
         
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
-            "domain" : this.ACTIVE_DOMAIN,
-            "homedir" : USER_HOME_DIR
-        };
-        
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
-        YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + " [This may take several minutes]</div>";
+            "domain" : this.ACTIVE_DOMAIN
+        }, callback, $('#user_records_div'));
     },
 
     // fetch zone records and build the global records cache
     refresh_records: function(cb_lambda) {
+        console.log('refresh_records');
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
                     }
@@ -503,30 +488,24 @@ console.log(settings);
                     CloudFlare.display_error("add_CNAME_status_bar", "error", CPANEL.lang.json_error, CPANEL.lang.json_parse_failed);
                 }
             },
-            failure : function(o) {
+            error: function(o) {
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
         
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
-            "domain" : this.ACTIVE_DOMAIN,
-            "homedir" : USER_HOME_DIR
-        };
-        
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "domain" : this.ACTIVE_DOMAIN
+        }, callback);
         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + " [This may take several minutes]</div>";
     },
 
     push_all_off: function () {
 
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         CloudFlare.update_user_records_table(function() {
                             CloudFlare.display_error("status_bar_" + 0, "error", 
@@ -550,7 +529,7 @@ console.log(settings);
                     });
                 }
             },
-            failure : function(o) {            
+            error: function(o) {            
                 YAHOO.util.Dom.get("status_bar_" + 0).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
@@ -563,17 +542,12 @@ console.log(settings);
         }
 
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_delete",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_key" : USER_ID,
-            "subdomains" : cf_zones.join(","),
-            "homedir" : USER_HOME_DIR
-        };
-
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "subdomains" : cf_zones.join(",")
+        }, callback);
     },
 
     toggle_www_on: function(domain) {
@@ -609,9 +583,8 @@ console.log(settings);
     change_cf_setting: function (domain, action, value) {
         this.ACTIVE_DOMAIN = domain;
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                             + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
@@ -627,7 +600,7 @@ console.log(settings);
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
                 }
             },
-            failure : function(o) {            
+            error: function(o) {            
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' 
                     + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
@@ -644,19 +617,14 @@ console.log(settings);
         }
         
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_edit_cf_setting",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
             "user_api_key" : USER_API_KEY,
             "v" : value,
-            "a" : action,
-            "homedir" : USER_HOME_DIR
-        };
-
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "a" : action
+        }, callback);
         return false;
     },
 
@@ -679,9 +647,8 @@ console.log(settings);
     set_railgun: function (domain, value) {
         this.ACTIVE_DOMAIN = domain;
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                             + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
@@ -697,7 +664,7 @@ console.log(settings);
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
                 }
             },
-            failure : function(o) {            
+            error: function(o) {            
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' 
                     + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
@@ -711,27 +678,21 @@ console.log(settings);
              action = "remove_railgun";
         
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : action,
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
             "user_api_key" : USER_API_KEY,
-            "tag" : tag,
-            "homedir" : USER_HOME_DIR
-        };
-
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "tag" : tag
+        }, callback);
         return false;
     },
 
     set_railgun_mode: function (domain, value, mode) {
         this.ACTIVE_DOMAIN = domain;
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error 
                             + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
@@ -747,7 +708,7 @@ console.log(settings);
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
                 }
             },
-            failure : function(o) {            
+            error: function(o) {            
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' 
                     + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
@@ -761,19 +722,14 @@ console.log(settings);
              action = "disabled";
             
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "set_railgun_mode",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
             "user_api_key" : USER_API_KEY,
             "tag" : tag,
-            "mode" : action,
-            "homedir" : USER_HOME_DIR
-        };
-
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "mode" : action
+        }, callback);
         return false;
     },
 
@@ -782,9 +738,8 @@ console.log(settings);
         this.ACTIVE_DOMAIN = domain;
 
         var callback = {
-            success : function(o) {
+            success: function(data) {
                 try {
-                    var data = YAHOO.lang.JSON.parse(o.responseText);
                     console.log(data);
                     if (data.cpanelresult.error) {
                         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
@@ -800,9 +755,8 @@ console.log(settings);
                         {
      
                                 var callback = {
-                                success : function(o) {
+                                success: function(data) {
                                      try {
-                                        var data = YAHOO.lang.JSON.parse(o.responseText);
                                         activeRailgunRequest = o;                                    
                                         if (data.cpanelresult.error)
                                         {
@@ -826,24 +780,17 @@ console.log(settings);
                                            console.log("It was an exception. Happy?");
                                         }
                                   },
-                                  failure : function (o) {
+                                  error: function (o) {
                                      console.log("It failed.");
                                      }
                                   };
-                                  
-                
-                                  
-                                var api2_call = {
-                                    "cpanel_jsonapi_version" : 2,
-                                    "cpanel_jsonapi_module" : "CloudFlare",
+
+                                CloudFlare.ajax({
                                     "cpanel_jsonapi_func" : "get_active_railguns",
                                     "zone_name" : this.ACTIVE_DOMAIN,
-                                  "user_email" : USER_EMAIL,
-                                  "user_api_key" : USER_API_KEY,
-                                  "homedir" : USER_HOME_DIR
-                                };
-                        
-                                 connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
+                                    "user_email" : USER_EMAIL,
+                                    "user_api_key" : USER_API_KEY
+                                }, callback);                                                          
                       } 
                       
                       getActiveRailguns(domain); 
@@ -926,10 +873,8 @@ console.log(settings);
                         {
      
                                 var callback = {
-                                success : function(o) {
-                                     try {
-                                        var data = YAHOO.lang.JSON.parse(o.responseText);
-                                                                            
+                                success: function(data) {
+                                     try {                
                                         if (data.cpanelresult.error)
                                         {
                                            console.log("Hey, it didn't work.");
@@ -948,23 +893,17 @@ console.log(settings);
                                            console.log("It was an exception. Happy?");
                                         }
                                   },
-                                  failure : function (o) {
+                                  error: function (o) {
                                      console.log("It failed.");
                                      }
                                   };
-                                  
-                                  
-                                var api2_call = {
-                                    "cpanel_jsonapi_version" : 2,
-                                    "cpanel_jsonapi_module" : "CloudFlare",
+
+                                CloudFlare.ajax({
                                     "cpanel_jsonapi_func" : "get_railguns",
                                     "zone_name" : this.ACTIVE_DOMAIN,
-                                  "user_email" : USER_EMAIL,
-                                  "user_api_key" : USER_API_KEY,
-                                  "homedir" : USER_HOME_DIR
-                                };
-                        
-                                 connection = YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');                                                          
+                                    "user_email" : USER_EMAIL,
+                                    "user_api_key" : USER_API_KEY
+                                }, callback);                                                         
                       }, 500);
                       
                       
@@ -976,7 +915,7 @@ console.log(settings);
                     YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + e + "</div>";
                 }
             },
-            failure : function(o) {    
+            error: function(o) {    
                 YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.error + " " + CPANEL.lang.ajax_error + ": " + CPANEL.lang.ajax_try_again + "</div>";
             }
         };
@@ -989,19 +928,12 @@ console.log(settings);
         }
 
         // send the AJAX request
-        var api2_call = {
-            "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
+        CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_get_stats",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY,
-            "homedir" : USER_HOME_DIR
-        };
-        
-        
-
-        YAHOO.util.Connect.asyncRequest('GET', CPANEL.urls.json_api(api2_call), callback, '');
+            "user_api_key" : USER_API_KEY
+        }, callback);
         YAHOO.util.Dom.get("user_records_div").innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
 
         return false;
