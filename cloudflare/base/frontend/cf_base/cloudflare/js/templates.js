@@ -321,7 +321,7 @@ __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><span class="label label-success">Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><img src="./images/icon-cloud-on.png"onclick="CloudFlare.toggle_all_off(\'' +
+'"><img src="./images/icon-cloud-on.png" onclick="return false;CloudFlare.toggle_all_off(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
 '\')" /></td>\n\t';
  } else { ;
@@ -329,7 +329,7 @@ __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><span class="label">Not Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on(\'' +
+'"><img src="./images/icon-cloud-bypass.png" onclick="return false;CloudFlare.toggle_www_on(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
 '\')" /></td>\n\t';
  } ;

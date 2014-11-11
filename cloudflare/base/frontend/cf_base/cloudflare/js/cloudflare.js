@@ -232,6 +232,7 @@ console.log(settings);
 
         var callback = {
             success: function(data) {
+                console.log('success');
                 CloudFlare.update_user_records_rows([rec_num]);
             },
             error: function() {
@@ -295,7 +296,8 @@ console.log(settings);
     },
 
     build_dnszone_cache: function(records) {
-        NUM_RECS = records.length;
+        this.NUM_RECS = records.length;
+        console.log(this);
         var tooltip_zone_cf_on = this.get_lang_string('tooltip_zone_cf_on'),
             tooltip_zone_cf_off = this.get_lang_string('tooltip_zone_cf_off');
         for (var i=0; i<records.length; i++) {
@@ -331,7 +333,7 @@ console.log(settings);
 
         // Set the global is CF powered text.
         if (this.NUM_RECS > 0) {
-            zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain});
+            zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain, action: 'enable_domain', action_text: 'Manage'});
             console.log(zone_row);
             $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
         }
@@ -345,7 +347,7 @@ console.log(settings);
         var domain = this.ACTIVE_DOMAIN;
         var callback = {
             success: function(data) {
-                CloudFlare.build_dnszone_cache(data.cpanelresult.data);
+                CloudFlare.build_dnszone_cache.apply(CloudFlare, [data.cpanelresult.data]);
                 for (var i=0, l=row_nums.length; i<l; i++) {
                     var v = row_nums[i];
                     var row_html = CFT['zone_record']({type: "CNAME", rec_num: v, record: data.cpanelresult.data[v]});
@@ -359,9 +361,10 @@ console.log(settings);
                     });
                 }
 
+                console.log(CloudFlare.NUM_RECS);
                 // Set the global is CF powered text.
                 if (CloudFlare.NUM_RECS > 0) {
-                    zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain});
+                    zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain, action: 'enable_domain', action_text: 'Manage'});
                     console.log(zone_row);
                     $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
                 }
@@ -380,7 +383,7 @@ console.log(settings);
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
             "domain" : this.ACTIVE_DOMAIN
-        }, callback, $('#user_records_div'));
+        }, callback);
 
         for(var i=0, l=row_nums.length; i<l; i++) {
             var rec_num = row_nums[i];
@@ -632,12 +635,11 @@ console.log(settings);
                 $(this).html(html);
             }
         };
-        
-        var cf_zones = [];
-        for (key in this.CF_RECS) {
-            if (this.CF_RECS[key]) {
-                cf_zones.push(key);
-            }
+
+        // hack to confirm that the domain is currently powered by CloudFlare
+        if (!$('tr[data-zone="' + this.ACTIVE_DOMAIN + '"] span.label').hasClass('label-success')) {
+            $('#user_records_div').html('<h4>Activate this domain on CloudFlare before managing this zone.</h4><p><a href="index.html" class="btn btn-success">Manage CloudFlare Sites</a></p>');
+            return false;
         }
 
         // send the AJAX request
