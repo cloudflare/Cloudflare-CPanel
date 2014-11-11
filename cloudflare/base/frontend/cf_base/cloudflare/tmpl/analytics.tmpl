@@ -23,7 +23,7 @@ CloudFlare provides insight to your website traffic that you can’t get from ot
 				var domain_data = '[% base_domains_result.0.res.json() %]';
 				domain_data = $.parseJSON(domain_data);
 				for (var i=0; i<domain_data.length; i++) {
-					document.write(CFT['zone']({cloudflare: domain_data[i].cloudflare, domain: domain_data[i].domain, 'action': 'get_stats', 'action_text': 'Settings'}));
+					document.write(CFT['zone']({cloudflare: domain_data[i].cloudflare, domain: domain_data[i].domain, 'action': 'get_stats', 'action_text': 'Statistics'}));
 				}
 				//]]>
 				</script>

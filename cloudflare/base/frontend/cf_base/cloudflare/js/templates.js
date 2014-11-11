@@ -307,7 +307,7 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '<tr data-zone="' +
 ((__t = ( domain )) == null ? '' : __t) +
-'">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.load_zone_features(\'' +
+'">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.set_domain(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
 '\', \'' +
 ((__t = ( action )) == null ? '' : __t) +

@@ -12,6 +12,7 @@ CloudFlare.$ = CF_jQuery;
 _.extend(CloudFlare, {
 
     ACTIVE_DOMAIN: null,
+    ACTIVE_SECTION: null,
 
     /* -- Start helper methods -- */
 
@@ -318,8 +319,7 @@ console.log(settings);
     // Builds the Zone List.
     build_dnszone_table_markup: function(records) {
         var domain = this.ACTIVE_DOMAIN;
-console.log(records);
-console.log(this);
+
         if (records.length < 1) {
             return '';
         }
@@ -491,19 +491,6 @@ console.log(this);
         return false;
     },
 
-    enable_domain: function(domain) {
-        this.reset_form();
-        this.ACTIVE_DOMAIN = domain;
-        if (this.ACTIVE_DOMAIN == null) {
-            $("#add_record_and_zone_table").slideUp(CPANEL.JQUERY_ANIMATION_SPEED);
-        }
-        else {
-            $("#add_record_and_zone_table").slideDown(CPANEL.JQUERY_ANIMATION_SPEED);
-            this.update_user_records_table();
-        }
-        return false;
-    },
-
     change_cf_accnt: function() {
         window.open('https://www.cloudflare.com/cloudflare-settings.html?z='+this.ACTIVE_DOMAIN,'_blank');    
     },
@@ -512,7 +499,7 @@ console.log(this);
         this.ACTIVE_DOMAIN = domain;
         var callback = {
             success: function(data) {
-                CloudFlare.get_stats(domain);
+                CloudFlare.load_zone_features(CloudFlare.ACTIVE_SECTION);
                 return false;
             }
         };
@@ -601,10 +588,37 @@ console.log(this);
         return false;
     },
 
-    load_zone_features: function(domain, type) {
+    // This function serves as the main entry point for each page (overview, ssecurity, performance, and analytics)
+    set_domain: function(domain, type) {
         this.reset_form();
         this.ACTIVE_DOMAIN = domain;
 
+        switch (type) {
+            case 'enable_domain':
+                this.enable_domain();
+                break;
+            default:
+                this.ACTIVE_SECTION = type;
+                this.load_zone_features(type);
+                break;
+        }
+        
+
+        return false;
+    },
+
+    enable_domain: function() {
+        if (this.ACTIVE_DOMAIN == null) {
+            $("#add_record_and_zone_table").slideUp(CPANEL.JQUERY_ANIMATION_SPEED);
+        }
+        else {
+            $("#add_record_and_zone_table").slideDown(CPANEL.JQUERY_ANIMATION_SPEED);
+            this.update_user_records_table();
+        }
+    },
+
+    // if the api gets split to pull stats and settings separately, then this function needs to get split as well
+    load_zone_features: function(type) {
         var callback = {
             success: function(data) {
                 html = '';
@@ -612,7 +626,7 @@ console.log(this);
                     var result = data.cpanelresult.data[0].response.result;
                     var stats = result.objs[0];
 
-                    html = CloudFlare[type](result, stats, domain);
+                    html = CloudFlare[type](result, stats, CloudFlare.ACTIVE_DOMAIN);
                 }
 
                 $(this).html(html);
@@ -633,8 +647,6 @@ console.log(this);
             "user_email" : USER_EMAIL,
             "user_api_key" : USER_API_KEY
         }, callback, $('#user_records_div'));
-
-        return false;
     },
 
     get_performance: function(result, stats, domain) {
@@ -658,17 +670,6 @@ console.log(this);
             "user_api_key" : USER_API_KEY
         }, callback1);
 
-        html = '';
-        if (typeof data.cpanelresult.data[0].response.result != "undefined") {
-            // Display stats here.
-            var result = data.cpanelresult.data[0].response.result;
-            var stats = result.objs[0];
-
-            html += CFT['performance']({'stats': stats, 'domain': domain});
-        } // END of check for stats
-
-        return html;
-
         setTimeout(function (domain)
         {
             var callback2 = {
@@ -689,6 +690,8 @@ console.log(this);
                 "user_api_key" : USER_API_KEY
             }, callback2);                                                         
         }, 500);
+
+        return CFT['performance']({'stats': stats, 'domain': domain});
     },
 
     get_stats: function(result, stats, domain) {
