@@ -35,29 +35,15 @@ with (obj) {
 
 var dev_mode    = stats.dev_mode * 1000;
 var local_time  = new Date();
-var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;   
-
-console.log(domain);                
+var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 ;
-__p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Settings for ' +
+__p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Performance Settings for ' +
 ((__t = ( domain )) == null ? '' : __t) +
 '</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'pro\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">\n            <option value="free" ';
  print(((!stats.pro_zone)? 'selected': '')) ;
 __p += '>Free</option>\'\n            <option value="pro" ';
  print(((stats.pro_zone)? 'selected': '')) ;
-__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'' +
-((__t = ( domain )) == null ? '' : __t) +
-'\', \'sec_lvl\', \'SecurityLevelSetting\')">\n            <option value="high" ';
- print(((stats.userSecuritySetting == "High")? 'selected': '')) ;
-__p += '>High</option>\'\n            <option value="med" ';
- print(((stats.userSecuritySetting == "Medium")? 'selected': '')) ;
-__p += '>Medium</option>\'\n            <option value="low" ';
- print(((stats.userSecuritySetting == "Low")? 'selected': '')) ;
-__p += '>Low</option>\'\n            <option value="eoff" ';
- print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''));
-__p += '>Essentially Off</option>\'\n            <option value="help" ';
- print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) ;
-__p += '>I\'m under attack!</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Development Mode <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'devmode\')"></i></span></label></div>\n    <div class="controls">\n        ';
+__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Development Mode <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'devmode\')"></i></span></label></div>\n    <div class="controls">\n        ';
  if (dev_mode > stats.currentServerTime) { ;
 __p += '\n            <a href="javascript:void(0);" class="btn btn-success" onclick="CloudFlare.change_cf_setting(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
@@ -146,9 +132,34 @@ return __p
 
 this["CFT"]["security"] = function(obj) {
 obj || (obj = {});
-var __t, __p = '', __e = _.escape;
+var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
+function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '';
+
+
+var dev_mode    = stats.dev_mode * 1000;
+var local_time  = new Date();
+var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;             
+;
+__p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Security Settings for ' +
+((__t = ( domain )) == null ? '' : __t) +
+'</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'pro\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">\n            <option value="free" ';
+ print(((!stats.pro_zone)? 'selected': '')) ;
+__p += '>Free</option>\'\n            <option value="pro" ';
+ print(((stats.pro_zone)? 'selected': '')) ;
+__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'' +
+((__t = ( domain )) == null ? '' : __t) +
+'\', \'sec_lvl\', \'SecurityLevelSetting\')">\n            <option value="high" ';
+ print(((stats.userSecuritySetting == "High")? 'selected': '')) ;
+__p += '>High</option>\'\n            <option value="med" ';
+ print(((stats.userSecuritySetting == "Medium")? 'selected': '')) ;
+__p += '>Medium</option>\'\n            <option value="low" ';
+ print(((stats.userSecuritySetting == "Low")? 'selected': '')) ;
+__p += '>Low</option>\'\n            <option value="eoff" ';
+ print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''));
+__p += '>Essentially Off</option>\'\n            <option value="help" ';
+ print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) ;
+__p += '>I\'m under attack!</option>\'\n        </select>\n    </div>\n</div>\n\n</fieldset>\n<p>For more statistics and settings, sign into your account at <a href="https://www.cloudflare.com/analytics" target="_blank">CloudFlare</a>.</p>\n';
 
 }
 return __p
@@ -296,19 +307,19 @@ function print() { __p += __j.call(arguments, '') }
 with (obj) {
 __p += '<tr data-zone="' +
 ((__t = ( domain )) == null ? '' : __t) +
-'">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.enable_domain(\'' +
+'">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.load_zone_features(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
-'\');">Edit</a></td>\n    <td>' +
+'\', \'' +
+((__t = ( action )) == null ? '' : __t) +
+'\');">' +
+((__t = ( action_text )) == null ? '' : __t) +
+'</a></td>\n    <td>' +
 ((__t = ( domain )) == null ? '' : __t) +
 '</td>\n\n\t';
  if (cloudflare)  { ;
 __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><span class="label label-success">Powered by CloudFlare</span></td>\n\t    <td id="cf_powered_stats' +
-((__t = ( domain )) == null ? '' : __t) +
-'"><a href="javascript:void(0);" class="btn btn-info" onclick="return CloudFlare.get_stats(\'' +
-((__t = ( domain )) == null ? '' : __t) +
-'\');">Statistics and Settings</a></td>\n\t    <td align="center" id="cf_powered_check' +
+'"><span class="label label-success">Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><img src="./images/icon-cloud-on.png"onclick="CloudFlare.toggle_all_off(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
@@ -316,9 +327,7 @@ __p += '\n\t    <td id="cf_powered_' +
  } else { ;
 __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><span class="label">Not Powered by CloudFlare</span></td>\n\t    <td id="cf_powered_stats' +
-((__t = ( domain )) == null ? '' : __t) +
-'">&nbsp;</td>\n\t    <td align="center" id="cf_powered_check' +
+'"><span class="label">Not Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on(\'' +
 ((__t = ( domain )) == null ? '' : __t) +

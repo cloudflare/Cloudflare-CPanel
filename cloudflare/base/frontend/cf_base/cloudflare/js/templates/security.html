@@ -1,0 +1,35 @@
+<%
+var dev_mode    = stats.dev_mode * 1000;
+var local_time  = new Date();
+var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;             
+%>
+
+<a NAME="infobox"></a>
+<h4>CloudFlare Security Settings for <%= domain %></h4>
+<fieldset id="table_dns_zone" class="form-horizontal">
+
+<div class="control-group">
+    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('pro')"></i></span></label></div>
+    <div class="controls">
+        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">
+            <option value="free" <% print(((!stats.pro_zone)? 'selected': '')) %>>Free</option>'
+            <option value="pro" <% print(((stats.pro_zone)? 'selected': '')) %>>CloudFlare Pro</option>'
+        </select>
+    </div>
+</div>
+
+<div class="control-group">
+    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp('seclvl')"></i></span></label></div>
+    <div class="controls">
+        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting('<%= domain %>', 'sec_lvl', 'SecurityLevelSetting')">
+            <option value="high" <% print(((stats.userSecuritySetting == "High")? 'selected': '')) %>>High</option>'
+            <option value="med" <% print(((stats.userSecuritySetting == "Medium")? 'selected': '')) %>>Medium</option>'
+            <option value="low" <% print(((stats.userSecuritySetting == "Low")? 'selected': '')) %>>Low</option>'
+            <option value="eoff" <% print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''))%>>Essentially Off</option>'
+            <option value="help" <% print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) %>>I'm under attack!</option>'
+        </select>
+    </div>
+</div>
+
+</fieldset>
+<p>For more statistics and settings, sign into your account at <a href="https://www.cloudflare.com/analytics" target="_blank">CloudFlare</a>.</p>

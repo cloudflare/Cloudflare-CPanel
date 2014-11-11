@@ -58,31 +58,35 @@
 
 		<h1>Account Settings</h1>
 
-		<p class="cf_description">
+		<p>
 		Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
-		</p><p class="cf_description">
-		To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login.html" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
-		</p><p class="cf_description">
+		</p><p>
+		To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
+		</p><p>
 		Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
 		</p>
 
 	[% ELSE %]
 
 		<h1>Activate CloudFlare</h1>
-
-		<p class="cf_description">
-		Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
-		</p><p class="cf_description">
-		CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designated as "on" or "off" CloudFlare by using an orange and gray cloud.
-		</p>
-		<p class="cf_description" id="cf_def_show">
-		Have SSL on your website? You have two options. <a href="javascript:void(0);" class="toggle show" data-target="cf_def_noshow2">Read more ...</a>
-		</p>
-		<p id="cf_def_noshow2" class="hide">
-		If you have SSL on your website, you have two options. If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="http://www.cloudflare.com/wiki/How_do_I_add_SSL_support_for_a_domain%3F" target="_blank">here</a>.
-		<br />
-		<a href="javascript:void(0);" class="toggle hide-only" data-target="cf_def_noshow2">[hide]</a>
-		</p>
+		<div class="columns two">
+			<div class="column">
+				<p>
+				Choose which website you want to activate by clicking on the cloud. We will activate CloudFlare for the subdomain 'www' and you can choose the additional subdomains to activate. Note: Only CNAME records will show up in the record list below.
+				</p>
+				<p>
+				CloudFlare works differently than other site acceleration services (i.e. CDNs). You do not need to make any changes to your code. Instead, you choose which subdomains you want to be accelerated and protected by CloudFlare. Subdomains are designated as "on" or "off" CloudFlare by using an orange and gray cloud.
+				</p>
+			</div>
+			<div class="column">
+				<p>
+				<strong>Have SSL on your website?</strong><br> You have two options:
+				</p>
+				<p>
+				If your SSL is on a separate subdomain, mark the subdomain by a gray cloud. Otherwise, you will have to upgrade to CloudFlare’s paid Pro service to ensure your site’s SSL continues to function as expected. You can learn more <a href="https://support.cloudflare.com/hc/en-us/articles/200170516-How-do-I-add-SSL-to-my-site-" target="_blank">here</a>.
+				</p>
+			</div>
+		</div>
 
 	[% END %]
 
@@ -99,28 +103,20 @@
 				        <th>&nbsp;</th>
 				        <th>Site</th>
 				        <th>Status</th>
-				        <th>&nbsp;</th>
 				        <th align="center">CloudFlare Status</th>
 				</tr>
 			</thead>
 
 			<tbody>
-			[% FOR domain_data = base_domains_result.0.res -%]
-				<tr data-zone="[% domain_data.domain %]">
-				    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.enable_domain('[% domain_data.domain %]');">Edit</a></td>
-				    <td>[% domain_data.domain %]</td>
-
-				[% IF domain_data.cloudflare -%]
-				    <td id="cf_powered_[% domain_data.domain %]"><span class="label label-success">Powered by CloudFlare</span></td>
-				    <td id="cf_powered_stats[% domain_data.domain %]"><a href="javascript:void(0);" class="btn btn-info" onclick="return CloudFlare.get_stats('[% domain_data.domain %]');">Statistics and Settings</a></td>
-				    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-on.png"onclick="CloudFlare.toggle_all_off('[% domain_data.domain %]')" /></td>
-				[% ELSE -%]
-				    <td id="cf_powered_[% domain_data.domain %]"><span class="label">Not Powered by CloudFlare</span></td>
-				    <td id="cf_powered_stats[% domain_data.domain %]">&nbsp;</td>
-				    <td align="center" id="cf_powered_check[% domain_data.domain %]"><img src="./images/icon-cloud-bypass.png" onclick="CloudFlare.toggle_www_on('[% domain_data.domain %]')" /></td>
-				[% END -%]
-				</tr>
-			[% END -%]
+				<script type="text/javascript">
+				//<![CDATA[
+				var domain_data = '[% base_domains_result.0.res.json() %]';
+				domain_data = $.parseJSON(domain_data);
+				for (var i=0; i<domain_data.length; i++) {
+					document.write(CFT['zone']({cloudflare: domain_data[i].cloudflare, domain: domain_data[i].domain, 'action': 'enable_domain', 'action_text': 'Manage'}));
+				}
+				//]]>
+				</script>
 			</tbody>
 		</table>
 	</div>

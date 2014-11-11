@@ -49,7 +49,7 @@ _.extend(CloudFlare, {
                 message: message
             });
 
-            $(html).appendTo($wrapper).delay(8000).queue(function() { console.log($(this)); $(this).slideUp(); });
+            $(html).appendTo($wrapper).delay(8000).queue(function() { console.log($(this)); $(this).remove(); });
         } else {
             alert(message);
         }
@@ -97,10 +97,10 @@ _.extend(CloudFlare, {
             }
 
             if (callback.error && typeof callback.error == "function") {
-                callback.error(xhr);
+                callback.error.apply(this, [xhr]);
             }
-            
-            CloudFlare.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again + '<br>' + status);
+
+            CloudFlare.display_error("error", CPANEL.lang.Error, CPANEL.lang.ajax_try_again + '<br>' + (status ? status : ''));
         };
 
         // define existing settings
@@ -114,15 +114,16 @@ _.extend(CloudFlare, {
                     var data = $.parseJSON(resp);
                     console.log(data);
                     if (data.cpanelresult.error || data.cpanelresult.data[0].result == "error") {
-                        throw "Error response: " + data.cpanelresult.error;
+                        throw "Error response: " + (data.cpanelresult.error || data.cpanelresult.data[0].msg || '');
                     } else {
                         if (callback.success && typeof callback.success == "function") {
-                            callback.success(data);
+                            callback.success.apply(this, [data]);
                         }
                     }
                 } catch (e) {
                     console.log(e);
-                    errorhandler.apply(this,[xhr, e.message]);
+                    msg = e.message || e || '';
+                    errorhandler.apply(this,[xhr, msg]);
                 }
             },
             error: errorhandler
@@ -317,7 +318,8 @@ console.log(settings);
     // Builds the Zone List.
     build_dnszone_table_markup: function(records) {
         var domain = this.ACTIVE_DOMAIN;
-
+console.log(records);
+console.log(this);
         if (records.length < 1) {
             return '';
         }
@@ -330,6 +332,7 @@ console.log(settings);
         // Set the global is CF powered text.
         if (this.NUM_RECS > 0) {
             zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain});
+            console.log(zone_row);
             $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
         }
 
@@ -351,7 +354,7 @@ console.log(settings);
 
                     new YAHOO.widget.Tooltip("tt_cf_enabled_"+v, { 
                         context: "cloudflare_table_edit_"+v, 
-                        text: REC_TEXT[v],
+                        text: CloudFlare.REC_TEXT[v],
                         showDelay: 300
                     });
                 }
@@ -359,6 +362,7 @@ console.log(settings);
                 // Set the global is CF powered text.
                 if (CloudFlare.NUM_RECS > 0) {
                     zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain});
+                    console.log(zone_row);
                     $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
                 }
 
@@ -380,7 +384,7 @@ console.log(settings);
 
         for(var i=0, l=row_nums.length; i<l; i++) {
             var rec_num = row_nums[i];
-            YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+            $("#cloudflare_table_edit_" + rec_num).html('<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>");
         }
     },
 
@@ -429,12 +433,13 @@ console.log(settings);
                 CloudFlare.build_dnszone_cache(data.cpanelresult.data);
 
                 // Call the cb, if it is set.
+                console.log(cb_lambda);
                 if (cb_lambda) {
                     cb_lambda();
                 }
             }
         };
-        
+        console.log(this.ACTIVE_DOMAIN);
         // send the AJAX request
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
@@ -446,21 +451,22 @@ console.log(settings);
 
         var callback = {
             success: function(data) {
+                console.log(data);
                 CloudFlare.update_user_records_table();
             }
         };
         
         var cf_zones = [];
-        for (key in this.CF_RECS) {
-            if (this.CF_RECS[key]) {
-                cf_zones.push(key+":"+CF_RECS[key]);
+        for (key in CloudFlare.CF_RECS) {
+            if (CloudFlare.CF_RECS[key]) {
+                cf_zones.push(key+":"+CloudFlare.CF_RECS[key]);
             }
         }
 
         // send the AJAX request
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_delete",
-            "zone_name" : this.ACTIVE_DOMAIN,
+            "zone_name" : CloudFlare.ACTIVE_DOMAIN,
             "user_key" : USER_ID,
             "subdomains" : cf_zones.join(",")
         }, callback, $('#status_bar_' + 0));
@@ -595,65 +601,21 @@ console.log(settings);
         return false;
     },
 
-    get_stats: function(domain) {
+    load_zone_features: function(domain, type) {
         this.reset_form();
         this.ACTIVE_DOMAIN = domain;
 
         var callback = {
             success: function(data) {
-                var activeRailgun;
-
-                var callback1 = {
-                    success: function(data) {
-                        console.log(data);
-                        if (data.cpanelresult.data[0].response.railgun_conn.obj == null) {
-                           activeRailgun = null;
-                        } else {
-                           activeRailgun = data.cpanelresult.data[0].response.railgun_conn.obj;
-                        }
-                    }
-                };
-
-                CloudFlare.ajax({
-                    "cpanel_jsonapi_func" : "get_active_railguns",
-                    "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-                    "user_email" : USER_EMAIL,
-                    "user_api_key" : USER_API_KEY
-                }, callback1);
-
                 html = '';
                 if (typeof data.cpanelresult.data[0].response.result != "undefined") {
-                    // Display stats here.
                     var result = data.cpanelresult.data[0].response.result;
                     var stats = result.objs[0];
 
-                    html += CFT['statistics']({'stats': stats, 'result': result, 'domain': domain});
-
-                    html += CFT['performance']({'stats': stats, 'domain': domain});
-                } // END of check for stats
+                    html = CloudFlare[type](result, stats, domain);
+                }
 
                 $(this).html(html);
-
-                setTimeout(function (domain)
-                {
-                    var callback2 = {
-                        success: function(data) {
-                            console.log(data);
-                            railgunList = data.cpanelresult.data[0].response.railguns.objs;
-                            if (railgunList != null) {
-                                rg_html = CFT['performance']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
-                                YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
-                            } 
-                        }
-                    };
-
-                    CloudFlare.ajax({
-                        "cpanel_jsonapi_func" : "get_railguns",
-                        "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-                        "user_email" : USER_EMAIL,
-                        "user_api_key" : USER_API_KEY
-                    }, callback2);                                                         
-                }, 500);
             }
         };
         
@@ -673,6 +635,68 @@ console.log(settings);
         }, callback, $('#user_records_div'));
 
         return false;
+    },
+
+    get_performance: function(result, stats, domain) {
+        var activeRailgun;
+
+        var callback1 = {
+            success: function(data) {
+                console.log(data);
+                if (data.cpanelresult.data[0].response.railgun_conn.obj == null) {
+                   activeRailgun = null;
+                } else {
+                   activeRailgun = data.cpanelresult.data[0].response.railgun_conn.obj;
+                }
+            }
+        };
+
+        CloudFlare.ajax({
+            "cpanel_jsonapi_func" : "get_active_railguns",
+            "zone_name" : CloudFlare.ACTIVE_DOMAIN,
+            "user_email" : USER_EMAIL,
+            "user_api_key" : USER_API_KEY
+        }, callback1);
+
+        html = '';
+        if (typeof data.cpanelresult.data[0].response.result != "undefined") {
+            // Display stats here.
+            var result = data.cpanelresult.data[0].response.result;
+            var stats = result.objs[0];
+
+            html += CFT['performance']({'stats': stats, 'domain': domain});
+        } // END of check for stats
+
+        return html;
+
+        setTimeout(function (domain)
+        {
+            var callback2 = {
+                success: function(data) {
+                    console.log(data);
+                    railgunList = data.cpanelresult.data[0].response.railguns.objs;
+                    if (railgunList != null) {
+                        rg_html = CFT['performance']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
+                        YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
+                    } 
+                }
+            };
+
+            CloudFlare.ajax({
+                "cpanel_jsonapi_func" : "get_railguns",
+                "zone_name" : CloudFlare.ACTIVE_DOMAIN,
+                "user_email" : USER_EMAIL,
+                "user_api_key" : USER_API_KEY
+            }, callback2);                                                         
+        }, 500);
+    },
+
+    get_stats: function(result, stats, domain) {
+        return CFT['statistics']({'stats': stats, 'result': result, 'domain': domain});
+    },
+
+    get_security: function(result, stats, domain) {
+        return CFT['security']({'stats': stats, 'domain': domain});
     }
 });
 
