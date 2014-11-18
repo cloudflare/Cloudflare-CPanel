@@ -86,7 +86,7 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '<div class="control-label">\n    <label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'railgun\')"></i></span></label>\n</div>\n\n<div class="controls">\n    <select name="Railgun" id="Railgun" onChange="set_railgun(\'' +
+__p += '<div class="control-label">\n    <label>Railgun <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'railgun\')"></i></span></label>\n</div>\n\n<div class="controls">\n    <select name="Railgun" id="Railgun" onChange="CloudFlare.set_railgun(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
 '\',\'Railgun\')">\n        <option value="remove">Railgun Not Selected</option>\n        ';
 
@@ -117,10 +117,10 @@ __p += '\n    </select>\n\n    ';
 
     if (preSelected) {
         if(!suppress) { ;
-__p += '\n            <select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode(\'' +
+__p += '\n            <select name="RailgunStatus" id="RailgunStatus" onChange="CloudFlare.set_railgun_mode(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
-'\',Railgun\', \'RailgunStatus\')">\n            <option value="0">Off</option>\n            <option value="1"';
- print( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) ;
+'\',\'Railgun\', \'RailgunStatus\')">\n            <option value="0">Off</option>\n            <option value="1"';
+ print( (activeRailgun.railgun_conn_mode == "1")? ' selected':'' ) ;
 __p += '>On</option>\n            </select>\n        ';
  }
     } ;

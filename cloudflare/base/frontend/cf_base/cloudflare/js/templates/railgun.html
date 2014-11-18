@@ -3,7 +3,7 @@
 </div>
 
 <div class="controls">
-    <select name="Railgun" id="Railgun" onChange="set_railgun('<%= domain %>','Railgun')">
+    <select name="Railgun" id="Railgun" onChange="CloudFlare.set_railgun('<%= domain %>','Railgun')">
         <option value="remove">Railgun Not Selected</option>
         <%
         var suppress = false;
@@ -34,9 +34,9 @@
     <%
     if (preSelected) {
         if(!suppress) { %>
-            <select name="RailgunStatus" id="RailgunStatus" onChange="set_railgun_mode('<%= domain %>',Railgun', 'RailgunStatus')">
+            <select name="RailgunStatus" id="RailgunStatus" onChange="CloudFlare.set_railgun_mode('<%= domain %>','Railgun', 'RailgunStatus')">
             <option value="0">Off</option>
-            <option value="1"<% print( (activeRailgun.railgun_conn_mode == "1")? 'selected':'' ) %>>On</option>
+            <option value="1"<% print( (activeRailgun.railgun_conn_mode == "1")? ' selected':'' ) %>>On</option>
             </select>
         <% }
     } %>

@@ -540,7 +540,7 @@ console.log(settings);
         this.ACTIVE_DOMAIN = domain;
         var callback = {
             success: function(data) {
-                CloudFlare.get_stats(domain);
+                CloudFlare.set_domain(domain, 'get_performance');
                 return false;
             }
         };
@@ -567,7 +567,7 @@ console.log(settings);
         this.ACTIVE_DOMAIN = domain;
         var callback = {
             success: function(data) {
-                CloudFlare.get_stats(domain);
+                CloudFlare.set_domain(domain, 'get_performance');
                 return false;
             }
         };
@@ -591,7 +591,7 @@ console.log(settings);
         return false;
     },
 
-    // This function serves as the main entry point for each page (overview, ssecurity, performance, and analytics)
+    // This function serves as the main entry point for each page (overview, security, performance, and analytics)
     set_domain: function(domain, type) {
         this.reset_form();
         this.ACTIVE_DOMAIN = domain;
@@ -672,14 +672,16 @@ console.log(settings);
             "user_api_key" : USER_API_KEY
         }, callback1);
 
-        setTimeout(function (domain)
+        setTimeout(function ()
         {
             var callback2 = {
                 success: function(data) {
                     console.log(data);
                     railgunList = data.cpanelresult.data[0].response.railguns.objs;
                     if (railgunList != null) {
-                        rg_html = CFT['performance']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
+                        console.log('test');
+                        rg_html = CFT['railgun']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
+                        console.log(rg_html);
                         YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
                     } 
                 }

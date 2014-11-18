@@ -1,5 +1,5 @@
 [% SET CPANEL.CPVAR.dprefix = "../" %]
-[% SET CPANEL.CPVAR.pagename = "overview" %]
+[% SET CPANEL.CPVAR.pagename = "security" %]
 
 [%
 IF FORM.itemsperpage;
