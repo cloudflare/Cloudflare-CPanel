@@ -231,7 +231,11 @@ fi
 #Install the module to the paper_lantern theme, once everything else is installed. Pretty messy, but it should work.
 if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
-		/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
+	/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
+    if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf ]]
+    then
+        rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf
+    fi
 fi
 
 echo "
