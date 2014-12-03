@@ -1,6 +1,6 @@
 Refer to the [cpanel readme](cloudflare/README) for specific installation requirements
 
-## CloudFlare CPanel Quick Installation Instructions
+## CloudFlare cPanel Quick Installation Instructions
 
 Using an SSH client such as Terminal or Putty:
 
@@ -25,3 +25,15 @@ The CloudFlare plugin is installed into the default 'x3' theme, as well as the n
 `$BASE_THEME` should be either 'x3' or 'paper_lantern', based on what theme the alternate was based on.
 
 Replace `$ALTERNATE_THEME` with the folder name of the alternate theme on your server. This folder should be located at `/usr/local/cpanel/base/frontend/$ALTERNATE_THEME/`.
+
+---
+
+### Uninstalling the cPanel Plugin
+
+An uninstall script has been provided to unregister the plugin with cPanel and remove all CloudFlare specific files from the server to deactivate the plugin.
+
+NOTE: This will not remove zones or users from CloudFlare that have been registered through the plugin.
+
+The following set of commands will download the necessary files, execute the uninstall script and ultimately remove the uninstall script as well:
+
+`wget https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare/cloudflare.cpanelplugin && bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare/uninstall_cf) && rm -f uninstall_cf`
