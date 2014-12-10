@@ -625,7 +625,8 @@ sub __https_post_req {
     } else {
         my ( $args_hr ) = @_;
         my $headers = make_headers(
-            'CF-Integration' => 'cPanel ' . $cf_cp_version
+            'CF-Integration' => 'cPanel',
+            'CF-Integration-Version' => $cf_cp_version
         );
         my ($page, $response, %reply_headers)
             = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, 
