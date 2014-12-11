@@ -20,6 +20,7 @@ use Cpanel::DataStore            ();
 use Socket                       ();
 use Digest::MD5 qw(md5_hex);
 use File::Temp qw/ tempdir /;
+use Data::Dumper;
 use strict;
 
 my $logger = Cpanel::Logger->new();
@@ -623,9 +624,15 @@ sub __https_post_req {
         $logger->info("Port is not 443. Wait, how did that happen?");
     } else {
         my ( $args_hr ) = @_;
+        my $headers = make_headers(
+            'CF-Integration' => 'cPanel',
+            'CF-Integration-Version' => $cf_cp_version
+        );
         my ($page, $response, %reply_headers)
-            = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, '',
-                         make_form(%{$args_hr->{'query'}}));
+            = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'}, 
+                        $headers,
+                        make_form(%{$args_hr->{'query'}})
+            );
         if ($cf_debug_mode) {
             $logger->info($response);
             $logger->info($page);
