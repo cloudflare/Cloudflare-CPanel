@@ -20,7 +20,6 @@ use Cpanel::DataStore            ();
 use Socket                       ();
 use Digest::MD5 qw(md5_hex);
 use File::Temp qw/ tempdir /;
-use Data::Dumper;
 use strict;
 
 my $logger = Cpanel::Logger->new();
