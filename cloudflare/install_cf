@@ -154,7 +154,7 @@ if [[ "$line62" =~ 'use 5.' ]]; then
 fi
 
 ## Lastly register the plugin buttons with Cpanel
-cp dynamicui_cloudflare.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare.conf
+cp dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
     ## the group requires mutliple icon images, so duplicate our current icon for all locations
     cp base/frontend/x3/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_support.png
     cp base/frontend/x3/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_status.png
