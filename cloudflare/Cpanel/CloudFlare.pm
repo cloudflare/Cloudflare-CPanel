@@ -624,7 +624,7 @@ sub __https_post_req {
     } else {
         my ( $args_hr ) = @_;
         my $headers = make_headers(
-            'CF-Integration' => 'cPanel',
+            'CF-Integration' => 'cpanel',
             'CF-Integration-Version' => $cf_cp_version
         );
         my ($page, $response, %reply_headers)
