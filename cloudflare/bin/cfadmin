@@ -459,7 +459,7 @@ sub __https_post_req {
     else {
         my ($args_hr) = @_;
         my $headers = Net::SSLeay::make_headers(
-            'CF-Integration' => 'cPanel',
+            'CF-Integration' => 'cpanel',
             'CF-Integration-Version' => $cf_cp_version
         );
         my ( $page, $response, %reply_headers ) = Net::SSLeay::post_https(
