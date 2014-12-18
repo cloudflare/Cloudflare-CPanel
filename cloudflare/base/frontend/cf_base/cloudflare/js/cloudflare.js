@@ -159,7 +159,7 @@ console.log(settings);
             $target = $('#' + $(this).attr('data-target'));
             $target.removeClass('hide');
 
-            if ($(this).hasClass('show')) {
+            if ($(this).hasClass('show-only')) {
                 $target.show();
             } else if ($(this).hasClass('hide-only')) {
                 $target.hide();

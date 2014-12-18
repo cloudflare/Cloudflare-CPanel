@@ -4,10 +4,10 @@
 		<p>CloudFlare accelerates and protects any website online. On average, a website on CloudFlare:</p>
 
 		<ul>
-		<li>Loads 30% faster
+		<li>Loads 2x faster
 		<li>Uses 60% less bandwidth
 		<li>Has 65% fewer requests
-		<li>And, is way more secure.
+		<li>And is way more secure
 		</ul>
 	</div>
 
@@ -21,32 +21,61 @@
 </div>
 
 <p>
-<div id="cf_def_show"><a href="javascript:void(0);" class="toggle show" data-target="cf_def_noshow">Learn More ...</a></div>
+<div id="cf_def_show"><a href="javascript:void(0);" class="toggle show-only btn" data-target="cf_def_noshow">Learn More</a></div>
 </p>
 
 <div id="cf_def_noshow" class="hide">
-	<b>Advantages of the CloudFlare system:</b>
+	<h4>Advantages of the CloudFlare system:</h4>
+
+    <h5>Performance</h5>
+    <ul>
+        <li>
+            <strong>Performance Acceleration:</strong> CloudFlare runs a global network of <a href="https://www.cloudflare.com/network-map" target="_blank">over 30 data centers located throughout the world</a>. Using this network, CloudFlare designed its next-generation CDN (Content Delivery Network). Our CDN automatically caches your static files at our edge nodes so these files are stored closer to your visitors while delivering your dynamic content directly from your web server. CloudFlare then uses a technology called Anycast to route your visitors to the nearest data center. The result is that your website, on average, loads twice as fast for your visitors regardless of where they are located.
+        </li>
+        <li>
+            <strong>Web content optimization:</strong> Beyond edge caching (moving static files closer to web visitors), CloudFlare improves the loading of a web page. We have several optimization features including: 
+            <ul>
+                <li>Rocket LoaderTM: Combines multiple JavaScript files into a single request and minimizes the number of network connections</li>
+                <li>AutoMinifyTM:Removes unnecessary characters from HTML, CSS, and JavaScript.</li>
+                <li>If your host offers paid CloudFlare plans, you can also get:
+                    <ul>
+                        <li>Polish: Automatically applies ‘lossless’ or ‘lossy’ image optimization to remove unnecessary bytes from images. On average, image sizes are reduced by 35%.</li>
+                        <li>Mirage: Delivers images that are the appropriate size and resolution for the device and automatic “lazy load” functionality</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <strong>Availability with Always Online:</strong> If your server ever goes offline, CloudFlare will serve a limited copy of your cached website to keep it online for your visitors. CloudFlare builds the Always Online™ version of your website, so your most popular pages are represented.
+        </li>
+    </ul>
+    
+    <h5>Security</h5>
+    <ul>
+        <li><strong>Easy website security:</strong> Online threats range from nuisances like comment spam and excessive bot crawling to malicious attacks like SQL injection and denial of service (DOS) attacks. CloudFlare provides security protection against all of these types of threats and more to keep your website safe. CloudFlare stops web threats at the edge before they hit the origin server. </li>
+        <li>
+            <strong>DDoS mitigation:</strong> Denial-of-service (DoS) attacks are on the rise and have evolved into complex and overwhelming security challenges for organizations large and small. Your website is automatically protected from a variety of DDoS attacks even with the CloudFlare Free plan. To get Advanced DDoS mitigation, you will need to upgrade to a paid CloudFlare plan. CloudFlare's advanced DDoS protection, provisioned as a service at the network edge, matches the sophistication and scale of such threats, and can be used to mitigate DDoS attacks of all forms and sizes. To learn more, visit <a href="www.cloudflare.com/ddos" target="_blank">www.cloudflare.com/ddos</a>.
+        </li>
+    </ul>
+    
+    <h5>Analytics & Reports</h5>
+    <ul>
+        <li><strong>Analytics & Stats:</strong> CloudFlare provides insight to your website traffic that you can’t get from other analytics programs. In addition to visitor analytics, you can monitor threats and search engine crawlers. For most websites, these threats and crawlers make up 20% to 50% of traffic. It’s traffic every website should understand, but most analytics services ignore. Compatible with all analytics programs including Google Analytics. </li>
+        <li><strong>Lower CPU Usage and Bandwidth:</strong> If you get a surge in traffic, CloudFlare’s CDN will absorb the effect so your server stays online. On average, you'll see 65% fewer requests to your servers and save 60% of your bandwidth, even with CloudFlare's free plan.</li>
+    </ul>
+    
+    <hr />
+
+	<h4>Notes on implementing CloudFlare through cPanel:</h4>
 
 	<ul>
-	<li><b>Site Performance Improvement:</b> CloudFlare has proxy servers located throughout the world. Proxy servers are located closer to your visitors, which means they will see page load speed improvements as the cached content is delivered from the closest caching box instead of directly off our server. There is a lot of research that shows that a faster a site, the longer a visitor stays.
-	<li><b>Bot and Threat Protection:</b> CloudFlare uses data from Project Honey Pot and other third party sources, as well as the data from its community, to identify malicious threats online and stop the attacks before they even get to your site. You can see which threats are being stopped through your CloudFlare dashboard <a href="https://www.cloudflare.com/your-websites.html" target="_blank">here</a>.
-	<li><b>Spam Comments Protection:</b> CloudFlare leverages data from third party resources to reduce the number of spam comments on your site
-	<li><b>Alerting Visitors of Infected Computers:</b> CloudFlare alerts human visitors that have an infected computer that they need to take action to clean up the malware or virus on their machine. The visitor can enter a CAPTCHA to gain access to your site.
-	<li><b>Always Online Mode:</b> In the event that our server is unavailable, visitors should still be able to access your site since CloudFlare serves the visitor a page from its cache.
-	<li><b>Lower CPU Usage:</b> As fewer requests hit our server, this lowers the overall CPU usage of your account.
-	<li><b>New Statistics Stats:</b> CloudFlare’s system keeps statistics on each hit and offers insight into search engine crawlers and threats.
-	</ul>
-
-	<b>Limitations of the CloudFlare system:</b>
-
-	<ul>
-	<li>Currently, requests must be directed to www.$domain instead of $domain.
-	<li>CloudFlare may affect internal statistic programs that read directly from Apache logs. (CloudFlare will not affect web-based analytic programs that use JavaScript like Google Analytics.) While your logs will reflect fewer requests to your server and therefore lower load, the experience to your visitors should be unaffected.
-	<li>CloudFlare caches static content from your site. While this reduces the load on your server, it means that if you make a change to an existing static file, like an image, there may be a delay before the change appears. While you are updating your site, you can put CloudFlare in ‘Development Mode’ so changes appear immediately.
-	</ul>
-
+        <li>When you activate CloudFlare thought cPanel, you use a CNAME integration. That means that only requests directed to www.$domain or other CNAMEs pass through the CloudFlare system. To take full advantage of CloudFlare, redirect your root domain ($domain) to the www.$domain subdomain.</li>
+        <li>CloudFlare may affect internal statistic programs that read directly from Apache logs. (CloudFlare will not affect web-based analytic programs that use JavaScript like Google Analytics.) While your logs will reflect fewer requests to your server and therefore lower load, the experience to your visitors should be unaffected.</li>
+        <li>CloudFlare caches static content from your site. When making changes to an existing static file on your website, like an image, you need to enter CloudFlare “Development Mode” so changes appear immediately. You can also “Purge” cache in cPanel or individual files directly in your cloudflare.com account.</li>
+    </ul>
+    
 	<p>
-	<a href="javascript:void(0);" class="toggle hide-only" data-target="cf_def_noshow">[hide]</a>
+	   <a href="javascript:void(0);" class="btn toggle hide-only" data-target="cf_def_noshow">Hide</a>
 	</p>
 </div>
 
@@ -59,11 +88,10 @@
 		<h1>Account Settings</h1>
 
 		<p>
-		Now that CloudFlare is activated, you can see quick statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
-		</p><p>
-		To access all of your reports and CloudFlare settings, log in to your <a href="https://www.cloudflare.com/login" target="_blank">CloudFlare.com</a> account. Hint: The first time you go to your CloudFlare.com account, use the 'I forgot my password' feature to set a password.
-		</p><p>
-		Remember: You can activate and deactivate CloudFlare for each website by toggling between the orange and grey cloud.
+		Now that CloudFlare is activated, you can see statistics for your website and manage the basic CloudFlare settings right here from your control panel. Statistics take 24 hours to first appear and subsequently update once per day.
+		</p>
+        <p>
+        To access advanced settings and additional functionality, log in to your <a href="https://www.cloudflare.com/login" target="_blank">CloudFlare.com</a> account, which has been automatically created for you. Hint: The first time you visit, use your current email and the '<a href="https://www.cloudflare.com/forgot-password" target="_blank">I forgot my password</a>' feature to set a password.
 		</p>
 
 	[% ELSE %]
