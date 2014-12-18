@@ -154,7 +154,7 @@ if [[ "$line62" =~ 'use 5.' ]]; then
 fi
 
 ## Lastly register the plugin buttons with Cpanel
-cp dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
+cp base/frontend/x3/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
     ## the group requires mutliple icon images, so duplicate our current icon for all locations
     cp base/frontend/x3/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_support.png
     cp base/frontend/x3/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_status.png
@@ -252,11 +252,25 @@ fi
 #Install the module to the paper_lantern theme, once everything else is installed. Pretty messy, but it should work.
 if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
 then
+    ## Add dynamicui files to paper lantern
+    cp base/frontend/paper_lantern/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare_base.conf
+    ## the group requires mutliple icon images, so duplicate our current icon for all locations
+    cp base/frontend/paper_lantern/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_support.png
+    cp base/frontend/paper_lantern/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_status.png
+    cp base/frontend/paper_lantern/branding/cloudflare_security.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_security.png
+    cp base/frontend/paper_lantern/branding/cloudflare_performance.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_performance.png
+    cp base/frontend/paper_lantern/branding/cloudflare_analytics.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_analytics.png
+    
 	/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
     if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf ]]
     then
         rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf
     fi
+fi
+
+if [[ -f /usr/local/cpanel/bin/sprite_generator ]]
+then
+    /usr/local/cpanel/bin/sprite_generator --all
 fi
 
 echo "
