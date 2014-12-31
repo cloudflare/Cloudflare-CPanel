@@ -1,6 +1,7 @@
 #!/bin/bash
 host_key=$1
 formal_name=$2
+install_mode=$3
 
 echo "Starting CloudFlare CPanel Installation..."
 
@@ -17,7 +18,7 @@ tar -zxvf cloudflare.tmp.tar.gz
 cd "cloudflare-CloudFlare-CPanel-${commit_hash}/cloudflare/"
 
 echo "Finalizing install..."
-./install_cf "$1" mod_cf "$2"
+./install_cf "$1" mod_cf "$2" $3
 
 ## Clean up files created by this install script
 echo "Removing temporary files..."
