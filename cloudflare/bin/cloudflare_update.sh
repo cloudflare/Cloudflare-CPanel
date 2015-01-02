@@ -18,7 +18,7 @@ if [ "$host_key" == "" ]; then
     echo "error -- can not find a valid host key"
     exit 10
 fi
-
+install_mode=`cat etc/cloudflare.json | grep install_mode | cut -d "\"" -f 4`
 
 installed_version=`cat etc/cloudflare.json | grep version | cut -d "\"" -f 4`
 current_version=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$host_key" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 6`
@@ -41,7 +41,7 @@ if [[ $new_version == 0 || "$forceinstall" == "force" ]]
 			    tar -zxf cloudflare.tar.gz
 			    mv */cloudflare .
 			    cd cloudflare
-			    ./install_cf $host_key mod_cf "${host_formal_name}"
+			    ./install_cf $host_key mod_cf "${host_formal_name}" $install_mode
 
 			    # Cleanup
 			    cd /usr/local/cpanel

@@ -5,6 +5,7 @@ DEFAULT_HOST_FORMAL_NAME="DEFAULT_HOST_FORMAL_NAME"
 host_key=$1
 mod_cf=$2
 formal_name=$3
+install_mode=$4
 if [ "$host_key" == "" ]; then
     echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name]."
     echo ""
@@ -39,6 +40,12 @@ if [ "$error" != "" ]; then
     echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
     echo "mod_cf is optional. If set, the installer will try to also install mod_cloudflare."
     exit 0
+fi
+
+## Only two options for install_mode, so force it to be one or the other
+if [ "$install_mode" != "simple" ]
+then
+    install_mode="extended"
 fi
 
 ## First install the CF files
@@ -157,6 +164,12 @@ if [ "$formal_name" == "" ]; then
 fi
 
 sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json 
+
+## make sure that install mode is set in the json file
+if [[ "$install_mode" == "simple" ]]
+then
+    sed -i -e "s/\"install_mode\":\"extended\"/\"install_mode\":\"simple\"/" etc/cloudflare.json
+fi
 
 ## Delete the keywrap, it doesn't need to be there anymore
 
