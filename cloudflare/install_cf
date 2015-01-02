@@ -156,24 +156,38 @@ if [[ "$line62" =~ 'use 5.' ]]; then
 fi
 
 ## Lastly register the plugin buttons with Cpanel
-if [[ "$install_mode" == "simple" ]]
+if [[ -f /usr/local/cpanel/scripts/install_plugin ]]
 then
-    if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf ]]
+    ## there is a separate install folder for x3 to use the older icon style
+    if [[ "$install_mode" == "simple" ]]
     then
-        rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.tar.bz2
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.x3.tar.bz2 --theme x3
+    else
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare.tar.bz2
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare.x3.tar.bz2 --theme x3
     fi
-    
-    /usr/local/cpanel/bin/register_cpanelplugin cloudflare_simple.cpanelplugin
 else
-    cp base/frontend/x3/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
-        ## the group requires mutliple icon images, so duplicate our current icon for all locations
-        cp base/frontend/x3/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_support.png
-        cp base/frontend/x3/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_status.png
-        cp base/frontend/x3/branding/cloudflare_security.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_security.png
-        cp base/frontend/x3/branding/cloudflare_performance.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_performance.png
-        cp base/frontend/x3/branding/cloudflare_analytics.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_analytics.png
-    
-    /usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
+    ## fall back to older installer for those before 11.44
+    if [[ "$install_mode" == "simple" ]]
+    then
+        if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf ]]
+        then
+            rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
+        fi
+
+        /usr/local/cpanel/bin/register_cpanelplugin installers/cloudflare_simple.cpanelplugin
+    else
+        cp base/frontend/x3/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
+            ## the group requires mutliple icon images, so duplicate our current icon for all locations
+            cp base/frontend/x3/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_support.png
+            cp base/frontend/x3/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_status.png
+            cp base/frontend/x3/branding/cloudflare_security.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_security.png
+            cp base/frontend/x3/branding/cloudflare_performance.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_performance.png
+            cp base/frontend/x3/branding/cloudflare_analytics.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_analytics.png
+
+        /usr/local/cpanel/bin/register_cpanelplugin installers/cloudflare.cpanelplugin
+    fi
 fi
 
 ## Populate config file.
@@ -261,35 +275,7 @@ if [ "$mod_cf" == "mod_cf" ]; then
 "
 
 fi
-#Install the module to the paper_lantern theme, once everything else is installed. Pretty messy, but it should work.
-if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
-then
-    if [[ "$install_mode" == "simple" ]]
-    then
-        if [[ -f /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare_base.conf ]]
-        then
-            rm /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare_base.conf
-        fi
 
-        /usr/local/cpanel/scripts/install_plugin cloudflare_simple.tar.bz2
-    else
-        ## Add dynamicui files to paper lantern
-        cp base/frontend/paper_lantern/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare_base.conf
-        ## the group requires mutliple icon images, so duplicate our current icon for all locations
-        cp base/frontend/paper_lantern/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_support.png
-        cp base/frontend/paper_lantern/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_status.png
-        cp base/frontend/paper_lantern/branding/cloudflare_security.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_security.png
-        cp base/frontend/paper_lantern/branding/cloudflare_performance.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_performance.png
-        cp base/frontend/paper_lantern/branding/cloudflare_analytics.png /usr/local/cpanel/base/frontend/paper_lantern/styled/basic/icons/cloudflare_analytics.png
-
-        /usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
-    fi
-    
-    if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf ]]
-    then
-        rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf
-    fi
-fi
 
 if [[ -f /usr/local/cpanel/bin/sprite_generator ]]
 then
