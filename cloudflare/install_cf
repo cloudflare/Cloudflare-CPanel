@@ -143,7 +143,7 @@ cpversion=${cpversion:0:5} #should return something like '11.44'
 if [[ !( ("$cpversion" == "11.42") || ("$cpversion" == "11.44") ) ]]
 then
     echo "Removing old index.html file"
-    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/index.html
+    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/*.html
 fi
 ## End Hack for paper lantern
 
