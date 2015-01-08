@@ -1,0 +1,62 @@
+[
+    {
+       "order" : 1,
+       "name" : "CloudFlare - Supercharge your website",
+       "type" : "group",
+       "id" : "cloudflare"
+    },
+    {
+        "icon" : "cloud.png",
+        "name" : "CloudFlare",
+        "group_id" : "cloudflare",
+        "order" : 1,
+        "type" : "link",
+        "id" : "cloudflare",
+        "uri" : "cloudflare/index.html"
+    },
+    {
+        "icon" : "cloudflare_status.png",
+        "name" : "CloudFlare Status",
+        "group_id" : "cloudflare",
+        "order" : 2,
+        "type" : "link",
+        "id" : "cloudflare_status",
+        "uri" : "cloudflare/status.html"
+    },
+    {
+        "icon" : "cloudflare_security.png",
+        "name" : "CloudFlare Security",
+        "group_id" : "cloudflare",
+        "order" : 3,
+        "type" : "link",
+        "id" : "cloudflare_security",
+        "uri" : "cloudflare/security.html"
+    },
+    {
+        "icon" : "cloudflare_performance.png",
+        "name" : "CloudFlare Performance",
+        "group_id" : "cloudflare",
+        "order" : 4,
+        "type" : "link",
+        "id" : "cloudflare_performance",
+        "uri" : "cloudflare/performance.html"
+    },
+    {
+        "icon" : "cloudflare_analytics.png",
+        "name" : "CloudFlare Analytics",
+        "group_id" : "cloudflare",
+        "order" : 5,
+        "type" : "link",
+        "id" : "cloudflare_analytics",
+        "uri" : "cloudflare/analytics.html"
+    },
+    {
+        "icon" : "cloudflare_support.png",
+        "name" : "CloudFlare Support",
+        "group_id" : "cloudflare",
+        "order" : 6,
+        "type" : "link",
+        "id" : "cloudflare_support",
+        "uri" : "cloudflare/support.html"
+    }
+]
