@@ -8,7 +8,7 @@
     {
         "icon" : "cloud.png",
         "name" : "CloudFlare",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 1,
         "type" : "link",
         "id" : "cloudflare",
@@ -17,7 +17,7 @@
     {
         "icon" : "cloudflare_status.png",
         "name" : "CloudFlare Status",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 2,
         "type" : "link",
         "id" : "cloudflare_status",
@@ -26,7 +26,7 @@
     {
         "icon" : "cloudflare_security.png",
         "name" : "CloudFlare Security",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 3,
         "type" : "link",
         "id" : "cloudflare_security",
@@ -35,7 +35,7 @@
     {
         "icon" : "cloudflare_performance.png",
         "name" : "CloudFlare Performance",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 4,
         "type" : "link",
         "id" : "cloudflare_performance",
@@ -44,7 +44,7 @@
     {
         "icon" : "cloudflare_analytics.png",
         "name" : "CloudFlare Analytics",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 5,
         "type" : "link",
         "id" : "cloudflare_analytics",
@@ -53,7 +53,7 @@
     {
         "icon" : "cloudflare_support.png",
         "name" : "CloudFlare Support",
-        "group_id" : "cloudflare",
+        "group_id" : "cloudflare_base",
         "order" : 6,
         "type" : "link",
         "id" : "cloudflare_support",
