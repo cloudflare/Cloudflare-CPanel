@@ -3,7 +3,7 @@
        "order" : 1,
        "name" : "CloudFlare - Supercharge your website",
        "type" : "group",
-       "id" : "cloudflare"
+       "id" : "cloudflare_base"
     },
     {
         "icon" : "cloud.png",
