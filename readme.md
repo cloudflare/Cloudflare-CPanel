@@ -10,9 +10,11 @@ Step 1. Access cPanel for the server using root user by:
 
 Step 2. Download necessary files and run installation
 
-`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) $HOST_API_KEY '$YOUR_COMPANY_NAME'`
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) $HOST_API_KEY '$YOUR_COMPANY_NAME' [install_mode]`
 
-NOTE: Be sure to replace HOST_API_KEY and YOUR_COMPANY_NAME with the appropriate values
+NOTES:
+- Be sure to replace $HOST_API_KEY and $YOUR_COMPANY_NAME with the appropriate values
+- [install_mode] is optional and needs to be either `simple` or `extended`. Extended is the default version, adding simple to the installer shows only 1 CloudFlare icon in the main cPanel dashboard
 
 ---
 

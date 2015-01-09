@@ -11,12 +11,13 @@ First, acquire a host api key from CloudFlare.
 
 Install (as root):
 
-./install_cf HOST_API_KEY [mod_cf] [Provider Name]
+./install_cf HOST_API_KEY [mod_cf] [Provider Name] [install_mode]
 
 This works for the default theme and locale. Other themes or locales may require custom work. 
 Replace HOST_API_KEY with your api key. Adding the string mod_cf will also install the Apache 
 extension mod_cloudflare on the local server. More information is available here: 
 https://github.com/cloudflare/CloudFlare-Tools.
+Install mode is optional and needs to be either `simple` or `extended`. Adding simple to the installer shows only 1 CloudFlare icon in the main cPanel dashboard
 
 Edit API key:
 
