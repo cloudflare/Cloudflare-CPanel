@@ -305,7 +305,13 @@ obj || (obj = {});
 var __t, __p = '', __e = _.escape, __j = Array.prototype.join;
 function print() { __p += __j.call(arguments, '') }
 with (obj) {
-__p += '<tr data-zone="' +
+
+
+   if (typeof toggleable == "undefined") {
+    toggleable = false;
+   }
+;
+__p += '\n<tr data-zone="' +
 ((__t = ( domain )) == null ? '' : __t) +
 '">\n    <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.set_domain(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
@@ -321,17 +327,25 @@ __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><span class="label label-success">Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><img src="./images/icon-cloud-on.png" onclick="return false;CloudFlare.toggle_all_off(\'' +
+'"><img src="./images/icon-cloud-on.png" ';
+ if (toggleable) { ;
+__p += ' onclick="CloudFlare.toggle_all_off(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
-'\')" /></td>\n\t';
+'\')" ';
+ } ;
+__p += ' /></td>\n\t';
  } else { ;
 __p += '\n\t    <td id="cf_powered_' +
 ((__t = ( domain )) == null ? '' : __t) +
 '"><span class="label">Not Powered by CloudFlare</span></td>\n\t    <td align="center" id="cf_powered_check' +
 ((__t = ( domain )) == null ? '' : __t) +
-'"><img src="./images/icon-cloud-bypass.png" onclick="return false;CloudFlare.toggle_www_on(\'' +
+'"><img src="./images/icon-cloud-bypass.png" ';
+ if (toggleable) { ;
+__p += ' onclick="CloudFlare.toggle_www_on(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
-'\')" /></td>\n\t';
+'\')" ';
+ } ;
+__p += ' /></td>\n\t';
  } ;
 __p += '\n</tr>\n';
 

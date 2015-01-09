@@ -336,7 +336,7 @@ console.log(settings);
 
         // Set the global is CF powered text.
         if (this.NUM_RECS > 0) {
-            zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain, action: 'enable_domain', action_text: 'Manage'});
+            zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain, action: 'enable_domain', action_text: 'Manage', 'toggleable': true});
             console.log(zone_row);
             $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
         }
@@ -367,7 +367,7 @@ console.log(settings);
                 console.log(CloudFlare.NUM_RECS);
                 // Set the global is CF powered text.
                 if (CloudFlare.NUM_RECS > 0) {
-                    zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain, action: 'enable_domain', action_text: 'Manage'});
+                    zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain, action: 'enable_domain', action_text: 'Manage', 'toggleable': true});
                     console.log(zone_row);
                     $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
                 }

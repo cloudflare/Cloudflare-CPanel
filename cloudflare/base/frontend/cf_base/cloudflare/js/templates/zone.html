@@ -1,12 +1,17 @@
+<%
+   if (typeof toggleable == "undefined") {
+    toggleable = false;
+   }
+%>
 <tr data-zone="<%= domain %>">
     <td><a href="javascript:void(0);" class="btn btn-primary" onclick="return CloudFlare.set_domain('<%= domain %>', '<%= action %>');"><%= action_text %></a></td>
     <td><%= domain %></td>
 
 	<% if (cloudflare)  { %>
 	    <td id="cf_powered_<%= domain %>"><span class="label label-success">Powered by CloudFlare</span></td>
-	    <td align="center" id="cf_powered_check<%= domain %>"><img src="./images/icon-cloud-on.png" onclick="return false;CloudFlare.toggle_all_off('<%= domain %>')" /></td>
+	    <td align="center" id="cf_powered_check<%= domain %>"><img src="./images/icon-cloud-on.png" <% if (toggleable) { %> onclick="CloudFlare.toggle_all_off('<%= domain %>')" <% } %> /></td>
 	<% } else { %>
 	    <td id="cf_powered_<%= domain %>"><span class="label">Not Powered by CloudFlare</span></td>
-	    <td align="center" id="cf_powered_check<%= domain %>"><img src="./images/icon-cloud-bypass.png" onclick="return false;CloudFlare.toggle_www_on('<%= domain %>')" /></td>
+	    <td align="center" id="cf_powered_check<%= domain %>"><img src="./images/icon-cloud-bypass.png" <% if (toggleable) { %> onclick="CloudFlare.toggle_www_on('<%= domain %>')" <% } %> /></td>
 	<% } %>
 </tr>
