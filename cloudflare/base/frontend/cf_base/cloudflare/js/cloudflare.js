@@ -50,7 +50,7 @@ _.extend(CloudFlare, {
                 message: message
             });
 
-            $(html).appendTo($wrapper).delay(8000).queue(function() { console.log($(this)); $(this).remove(); });
+            $(html).appendTo($wrapper).delay(8000).queue(function() { $(this).remove(); });
         } else {
             alert(message);
         }
@@ -109,11 +109,8 @@ _.extend(CloudFlare, {
             url: CPANEL.urls.json_api(),
             data: data,
             success: function(resp, status, xhr) {
-                console.log(this);
                 try {
-                    console.log(callback);
                     var data = $.parseJSON(resp);
-                    console.log(data);
                     // callback can set 'handlesError' to true to skip this error response and allow the callback's success function to handle the error separately
                     if (!callback.handlesError && (data.cpanelresult.error || data.cpanelresult.data[0].result == "error")) {
                         throw "Error response: " + (data.cpanelresult.error || data.cpanelresult.data[0].msg || '');
@@ -123,7 +120,6 @@ _.extend(CloudFlare, {
                         }
                     }
                 } catch (e) {
-                    console.log(e);
                     msg = e.message || e || '';
                     errorhandler.apply(this,[xhr, msg]);
                 }
@@ -136,7 +132,6 @@ _.extend(CloudFlare, {
             $(context).html('<div style="padding: 20px">' + CPANEL.icons.ajax + ' ' + CPANEL.lang.ajax_loading + '</div>');
         }
 
-console.log(settings);
         $.ajax(settings);
     },
 
@@ -235,7 +230,6 @@ console.log(settings);
 
         var callback = {
             success: function(data) {
-                console.log('success');
                 CloudFlare.update_user_records_rows([rec_num]);
             },
             error: function() {
@@ -300,7 +294,6 @@ console.log(settings);
 
     build_dnszone_cache: function(records) {
         this.NUM_RECS = records.length;
-        console.log(this);
         var tooltip_zone_cf_on = this.get_lang_string('tooltip_zone_cf_on'),
             tooltip_zone_cf_off = this.get_lang_string('tooltip_zone_cf_off');
         for (var i=0; i<records.length; i++) {
@@ -337,7 +330,6 @@ console.log(settings);
         // Set the global is CF powered text.
         if (this.NUM_RECS > 0) {
             zone_row = CFT['zone']({cloudflare: this.is_domain_cf_powered(records), domain: domain, action: 'enable_domain', action_text: 'Manage', 'toggleable': true});
-            console.log(zone_row);
             $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
         }
 
@@ -364,11 +356,9 @@ console.log(settings);
                     });
                 }
 
-                console.log(CloudFlare.NUM_RECS);
                 // Set the global is CF powered text.
                 if (CloudFlare.NUM_RECS > 0) {
                     zone_row = CFT['zone']({cloudflare: CloudFlare.is_domain_cf_powered(data.cpanelresult.data), domain: domain, action: 'enable_domain', action_text: 'Manage', 'toggleable': true});
-                    console.log(zone_row);
                     $('tr[data-zone="' + domain + '"').replaceWith(zone_row);
                 }
 
@@ -398,8 +388,6 @@ console.log(settings);
     update_user_records_table: function(cb_lambda) {
         var callback = {
             success: function(data) {
-                console.log(data);
-
                 var html = CloudFlare.build_dnszone_table_markup(data.cpanelresult.data);
                 YAHOO.util.Dom.get("user_records_div").innerHTML = 
                     '<a name="user_recs_' + this.ACTIVE_DOMAIN + '"></a>' + html;
@@ -439,13 +427,12 @@ console.log(settings);
                 CloudFlare.build_dnszone_cache(data.cpanelresult.data);
 
                 // Call the cb, if it is set.
-                console.log(cb_lambda);
                 if (cb_lambda) {
                     cb_lambda();
                 }
             }
         };
-        console.log(this.ACTIVE_DOMAIN);
+        
         // send the AJAX request
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "fetchzone",
@@ -457,7 +444,6 @@ console.log(settings);
 
         var callback = {
             success: function(data) {
-                console.log(data);
                 CloudFlare.update_user_records_table();
             }
         };
@@ -659,7 +645,6 @@ console.log(settings);
 
         var callback1 = {
             success: function(data) {
-                console.log(data);
                 if (data.cpanelresult.data[0].response.railgun_conn.obj == null) {
                    activeRailgun = null;
                 } else {
@@ -679,12 +664,9 @@ console.log(settings);
         {
             var callback2 = {
                 success: function(data) {
-                    console.log(data);
                     railgunList = data.cpanelresult.data[0].response.railguns.objs;
                     if (railgunList != null) {
-                        console.log('test');
                         rg_html = CFT['railgun']({'railgunList': railgunList, 'domain': domain, 'activeRailgun': activeRailgun});
-                        console.log(rg_html);
                         YAHOO.util.Dom.get("rglist").innerHTML = rg_html;
                     } 
                 }
