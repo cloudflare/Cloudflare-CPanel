@@ -17,7 +17,7 @@ END;
     app_key = 'CloudFlare'
  -%]
 
-	[% INCLUDE simple_head.html %]
+	[% INCLUDE tmpl/simple_head.html %]
 
 	<!-- Override to deal with Paper Lantern conflict -->
 	<style>
