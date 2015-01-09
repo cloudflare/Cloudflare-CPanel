@@ -114,7 +114,8 @@ _.extend(CloudFlare, {
                     console.log(callback);
                     var data = $.parseJSON(resp);
                     console.log(data);
-                    if (data.cpanelresult.error || data.cpanelresult.data[0].result == "error") {
+                    // callback can set 'handlesError' to true to skip this error response and allow the callback's success function to handle the error separately
+                    if (!callback.handlesError && (data.cpanelresult.error || data.cpanelresult.data[0].result == "error")) {
                         throw "Error response: " + (data.cpanelresult.error || data.cpanelresult.data[0].msg || '');
                     } else {
                         if (callback.success && typeof callback.success == "function") {
@@ -183,25 +184,27 @@ console.log(settings);
         }
         
         var callback = {
+            handlesError: true,
             success: function(data) {
+                $("#add_USER_record_status").html('');
+                $(this).html('');
+                
                 if (data.cpanelresult.data[0].result == 'success') {
-                    signup_welcome = this.get_lang_string('signup_welcome');
-                    signup_info = this.get_lang_string('signup_info', {email: email});
-
-                    YAHOO.util.Dom.get("add_USER_record_status").innerHTML = "";
-                    CloudFlare.display_error("add_USER_status_bar", "success", signup_welcome, signup_info);
-                    // After 10 sec, reload the page
-                    setTimeout('window.location.reload(true)', 10000);
+                    signup_welcome = CloudFlare.get_lang_string('signup_welcome');
+                    signup_info = CloudFlare.get_lang_string('signup_info', {email: data.cpanelresult.data[0].response.cloudflare_email});
+                    
+                    CloudFlare.display_error("success", signup_welcome, signup_info);
+                    // After 8 sec, reload the page
+                    setTimeout('window.location.reload(true)', 8000);
                 }
                 else {
-                    YAHOO.util.Dom.setStyle("add_USER_record_button", "display", "block");
+                    $("#add_USER_record_button").show();
+                    
                     if (data.cpanelresult.data[0].err_code == 124) {
-                        YAHOO.util.Dom.setStyle("cf_pass_noshow", "display", "block");
-                        YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-                        CloudFlare.display_error("add_USER_status_bar", "error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
+                        $("#cf_pass_noshow").show();
+                        CloudFlare.display_error("error", CPANEL.lang.Error, "This email is already signed up with CloudFlare. Please provide the user's CloudFlare password to continue.");
                     } else {
-                        YAHOO.util.Dom.get("add_USER_record_status").innerHTML = '';
-                        CloudFlare.display_error("add_USER_status_bar", "error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
+                        CloudFlare.display_error("error", CPANEL.lang.Error, data.cpanelresult.data[0].msg.replace(/\\/g, ""));
                     }
                 }
             },
