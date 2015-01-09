@@ -31,3 +31,6 @@ fi
 
 ## Verify that the dynamicui files have been removed for X3 and Paper Lantern
 rm -rf /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_CloudFlare.conf
+rm -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare*.conf
+rm -f /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare*.conf
+rm -f /usr/local/cpanel/base/frontend/FlatPanel/dynamicui/dynamicui_cloudflare*.conf
