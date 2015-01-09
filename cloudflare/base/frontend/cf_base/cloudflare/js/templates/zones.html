@@ -1,0 +1,56 @@
+<h4>Website Records</h4>
+
+<table id="table_dns_zone" class="table table-hover" border="0" cellspacing="0" cellpadding="0">    
+    <thead>    
+        <tr class="dt_header_row">    
+            <th>type</th>    
+            <th>name</th>    
+            <th colspan="2">record</th>    
+            <th>CloudFlare status</th>    
+        </tr>    
+    </thead>
+    <tbody>
+        <%
+        for (var i=0; i<records.length; i++) {
+            // CNAME records
+            if (records[i]['type'].match(/^(CNAME)$/)) { %>
+                <tr id="info_row_<%= i %>" class="dt_info_row">    
+                    <% print(CFT['zone_record']({type: "CNAME", rec_num: i, record: records[i]})) %>
+                </tr>    
+            
+                <tr id="module_row_<%= i %>" class="dt_module_row">
+                    <td colspan="7">    
+                        <div id="dnszone_table_edit_div_<%= i %>" class="dt_module"></div>    
+                        <div id="dnszone_table_delete_div_<%= i %>" class="dt_module"></div>    
+                        <div id="status_bar_<%= i %>" class="cjt_status_bar"></div>    
+                    </td>
+                </tr>    
+            <% }
+        }
+
+        for (var i=0; i<records.length; i++) {
+            // A, records
+            if (records[i]['type'].match(/^(A)$/)) { %>
+
+                <tr id="info_row_a_<%= i %>" class="dt_info_row">    
+                    <td id="name_value_a_<%= i %>"><%= records[i]['type'] %></td>    
+                    <td id="type_value_a_<%= i %>"><% print(records[i]['name'].substring(0, records[i]['name'].length - 1)) %></td>    
+                
+                    <% // A
+                    if (records[i]['type'] == 'A') { %>
+                        <td colspan="2" id="value_value_hehe_a_<%= i %>"><%= records[i]['address'] %></td>    
+                    <% } %> 
+
+                    <td>    
+                        <a href="javascript:void(0);" class="btn" onclick="CloudFlare.show_a_help(<%= i %>,'<%= records[i]['name'] %> ')">Run on CloudFlare</a>    
+                    </td>    
+                </tr>    
+
+                <tr id="module_row_a_<%= i %>" class="dt_module_row">
+                    <td colspan="7">    
+                    </td>
+                </tr>    
+            <% }
+        } %>
+    </tbody>
+</table>

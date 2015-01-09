@@ -7,10 +7,11 @@ mod_cf=$2
 formal_name=$3
 install_mode=$4
 if [ "$host_key" == "" ]; then
-    echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name]."
+    echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name] [install_mode]."
     echo ""
     echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
     echo "mod_cf is optional. If set, the installer will try to also install mod_cloudflare."
+    echo "install_mode is optional. Set to 'simple' to have only 1 CloudFlare icon on the main cPanel dashboard."
     exit 0
 fi
 
@@ -35,10 +36,11 @@ error=`curl -s -k https://api.cloudflare.com/host-gw.html -d act=cpanel_info -d 
 if [ "$error" != "" ]; then
     echo "Your HOST_KEY ($host_key) is invalid."
     echo ""
-    echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name]."
+    echo "Usage: ./install_cf HOST_KEY [mod_cf] [formal name] [install_mode]."
     echo ""
     echo "If you do not have a HOST_KEY, contact CloudFlare for one before proceeding."
     echo "mod_cf is optional. If set, the installer will try to also install mod_cloudflare."
+    echo "install_mode is optional. Set to 'simple' to have only 1 CloudFlare icon on the main cPanel dashboard."
     exit 0
 fi
 
@@ -141,7 +143,7 @@ cpversion=${cpversion:0:5} #should return something like '11.44'
 if [[ !( ("$cpversion" == "11.42") || ("$cpversion" == "11.44") ) ]]
 then
     echo "Removing old index.html file"
-    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/index.html
+    rm -f /usr/local/cloudflare_cpanel/paper_lantern/cloudflare/*.html
 fi
 ## End Hack for paper lantern
 
@@ -153,8 +155,43 @@ if [[ "$line62" =~ 'use 5.' ]]; then
     sed -i -e '62,1d' /usr/local/cpanel/perl/Net/SSLeay.pm
 fi
 
-## Lastly register the plugin with Cpanel
-/usr/local/cpanel/bin/register_cpanelplugin cloudflare.cpanelplugin
+## cleanup old dynamicui files if they exist, they will be recreated as needed
+rm -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare*.conf
+rm -f /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare*.conf
+rm -f /usr/local/cpanel/base/frontend/FlatPanel/dynamicui/dynamicui_cloudflare*.conf
+## including this old version of the paper lantern file
+rm -f /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_CloudFlare*.conf
+
+## Lastly register the plugin buttons with Cpanel
+if [[ -f /usr/local/cpanel/scripts/install_plugin ]]
+then
+    ## there is a separate install folder for x3 to use the older icon style
+    if [[ "$install_mode" == "simple" ]]
+    then
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.tar.bz2
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.x3.tar.bz2 --theme x3
+    else
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare.tar.bz2
+        /usr/local/cpanel/scripts/install_plugin installers/cloudflare.x3.tar.bz2 --theme x3
+    fi
+else
+    ## fall back to older installer for those before 11.44
+    if [[ "$install_mode" == "simple" ]]
+    then
+        /usr/local/cpanel/bin/register_cpanelplugin installers/cloudflare_simple.cpanelplugin
+    else
+        ## only installs in X3, since Paper lantern won't exist
+        cp base/frontend/x3/dynamicui_cloudflare_base.conf /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare_base.conf
+            ## the group requires mutliple icon images, so duplicate our current icon for all locations
+            cp base/frontend/x3/branding/cloudflare_support.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_support.png
+            cp base/frontend/x3/branding/cloudflare_status.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_status.png
+            cp base/frontend/x3/branding/cloudflare_security.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_security.png
+            cp base/frontend/x3/branding/cloudflare_performance.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_performance.png
+            cp base/frontend/x3/branding/cloudflare_analytics.png /usr/local/cpanel/base/frontend/x3/branding/cloudflare_analytics.png
+
+        /usr/local/cpanel/bin/register_cpanelplugin installers/cloudflare.cpanelplugin
+    fi
+fi
 
 ## Populate config file.
 cp etc/cloudflare.json.back etc/cloudflare.json
@@ -241,14 +278,11 @@ if [ "$mod_cf" == "mod_cf" ]; then
 "
 
 fi
-#Install the module to the paper_lantern theme, once everything else is installed. Pretty messy, but it should work.
-if [[ -d /usr/local/cpanel/base/frontend/paper_lantern/ ]]
+
+
+if [[ -f /usr/local/cpanel/bin/sprite_generator ]]
 then
-	/usr/local/cpanel/scripts/install_plugin cloudflare.tar.bz2
-    if [[ -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf ]]
-    then
-        rm /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_CloudFlare.conf
-    fi
+    /usr/local/cpanel/bin/sprite_generator --all
 fi
 
 echo "

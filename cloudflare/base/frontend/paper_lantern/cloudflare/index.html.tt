@@ -1,4 +1,5 @@
 [% SET CPANEL.CPVAR.dprefix = "../" %]
+[% SET CPANEL.CPVAR.pagename = "overview" %]
 
 [%
 IF FORM.itemsperpage;
@@ -16,7 +17,7 @@ END;
     app_key = 'CloudFlare'
  -%]
 
-	[% INCLUDE simple_head.html %]
+	[% INCLUDE tmpl/simple_head.html %]
 
 	<!-- Override to deal with Paper Lantern conflict -->
 	<style>
@@ -29,7 +30,7 @@ END;
 		}
 	</style>
 
-	[% INCLUDE simple.tmpl %]
+	[% INCLUDE tmpl/setup.tmpl %]
 
 [% END #wrapper -%]
 

@@ -1,6 +1,7 @@
 <cpanel setvar="headerimg=../images/mailmenu.gif">
 <cpanel setvar="dprefix=../">
-<cpanel setvar="headerinclude=cloudflare/simple_head.html">
+<cpanel setvar="headerinclude=cloudflare/tmpl/simple_head.html">
+<cpanel setvar="pagename=overview">
 <cpanel Branding="include(stdheader.html)">
 
 <cpanelfeature cloudflare>
@@ -14,7 +15,7 @@
 			height: 2em;
 		}
 	</style>
-<?cptt cloudflare/simple.tmpl ?>
+<?cptt cloudflare/tmpl/setup.tmpl ?>
 </cpanelfeature><!-- end cpanelfeature cloudflare -->
 
 <script type="text/javascript" src="./js/cloudflare.core.min.js"></script>

@@ -24,4 +24,13 @@ fi
 
 ln -sf "/usr/local/cloudflare_cpanel/${base_theme}/cloudflare" "/usr/local/cpanel/base/frontend/${alternate_theme}/cloudflare"
 
+find "/usr/local/cpanel/base/frontend/${base_theme}/dynamicui/" -name "dynamicui_cloudflare*.conf" -exec cp {} "/usr/local/cpanel/base/frontend/${alternate_theme}/dynamicui/" \;
+
+find "/usr/local/cpanel/base/frontend/${base_theme}/branding/" -name "cloudflare*" -exec cp {} "/usr/local/cpanel/base/frontend/${alternate_theme}/branding/" \;
+
+if [[ -f /usr/local/cpanel/bin/sprite_generator ]]
+then
+    /usr/local/cpanel/bin/sprite_generator --all
+fi
+
 echo "Success: CloudFlare plugin successfully copied to ${alternate_theme}."

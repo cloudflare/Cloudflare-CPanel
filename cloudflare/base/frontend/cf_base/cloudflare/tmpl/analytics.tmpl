@@ -1,0 +1,43 @@
+<p>
+    CloudFlare provides insight to your website traffic that you can’t get from other analytics programs. In addition to visitor analytics, you can monitor threats and search engine crawlers. For most websites, these threats and crawlers make up 20% to 50% of traffic. It’s traffic every website should understand, but most analytics services ignore.
+</p>
+
+<p><a href="https://www.cloudflare.com/features-analytics" class="btn" target="_blank">Learn More at CloudFlare</a></p>
+
+<hr />
+
+[% IF cf_user.response.user_key && base_domains_result.0.has_cf -%]
+	<div class="highlight">
+		<table class="table" width="700">
+			<thead>
+				<tr style="text-align:left;">
+				        <th>&nbsp;</th>
+				        <th>Site</th>
+				        <th>Status</th>
+				        <th align="center">CloudFlare Status</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				<script type="text/javascript">
+				//<![CDATA[
+				var domain_data = '[% base_domains_result.0.res.json() %]';
+				domain_data = $.parseJSON(domain_data);
+				for (var i=0; i<domain_data.length; i++) {
+					document.write(CFT['zone']({cloudflare: domain_data[i].cloudflare, domain: domain_data[i].domain, 'action': 'get_stats', 'action_text': 'Statistics'}));
+				}
+				//]]>
+				</script>
+			</tbody>
+		</table>
+	</div>
+
+	<div id="user_records_div"></div>
+
+[% ELSE -%]
+
+	<h2>Activate CloudFlare</h2>
+
+	<p><a href="index.html" class="btn btn-success">To begin, activate CloudFlare on your website.</a></p>
+
+[% END -%]

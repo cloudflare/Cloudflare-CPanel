@@ -1,0 +1,23 @@
+// Quick first stab at localization - some strings are still in the wild
+var CF_LANG = {
+    'creating_account' : "Creating Your CloudFlare Account. This may take several minutes.",
+    'signup_welcome' : "Welcome to CloudFlare",
+    'signup_info' : "Generate a CloudFlare password <a href=\"https://www.cloudflare.com/forgot-password.html\" target=\"_blank\">here</a>. Your CloudFlare email is curently set to {email}. Click <a href=\"\">here</a> to continue.",
+    'tooltip_zone_cf_off' : "CloudFlare is currently off. Click to enable",
+    'tooltip_zone_cf_on' : "CloudFlare is currently on. Click to disable",
+    'help': {
+    	"devmode" : "CloudFlare makes your website load faster by caching static resources like images, CSS and Javascript. If you are editing cachable content (like images, CSS, or JS) and want to see the changes right away, you should enter <b>Development mode</b>. This will bypass CloudFlare's cache. Development mode will automatically toggle off after <b>3 hours</b>. Hint: Press shift-reload if you do not see your changes immediate. If you forget to enter Development mode, you should log in to your CloudFlare.com account and use Cache Purge.",
+        "seclvl" : " CloudFlare provides security for your website and you can adjust your security setting for each website. A <b>low</b> security setting will challenge only the most threatening visitors. A <b>high</b> security setting will challenge all visitors that have exhibited threatening behavior within the last 14 days. We recommend starting with a high or medium setting.",
+        "uniques" : "Visitors are classified by regular traffic, search engine crawlers and threats. Unique visitors is defined by unique IP addresses.",
+        "visits" : "Traffic is classified by regular, search engine crawlers and threats. Page Views is defined by the number of requests to your site which return HTML.",
+        "pageload" : "CloudFlare visits the home page of your website from several locations around the world from shared hosting. We do the same request twice: once through the CloudFlare system, and once directly to your site, so bypassing the CloudFlare system. We report both page load times here. CloudFlare improves the performance of your website by caching static resources like images, CSS and Javascript closer to your visitors and by compressing your requests so they are delivered quickly.",
+        "hits" : "CloudFlare sits in front of your server and acts as a proxy, which means your traffic passes through our network. Our network nodes are distributed all over the world. We cache your static resources like images, CSS and Javascript at these nodes and deliver them to your visitors in those regions. By serving certain resources from these nodes, not only do we make your website load faster for your visitors, but we save you requests from your origin server. This means that CloudFlare offsets load so your server can perform optimally. CloudFlare does not cache html.",
+        "bandwidth" : "Just like CloudFlare saves you requests to your origin server, CloudFlare also saves you bandwidth. By serving cached content from CloudFlare's nodes and by stopping threats before they reach your server, you will see less bandwidth usage from your origin server.",       
+        "fpurge_ts":"Immediately purge all cached resources for your website. This will force CloudFlare to expire all static resources cached prior to the button click and fetch a new version.",
+        "ipv46":"Automatically enable IPv6 networking for all your orange-clouded websites. CloudFlare will listen to <a href='http://en.wikipedia.org/wiki/IPv6'>IPv6</a> even if your host or server only supports IPv4.",
+        "ob":"Automatically enable always online for web pages that lose connectivity or time out. Seamlessly bumps your visitors back to normal browsing when your site comes back online.",
+        "cache_lvl":"Adjust your caching level to modify CloudFlare's caching behavior. The <b>basic</b> setting will cache most static resources (i.e., css, images, and JavaScript). The <b>aggressive</b> setting will cache all static resources, including ones with a query string.<br /><br />Basic: http://example.com/pic.jpg<br />Aggressive: http://example.com/pic.jpg?with=query",
+        "pro":"Choose your CloudFlare plan. Upgrading will make your website even faster, even safer and even smarter. <b>SSL support</b> is included in every plan and will be <b>automatically</b> provisioned. All plans are month to month: no long-term contracts! ",
+        "railgun": "Railgun is a WAN optimization technology that caches dynamic content. It speeds up the delivery of previously non-cached pages, making your site even faster."
+    }
+};
