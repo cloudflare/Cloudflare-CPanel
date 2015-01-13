@@ -193,6 +193,12 @@ else
     fi
 fi
 
+## grab current ordering value if it exists
+ordering=`cat /usr/local/cpanel/etc/cloudflare.json | grep ordering | cut -d "\"" -f 4`
+if [ "$ordering" == "" ]; then
+    ordering=1
+fi
+
 ## Populate config file.
 cp etc/cloudflare.json.back etc/cloudflare.json
 
@@ -206,6 +212,17 @@ sed -i -e "s/$DEFAULT_HOST_FORMAL_NAME/$formal_name/" etc/cloudflare.json
 if [[ "$install_mode" == "simple" ]]
 then
     sed -i -e "s/\"install_mode\":\"extended\"/\"install_mode\":\"simple\"/" etc/cloudflare.json
+fi
+
+## set the ordering value in the json again
+sed -i -e "s/\"ordering\":\"1\"/\"ordering\":\"${ordering}\"/" etc/cloudflare.json
+
+## update dynamicui_cloudflare_base.conf files to use the ordering set
+if [ "$ordering" != 1 ]; then
+    for f in /usr/local/cpanel/base/frontend/*/dynamicui/dynamicui_cloudflare_base.conf
+    do
+        sed -i -e "s/grouporder=>1/grouporder=>${ordering}/" "$f"
+    done
 fi
 
 ## Delete the keywrap, it doesn't need to be there anymore
