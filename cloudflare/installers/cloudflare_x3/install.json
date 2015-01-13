@@ -6,7 +6,7 @@
        "id" : "cloudflare_base"
     },
     {
-        "icon" : "cloudflare.jpg",
+        "icon" : "cloudflare.png",
         "name" : "CloudFlare",
         "group_id" : "cloudflare_base",
         "order" : 1,
