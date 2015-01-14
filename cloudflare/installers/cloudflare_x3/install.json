@@ -1,6 +1,6 @@
 [
     {
-       "order" : 1,
+       "order" : 5,
        "name" : "CloudFlare - Supercharge your website",
        "type" : "group",
        "id" : "cloudflare_base"
