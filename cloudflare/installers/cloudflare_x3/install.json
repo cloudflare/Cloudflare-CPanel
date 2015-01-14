@@ -1,12 +1,12 @@
 [
     {
-       "order" : 1,
+       "order" : 5,
        "name" : "CloudFlare - Supercharge your website",
        "type" : "group",
        "id" : "cloudflare_base"
     },
     {
-        "icon" : "cloudflare.jpg",
+        "icon" : "cloudflare.png",
         "name" : "CloudFlare",
         "group_id" : "cloudflare_base",
         "order" : 1,
