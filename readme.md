@@ -10,10 +10,10 @@ Step 1. Access cPanel for the server using root user by:
 
 Step 2. Download necessary files and run installation
 
-`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) $HOST_API_KEY '$YOUR_COMPANY_NAME' [install_mode]`
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) HOST_API_KEY 'YOUR_COMPANY_NAME' [install_mode]`
 
 NOTES:
-- Be sure to replace $HOST_API_KEY and $YOUR_COMPANY_NAME with the appropriate values
+- Be sure to replace HOST_API_KEY and YOUR_COMPANY_NAME with the appropriate values
 - [install_mode] is optional and needs to be either `simple` or `extended`. Extended is the default version, adding simple to the installer shows only 1 CloudFlare icon in the main cPanel dashboard
 
 ---
@@ -22,11 +22,11 @@ NOTES:
 
 The CloudFlare plugin is installed into the default 'x3' theme, as well as the new 'Paper Lantern' theme if installed. If you utilize a custom theme or have alternate themes installed, the following command can be used to install the CloudFlare plugin on these themes:
 
-`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/copy2theme.sh) $BASE_THEME $ALTERNATE_THEME`
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/copy2theme.sh) BASE_THEME ALTERNATE_THEME`
 
-`$BASE_THEME` should be either 'x3' or 'paper_lantern', based on what theme the alternate was based on.
+`BASE_THEME` should be either 'x3' or 'paper_lantern', based on what theme the alternate was based on.
 
-Replace `$ALTERNATE_THEME` with the folder name of the alternate theme on your server. This folder should be located at `/usr/local/cpanel/base/frontend/$ALTERNATE_THEME/`.
+Replace `ALTERNATE_THEME` with the folder name of the alternate theme on your server. This folder should be located at `/usr/local/cpanel/base/frontend/ALTERNATE_THEME/`.
 
 ---
 
