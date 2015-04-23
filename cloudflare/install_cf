@@ -290,7 +290,7 @@ if [ "$mod_cf" == "mod_cf" ]; then
     rm -f mod_cloudflare*
     echo "
 
-==> mod_cloudflare: `/usr/bin/perl <(curl -s https://www.cloudflare.com/static/misc/mod_cloudflare/cloudflare.pl) install`
+==> mod_cloudflare: `bash <(curl -s https://raw.githubusercontent.com/cloudflare/mod_cloudflare/master/EasyApache/installer.sh)`
 ==> You may need to customize your EasyApache profile to include Mod CloudFlare
 "
 
