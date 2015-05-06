@@ -273,6 +273,9 @@ else
   cd ..
 fi
 
+## Shift our scripts into the 3rdparty bin
+cp -Rf 3rdparty/bin/* /usr/local/cpanel/3rdparty/bin/
+
 ## Add a post update script for cPanel in general to reinstall Cloudflare extension, since we do a version check on install
 if [[ ! -f /scripts/postupcp ]]
 then

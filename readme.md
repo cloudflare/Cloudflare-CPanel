@@ -30,6 +30,24 @@ Replace `ALTERNATE_THEME` with the folder name of the alternate theme on your se
 
 ---
 
+### BETA: "Default on" for accounts added to cPanel servers
+
+For servers that have the CloudFlare plugin installed, server owners can additionally enable a hook to automatically attempt to provision CloudFlare for all new accounts. This script hooks into the Whostmgr::Accounts::Create event.
+
+Once cPanel completes the account creation, the user's information is passed to the "default-on.php" script which attempts to create a CloudFlare account for the email address of the account and add the domain to CloudFlare. If the domain is added, the "www" subdomain will be automatically "orange clouded", enabling CloudFlare on traffic through that sub domain. This process will update the DNS record on that subdomain to properly route traffic.
+
+This service can be enabled by running the following command:
+
+`/usr/local/cpanel/bin/manage_hooks add script /usr/local/cpanel/3rdparty/bin/cloudflare/default-on.php`
+
+To disable this service, run the same command with "delete" instead of "add":
+
+`/usr/local/cpanel/bin/manage_hooks delete script /usr/local/cpanel/3rdparty/bin/cloudflare/default-on.php`
+
+Upon successfully completing signup for CloudFlare. The end-user should be able to click the "CloudFlare" button in their cPanel dashboard and already be logged in to the CloudFlare interface to enable additional subdomains, manage CloudFlare settings, and view analytics on their domain.
+
+---
+
 ### Uninstalling the cPanel Plugin
 
 An uninstall script has been provided to unregister the plugin with cPanel and remove all CloudFlare specific files from the server to deactivate the plugin.
