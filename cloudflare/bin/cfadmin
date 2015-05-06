@@ -63,7 +63,9 @@ sub run {
     }
     chomp($theargs);
 
-    $logger->info($theargs);
+    if ($cf_debug_mode) {
+        $logger->info($theargs);
+    }
 
     my ( $uid, $action, @args ) = split( / /, $theargs );
 
