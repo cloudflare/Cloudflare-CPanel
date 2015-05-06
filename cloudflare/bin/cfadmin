@@ -6,7 +6,7 @@ eval 'if [ -x /usr/local/cpanel/3rdparty/bin/perl ]; then exec /usr/local/cpanel
 
 package bin::cfadmin;
 
-# Sanatize @INC
+# Sanitize @INC
 BEGIN {
     unshift @INC, '..';                  # jnk - FIXME: is this really needed
     unshift @INC, '/usr/local/cpanel';
@@ -20,7 +20,8 @@ use Cpanel::DataStore ();
 use Cpanel::LoadFile  ();
 use Socket            ();
 use Digest::MD5       ();
-use Cpanel::AccessIds (); 
+use Cpanel::AccessIds ();
+use Data::Dumper;
 
 my $logger = Cpanel::Logger->new();
 my $locale;
@@ -45,8 +46,6 @@ my $cf_global_data      = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 
-
-
 my $serializer_function    = __get_serializer_function();
 my $json_load_function     = __get_json_load_function();
 my $json_loadfile_function = __get_json_loadfile_function();
@@ -65,6 +64,8 @@ sub run {
     }
     chomp($theargs);
 
+    $logger->info($theargs);
+
     my ( $uid, $action, @args ) = split( / /, $theargs );
 
     $logger->info($action);
@@ -73,7 +74,7 @@ sub run {
 
     my $temp_homedir_owner = ( stat($temp{"homedir"}) )[4];
 
-    if ( defined($temp{"user"}) && exists($temp{"user"}) && $uid != getpwnam($temp{"user"}) ) {
+    if ( defined($temp{"user"}) && $uid != getpwnam($temp{"user"}) ) {
         $logger->info("User mismatch. Bailing out.");
         die "User mismatch";
     }
@@ -93,212 +94,110 @@ sub run {
         'user_create' => sub {
             my %OPTS = @args;
 
-            if ( ( getpwuid( int($uid) ) )[0] eq $OPTS{"user"} ) {
-                CloudFlare_init();
+            # This is the one case where we need to do __load_data_file among other things, because of the
+            # host_key salt with the user token.
+            __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
 
-                if ( !$cf_host_key ) {
-                    $logger->info("Missing cf_host_key! Define this in $cf_host_key_file.");
-                    return [];
-                }
+            # Use a random string as a password.
+            $logger->info( "Creating Cloudflare user for " . $OPTS{"email"} );
+            $cf_global_data->{"cloudflare_email"} = $OPTS{"email"};
+            $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } = Digest::MD5::md5_hex( $OPTS{"email"} . $cf_host_key );
+            $logger->info( "Making user token: " . $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } );
 
+            __verify_file_with_user($OPTS{"user"});
 
+            Cpanel::AccessIds::do_as_user( $OPTS{"user"}, sub { Cpanel::DataStore::store_ref( $cf_data_file , $cf_global_data); } );
 
-                # This is the one case where we need to do __load_data_file among other things, because of the
-                # host_key salt with the user token.
-                __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
+            ## Otherwise, try to create this user.
+            my $query = {
+                "act"              => "user_create",
+                "cloudflare_email" => $OPTS{"email"},
+                "cloudflare_pass"  => ( defined($OPTS{"password"}) && $OPTS{"password"} ) ? $OPTS{"password"} : crypt( int( rand(10000000) ), time ),
+                "unique_id"        => Digest::MD5::md5_hex( $OPTS{"email"} . $cf_host_key ),
+            };
 
-                # Use a random string as a password.
-                $logger->info( "Creating Cloudflare user for " . $OPTS{"email"} );
-                $cf_global_data->{"cloudflare_email"} = $OPTS{"email"};
-                $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } = Digest::MD5::md5_hex( $OPTS{"email"} . $cf_host_key );
-                $logger->info( "Making user token: " . $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } );
-                
-                __verify_file_with_user($OPTS{"user"});
+            my $result = __https_post_req->($query);
+            $result = $json_load_function->($result);
 
-                
-                Cpanel::AccessIds::do_as_user( $OPTS{"user"}, sub { Cpanel::DataStore::store_ref( $cf_data_file , $cf_global_data); } );
-                
-
-                
-                ## Otherwise, try to create this user.
-                my $args = {
-                    "host"  => $cf_host_name,
-                    "uri"   => $cf_host_uri,
-                    "port"  => $cf_host_port,
-                    "query" => {
-                        "act"              => "user_create",
-                        "host_key"         => $cf_host_key,
-                        "cloudflare_email" => $OPTS{"email"},
-                        "cloudflare_pass"  => ( $OPTS{"password"} ) ? $OPTS{"password"} : crypt( int( rand(10000000) ), time ),
-                        "unique_id"        => Digest::MD5::md5_hex( $OPTS{"email"} . $cf_host_key ),
-                    },
-                };
-
-                my $result = __https_post_req->($args);
-                $result = $json_load_function->($result);
-
-                $serializer_function->($result);
-
-            }
-            else {
-                exit;
-            }
+            $serializer_function->($result);
         },
         'user_lookup' => sub {
             my %OPTS = @args;
 
-            if ( ( getpwuid( int($uid) ) )[0] eq $OPTS{"user"} ) {
+            __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
 
-                CloudFlare_init();
-
-                __load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
-                if ( !$cf_host_key ) {
-                    $logger->info("Missing cf_host_key! Define this in $cf_host_key_file.");
-                    return [];
+            if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
+                if ($cf_debug_mode) {
+                    $logger->info("Using user token");
                 }
+                my $query = {
+                    "act"       => "user_lookup",
+                    "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
+                };
 
-                if ( !$has_ssl ) {
-                    $logger->info("No SSL Configured");
-                    return [
-                        {
-                            "result" => "error",
-                            "msg"    => "CloudFlare is disabled until Net::SSLeay is installed on this server."
-                        }
-                    ];
+                my $result = $json_load_function->( __https_post_req->($query) );
+                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+                $logger->info($result);
+
+                $serializer_function->($result);
+            } else {
+                if ($cf_debug_mode) {
+                    $logger->info("Using user email");
                 }
+                my $query = {
+                    "act"              => "user_lookup",
+                    "cloudflare_email" => $cf_global_data->{"cloudflare_email"},
+                };
 
-                if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
-                    if ($cf_debug_mode) {
-                        $logger->info("Using user token");
-                    }
-                    my $login_args = {
-                        "host"  => $cf_host_name,
-                        "uri"   => $cf_host_uri,
-                        "port"  => $cf_host_port,
-                        "query" => {
-                            "act"       => "user_lookup",
-                            "host_key"  => $cf_host_key,
-                            "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
-                        },
-                    };
+                my $result = $json_load_function->( __https_post_req->($query) );
+                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
 
-                    my $result = $json_load_function->( __https_post_req->($login_args) );
-                    $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-                    $logger->info($result);
-
-                    $serializer_function->($result);
-                }
-                else {
-                    if ($cf_debug_mode) {
-                        $logger->info("Using user email");
-                    }
-                    my $login_args = {
-                        "host"  => $cf_host_name,
-                        "uri"   => $cf_host_uri,
-                        "port"  => $cf_host_port,
-                        "query" => {
-                            "act"              => "user_lookup",
-                            "host_key"         => $cf_host_key,
-                            "cloudflare_email" => $cf_global_data->{"cloudflare_email"},
-                        },
-                    };
-
-                    my $result = $json_load_function->( __https_post_req->($login_args) );
-                    $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
-
-                    $serializer_function->($result);
-                }
-            }
-            else {
-                exit;
+                $serializer_function->($result);
             }
         },
-
         'zone_set' => sub {
             my %OPTS = @args;
 
-            if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir"} ) {
-                CloudFlare_init();
+            __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
+            my $domain = "." . $OPTS{"zone_name"} . ".";
+            my $subs   = $OPTS{"subdomains"};
+            $subs =~ s/${domain}//g;
 
-                if ( !$cf_host_key || !$cf_host_prefix ) {
-                    $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_host_key_file and $cf_config_file.");
-                    return [];
-                }
+            ## Set up the zone_set args.
+            my $query = {
+                "act"        => "zone_set",
+                "user_key"   => $OPTS{"user_key"},
+                "zone_name"  => $OPTS{"zone_name"},
+                "resolve_to" => $cf_host_prefix . "." . $OPTS{"zone_name"},
+                "subdomains" => $subs
+            };
 
-                __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
-                my $domain = "." . $OPTS{"zone_name"} . ".";
-                my $subs   = $OPTS{"subdomains"};
-                $subs =~ s/${domain}//g;
-
-                ## Unpack the mapping from recs to lines (ugg, this is SOOO BAAD)
-                my $recs2lines = $json_load_function->( $OPTS{"cf_recs"} );
-
-                ## Set up the zone_set args.
-                my $login_args = {
-                    "host"  => $cf_host_name,
-                    "uri"   => $cf_host_uri,
-                    "port"  => $cf_host_port,
-                    "query" => {
-                        "act"        => "zone_set",
-                        "host_key"   => $cf_host_key,
-                        "user_key"   => $OPTS{"user_key"},
-                        "zone_name"  => $OPTS{"zone_name"},
-                        "resolve_to" => $cf_host_prefix . "." . $OPTS{"zone_name"},
-                        "subdomains" => $subs
-                    },
-                };
-
-                if ( !$subs ) {
-                    $login_args->{"query"}->{"act"} = "zone_delete";
-                    $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
-                }
-
-                my $result = $json_load_function->( __https_post_req->($login_args) );
-
-                $serializer_function->($result);
-            }
-            else {
-                exit;
+            if ( !$subs ) {
+                $query->{"act"} = "zone_delete";
+                $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
             }
 
+            my $result = $json_load_function->( __https_post_req->($query) );
+
+            $serializer_function->($result);
         },
-
         'zone_delete' => sub {
             my %OPTS = @args;
 
-            if ( ( getpwuid( int($uid) ) )[7] eq $OPTS{"homedir"} ) {
+            __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
+            my $domain = "." . $OPTS{"zone_name"} . ".";
 
-                CloudFlare_init();
+            ## Set up the zone_set args.
+            my $query =  {
+                "act"       => "zone_delete",
+                "user_key"  => $OPTS{"user_key"},
+                "zone_name" => $OPTS{"zone_name"}
+            };
 
-                if ( !$cf_host_key || !$cf_host_prefix ) {
-                    $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_host_key_file and $cf_config_file.");
-                    return [];
-                }
+            my $result = $json_load_function->( __https_post_req->($query) );
 
-                __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
-                my $domain = "." . $OPTS{"zone_name"} . ".";
-
-                ## Set up the zone_set args.
-                my $login_args = {
-                    "host"  => $cf_host_name,
-                    "uri"   => $cf_host_uri,
-                    "port"  => $cf_host_port,
-                    "query" => {
-                        "act"       => "zone_delete",
-                        "host_key"  => $cf_host_key,
-                        "user_key"  => $OPTS{"user_key"},
-                        "zone_name" => $OPTS{"zone_name"}
-                    },
-                };
-
-                my $result = $json_load_function->( __https_post_req->($login_args) );
-
-                $serializer_function->($result);
-            }
-            else {
-                exit;
-            }
-        },
+            $serializer_function->($result);
+        }
     );
 
     # Verify that the command exists
@@ -308,7 +207,8 @@ sub run {
     }
 
     # Code used to ensure that the correct user is being run.
-    my ( $user, $gid, $home ) = ( getpwuid( int($uid) ) )[ 0, 3, 7 ];
+    my @getpwuid_result = getpwuid( int($uid) );
+    my ( $user, $gid, $home ) = @getpwuid_result[ 0, 3, 7 ];
 
     if ( $user eq 'root' || $user eq '' ) {
         print "Admin Binary called with invalid user\n";
@@ -322,6 +222,37 @@ sub run {
 
     # This is needed by the Cpanel::AdminBin module
     print ".\n";
+
+    # Additional validation to make sure we are operating in the correct user
+    if (!defined($temp{"homedir"}) && !defined($temp{"user"})) {
+        exit;
+    }
+
+    if (defined($temp{"homedir"}) && ! $getpwuid_result[7] eq $temp{"homedir"} ) {
+        exit;
+    }
+
+    if (defined($temp{"user"}) && ! $getpwuid_result[0] eq $temp{"user"} ) {
+        exit;
+    }
+
+    CloudFlare_init();
+    $logger->info("CloudFlare initialized");
+
+    if ( !$cf_host_key || !$cf_host_prefix ) {
+        $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_host_key_file and $cf_config_file.");
+        return [];
+    }
+
+    if ( !$has_ssl ) {
+        $logger->info("No SSL Configured");
+        return [
+            {
+                "result" => "error",
+                "msg"    => "CloudFlare is disabled until Net::SSLeay is installed on this server."
+            }
+        ];
+    }
 
     # Execute the action in question
 
@@ -394,70 +325,53 @@ sub __load_data_file {
 }
 
 sub __verify_file_with_user{
-        my $user = shift;
-                
-        if ( -l $cf_data_file )
-        {
-            $logger->info("Symlink found. Removing cloudflare_data.yaml.");
-            unlink($cf_data_file);
-        }  
+    my $user = shift;
 
-        my $temp_uid = (getpwnam($user))[2];
-
-        my $inode = (stat($cf_data_file))[4];
-        $logger->info($inode);
-        $logger->info($temp_uid);
-
-        if ( $inode != (getpwnam($user))[2] )
-        {   
-            if ( -e $cf_data_file )
-            {
-                    $logger->info("Permisisons incorrect on inode. Removing cloudflare_data.yaml");
-                    unlink($cf_data_file);
-            }
-            else
-            {
-                    $logger->info("cloudflare_data.yaml does not exist.");
-            }
-        }                 
-}
-
-sub __fetchzone {
-    my %OPTS   = @_;
-    my $domain = $OPTS{'domain'};
-
-    require Cpanel::DnsUtils::AskDnsAdmin;
-    require Cpanel::ZoneFile;
-
-    my @ZFILE = split( "\n", Cpanel::DnsUtils::AskDnsAdmin::askdnsadmin( "GETZONE", 0, $domain ) );
-    my $zone_ref = Cpanel::ZoneFile->new( text => \@ZFILE, domain => $domain );
-    my $results = { 'record' => $zone_ref };
-
-    my %KEYMAP;
-
-    if ( ref $results->{'record'} eq 'ARRAY' ) {
-        for ( 0 .. $#{ $results->{'record'} } ) {
-            $results->{'record'}->[$_]->{'record'} = ( $results->{'record'}->[$_]->{'address'} || $results->{'record'}->[$_]->{'cname'} || $results->{'record'}->[$_]->{'txtdata'} );
-            $results->{'record'}->[$_]->{'line'} = ( $results->{'record'}->[$_]->{'Line'} );
-        }
-        foreach my $key ( keys %KEYMAP ) {
-            if ( exists $OPTS{$key} && defined $OPTS{$key} ) {
-                my %MULTITYPES = map { $_ => undef } split( /[\|\,]/, $OPTS{$key} );
-                @{ $results->{'record'} } = grep { exists $MULTITYPES{ $_->{ $KEYMAP{$key} } } } @{ $results->{'record'} };
-            }
-        }
+    if ( -l $cf_data_file )
+    {
+        $logger->info("Symlink found. Removing cloudflare_data.yaml.");
+        unlink($cf_data_file);
     }
 
-    return $results;
+    my $temp_uid = (getpwnam($user))[2];
+
+    my $inode = (stat($cf_data_file))[4];
+    $logger->info($inode);
+    $logger->info($temp_uid);
+
+    if ( $inode != (getpwnam($user))[2] )
+    {
+        if ( -e $cf_data_file )
+        {
+                $logger->info("Permisisons incorrect on inode. Removing cloudflare_data.yaml");
+                unlink($cf_data_file);
+        }
+        else
+        {
+                $logger->info("cloudflare_data.yaml does not exist.");
+        }
+    }
 }
 
 sub __https_post_req {
-    my ($args_hr) = @_;
+    my ($query) = @_;
+
+    # Use standard host, uri, and port
+    my $args_hr = {
+        "host"  => $cf_host_name,
+        "uri"   => $cf_host_uri,
+        "port"  => $cf_host_port,
+        "query" => $query
+    };
+
+    # Add host_key to all queries
+    $args_hr->{'query'}->{'host_key'} = $cf_host_key;
+    $logger->info(Dumper($args_hr));
+
     if ( $args_hr->{'port'} ne "443" ) {
         die "POST request not defined to be Port 443, this should not happen.";
     }
     else {
-        my ($args_hr) = @_;
         my $headers = Net::SSLeay::make_headers(
             'CF-Integration' => 'cpanel',
             'CF-Integration-Version' => $cf_cp_version
