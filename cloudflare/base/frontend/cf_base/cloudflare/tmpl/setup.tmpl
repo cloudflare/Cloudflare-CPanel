@@ -32,11 +32,11 @@ END;
 SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 -%]
 
-<div id="FixedContent">
-	<ul id="Notifications"></ul>
-</div>
-
 <div class="cloudflare-content">
+    <div id="notifications">
+        <div class="global-notifications"></div>
+    </div>
+
 	<div class="yui-skin-sam">
 		[% INCLUDE tmpl/brand.tmpl %]
 		[% INCLUDE "tmpl/${CPANEL.CPVAR.pagename}.tmpl" %]

@@ -4,13 +4,13 @@ this["CFT"]["error"] = function(obj) {
 obj || (obj = {});
 var __t, __p = '', __e = _.escape;
 with (obj) {
-__p += '<div class="alert alert-' +
+__p += '<div role="alert" class="alert ' +
 ((__t = ( type )) == null ? '' : __t) +
-'">\n\t<h4>' +
+'">\n    <span class="message"><p><strong>' +
 ((__t = ( header )) == null ? '' : __t) +
-'</h4>\n\t<p>' +
+'</strong> ' +
 ((__t = ( message )) == null ? '' : __t) +
-'</p>\n</div>\n';
+'</p></span>\n</div>\n';
 
 }
 return __p

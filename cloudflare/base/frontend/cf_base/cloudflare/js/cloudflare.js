@@ -41,7 +41,7 @@ _.extend(CloudFlare, {
     display_error: function(type, header, message) {
         $ = CloudFlare.$;
 
-        var $wrapper = $('#cloudflare-error');
+        var $wrapper = $('#notifications .global-notifications');
 
         if ($wrapper.length > 0) {
             html = CFT['error']({
@@ -50,7 +50,7 @@ _.extend(CloudFlare, {
                 message: message
             });
 
-            $(html).appendTo($wrapper).delay(8000).queue(function() { $(this).remove(); });
+            $(html).appendTo($wrapper).delay(10000).queue(function() { $(this).remove(); });
         } else {
             alert(message);
         }
