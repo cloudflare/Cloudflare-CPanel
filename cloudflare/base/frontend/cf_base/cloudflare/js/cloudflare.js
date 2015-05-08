@@ -511,7 +511,7 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_func" : "zone_edit_cf_setting",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY,
+            "user": USER,
             "v" : value,
             "a" : action
         }, callback, $('#user_records_div'));
@@ -546,7 +546,7 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_func" : action,
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY,
+            "user": USER,
             "tag" : tag
         }, callback, $('#user_records_div'));
         return false;
@@ -573,7 +573,7 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_func" : "set_railgun_mode",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY,
+            "user": USER,
             "tag" : tag,
             "mode" : action
         }, callback, $('#user_records_div'));
@@ -636,7 +636,7 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_func" : "zone_get_stats",
             "zone_name" : this.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY
+            "user": USER
         }, callback, $('#user_records_div'));
     },
 
@@ -657,7 +657,7 @@ _.extend(CloudFlare, {
             "cpanel_jsonapi_func" : "get_active_railguns",
             "zone_name" : CloudFlare.ACTIVE_DOMAIN,
             "user_email" : USER_EMAIL,
-            "user_api_key" : USER_API_KEY
+            "user": USER
         }, callback1);
 
         setTimeout(function ()
@@ -676,7 +676,7 @@ _.extend(CloudFlare, {
                 "cpanel_jsonapi_func" : "get_railguns",
                 "zone_name" : CloudFlare.ACTIVE_DOMAIN,
                 "user_email" : USER_EMAIL,
-                "user_api_key" : USER_API_KEY
+                "user": USER
             }, callback2);                                                         
         }, 500);
 
