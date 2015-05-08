@@ -32,11 +32,11 @@ END;
 SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 -%]
 
-<div id="FixedContent">
-	<ul id="Notifications"></ul>
-</div>
-
 <div class="cloudflare-content">
+    <div id="notifications">
+        <div class="global-notifications"></div>
+    </div>
+
 	<div class="yui-skin-sam">
 		[% INCLUDE tmpl/brand.tmpl %]
 		[% INCLUDE "tmpl/${CPANEL.CPVAR.pagename}.tmpl" %]
@@ -49,9 +49,9 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
 var LANG = [% js_lang.json() %];
 var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 0 %];
-var USER_API_KEY = [% (cf_user.response.user_api_key)? cf_user.response.user_api_key.json(): 0 %];
+var USER = "[% CPANEL.CPDATA.USER %]";
 var USER_EMAIL = [% (cf_user.response.cloudflare_email)? cf_user.response.cloudflare_email.json(): 0 %];
 var USER_HOME_DIR = [% CPANEL.homedir.json() %];
-var CF_ON_CLOUD_MESSAGE = [% cf_user.on_cloud_message.json() %];
+var CF_ON_CLOUD_MESSAGE = [% cf_user.on_cloud_message.json()? cf_user.on_cloud_message.json(): "\"\"" %];
 //]]>
 </script>

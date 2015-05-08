@@ -100,7 +100,8 @@ sub api2_user_lookup {
 sub api2_get_stats {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -119,7 +120,7 @@ sub api2_get_stats {
         "query" => {
             "a" => "stats",
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "u" => $OPTS{"user_email"},
             "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
         },
@@ -132,7 +133,8 @@ sub api2_get_stats {
 sub api2_edit_cf_setting {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -151,7 +153,7 @@ sub api2_edit_cf_setting {
         "query" => {
             "a" => $OPTS{"a"},
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "u" => $OPTS{"user_email"},
             "v" => $OPTS{"v"},
         },
@@ -358,7 +360,8 @@ sub api2_getbasedomains {
 sub api2_get_railguns {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -374,7 +377,7 @@ sub api2_get_railguns {
         "uri" => "/api/v2/railgun/zone_get_actives_list",
         "port" => $cf_host_port,
         "query" => {
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "email" => $OPTS{"user_email"},
             "z" => $OPTS{"zone_name"},
         },
@@ -387,7 +390,8 @@ sub api2_get_railguns {
 sub api2_zone_get_active_railgun {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -404,7 +408,7 @@ sub api2_zone_get_active_railgun {
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "email" => $OPTS{"user_email"},
             "enabled" => "all",
         },
@@ -417,7 +421,8 @@ sub api2_zone_get_active_railgun {
 sub api2_set_railgun {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -437,7 +442,7 @@ sub api2_set_railgun {
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "email" => $OPTS{"user_email"},
             "tag" => $OPTS{"tag"},
             "mode" => "0",
@@ -451,7 +456,8 @@ sub api2_set_railgun {
 sub api2_remove_railgun {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -468,7 +474,7 @@ sub api2_remove_railgun {
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "email" => $OPTS{"user_email"},
         },
     };
@@ -480,7 +486,8 @@ sub api2_remove_railgun {
 sub api2_railgun_mode {
     my %OPTS = @_;
 
-    if (!$OPTS{"user_api_key"}) {
+    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
+    if (!$user_api_key) {
         $logger->info("Missing user_api_key!");
         return [];
     }
@@ -497,7 +504,7 @@ sub api2_railgun_mode {
         "port" => $cf_host_port,
         "query" => {
             "z" => $OPTS{"zone_name"},
-            "tkn" => $OPTS{"user_api_key"},
+            "tkn" => $user_api_key,
             "email" => $OPTS{"user_email"},
             "tag" => $OPTS{"tag"},
         },
@@ -614,6 +621,15 @@ sub __fetchzone {
     }
 
     return $results;
+}
+
+sub __load_user_api_key {
+    my $home_dir = shift;
+    my $user = shift;
+
+    my $user_lookup = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', "user $user homedir $home_dir" );
+
+    return $user_lookup->{"response"}->{"user_api_key"};
 }
 
 sub __https_post_req {
