@@ -18,9 +18,11 @@ use strict;
 use Cpanel::Logger    ();
 use Cpanel::DataStore ();
 use Cpanel::LoadFile  ();
-use Socket            ();
 use Digest::MD5       ();
 use Cpanel::AccessIds ();
+
+use Cpanel::CloudFlare::Helper();
+use Cpanel::CloudFlare::Api();
 
 my $logger = Cpanel::Logger->new();
 my $locale;
@@ -46,8 +48,8 @@ my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 
 my $serializer_function    = __get_serializer_function();
-my $json_load_function     = __get_json_load_function();
-my $json_loadfile_function = __get_json_loadfile_function();
+my $json_load_function     = Cpanel::CloudFlare::Helper::__get_json_load_function();
+my $json_loadfile_function = Cpanel::CloudFlare::Helper::__get_json_loadfile_function();
 
 __PACKAGE__->run unless caller;
 
@@ -408,30 +410,6 @@ sub __get_current_version {
     }
 
     return 'unknown';
-}
-
-sub __get_json_load_function {
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
-    if ( $INC{'Cpanel/JSON.pm'} ) {
-        return \&Cpanel::JSON::Load;
-    }
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
-    if ( $INC{'JSON/Syck.pm'} ) {
-        return \&JSON::Syck::Load;
-    }
-    die "Failed to find JSON load funcition";
-}
-
-sub __get_json_loadfile_function {
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
-    if ( $INC{'Cpanel/JSON.pm'} && 'Cpanel::JSON'->can('LoadFile') ) {
-        return \&Cpanel::JSON::LoadFile;
-    }
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
-    if ( $INC{'JSON/Syck.pm'} ) {
-        return \&JSON::Syck::LoadFile;
-    }
-    die "Failed to find JSON load funcition";
 }
 
 ########## END Internal Functions #########
