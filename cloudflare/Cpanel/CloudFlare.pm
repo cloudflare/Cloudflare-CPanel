@@ -28,7 +28,7 @@ my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
 
 sub CloudFlare_init {
     $json_dump_function     ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
-    $json_load_function     ||= Cpanel::CloudFlare::Helper::__get_json_loadfile_function();
+    $json_load_function     ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
     Cpanel::CloudFlare::Api::init();
 }
 
