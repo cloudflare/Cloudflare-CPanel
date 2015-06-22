@@ -55,16 +55,11 @@ sub api2_user_lookup {
 sub api2_get_stats {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::client_api_request({
         "a" => "stats",
         "z" => $OPTS{"zone_name"},
-        "tkn" => $user_api_key,
         "u" => $OPTS{"user_email"},
         "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
     });
@@ -73,16 +68,11 @@ sub api2_get_stats {
 sub api2_edit_cf_setting {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::client_api_request({
         "a" => $OPTS{"a"},
         "z" => $OPTS{"zone_name"},
-        "tkn" => $user_api_key,
         "u" => $OPTS{"user_email"},
         "v" => $OPTS{"v"}
     });
@@ -286,14 +276,9 @@ sub api2_getbasedomains {
 sub api2_get_railguns {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_get_actives_list", {
-        "tkn" => $user_api_key,
         "email" => $OPTS{"user_email"},
         "z" => $OPTS{"zone_name"}
     });
@@ -302,15 +287,10 @@ sub api2_get_railguns {
 sub api2_zone_get_active_railgun {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_conn_get_active", {
         "z" => $OPTS{"zone_name"},
-        "tkn" => $user_api_key,
         "email" => $OPTS{"user_email"},
         "enabled" => "all"
     });
@@ -319,18 +299,12 @@ sub api2_zone_get_active_railgun {
 sub api2_set_railgun {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
-
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     api2_remove_railgun(%OPTS);
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_set_by_tag", {
         "z" => $OPTS{"zone_name"},
-        "tkn" => $user_api_key,
         "email" => $OPTS{"user_email"},
         "tag" => $OPTS{"tag"},
         "mode" => "0",
@@ -340,15 +314,10 @@ sub api2_set_railgun {
 sub api2_remove_railgun {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_multi_delete", {
        "z" => $OPTS{"zone_name"},
-       "tkn" => $user_api_key,
        "email" => $OPTS{"user_email"},
     });
 }
@@ -356,15 +325,10 @@ sub api2_remove_railgun {
 sub api2_railgun_mode {
     my %OPTS = @_;
 
-    my $user_api_key = __load_user_api_key($OPTS{"homedir"} , $OPTS{"user"});
-    if (!$user_api_key) {
-        $logger->info("Missing user_api_key!");
-        return [];
-    }
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_setmode_" . $OPTS{"mode"} . "_by_tag", {
        "z" => $OPTS{"zone_name"},
-       "tkn" => $user_api_key,
        "email" => $OPTS{"user_email"},
        "tag" => $OPTS{"tag"},
     });
