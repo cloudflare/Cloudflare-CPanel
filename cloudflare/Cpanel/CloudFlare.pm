@@ -57,7 +57,7 @@ sub api2_get_stats {
 
     Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
-    return Cpanel::CloudFlare::Api::client_api_request({
+    return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => "stats",
         "z" => $OPTS{"zone_name"},
         "u" => $OPTS{"user_email"},
@@ -70,7 +70,7 @@ sub api2_edit_cf_setting {
 
     Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
-    return Cpanel::CloudFlare::Api::client_api_request({
+    return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => $OPTS{"a"},
         "z" => $OPTS{"zone_name"},
         "u" => $OPTS{"user_email"},

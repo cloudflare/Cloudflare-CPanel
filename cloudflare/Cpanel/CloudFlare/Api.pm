@@ -28,7 +28,7 @@ sub init {
     return $initialized = true;
 }
 
-sub client_api_request {
+sub client_api_request_v1 {
     my ( $query ) = @_;
 
     $base = Cpanel::CloudFlare::Config::get_client_api_base();
