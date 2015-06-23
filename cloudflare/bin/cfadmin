@@ -18,36 +18,28 @@ use strict;
 use Cpanel::Logger    ();
 use Cpanel::DataStore ();
 use Cpanel::LoadFile  ();
-use Socket            ();
 use Digest::MD5       ();
 use Cpanel::AccessIds ();
 
+use Cpanel::CloudFlare::Api();
+use Cpanel::CloudFlare::Config();
+use Cpanel::CloudFlare::Helper();
+use Cpanel::CloudFlare::Host();
+
 my $logger = Cpanel::Logger->new();
-my $locale;
-my $cf_config_file        = "/usr/local/cpanel/etc/cloudflare.json";
 my $cf_host_key_file	  = "/root/.cpanel/datastore/cf_api";
 my $cf_data_file_name     = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
 my $cf_host_key;
-my $cf_host_name;
-my $cf_host_uri;
-my $cf_user_name;
-my $cf_user_uri;
-my $cf_host_port;
 my $cf_host_on_cloud_msg;
-my $cf_host_prefix;
-my $has_ssl;
-my $cf_debug_mode;
-my $hoster_name;
-my $cf_cp_version;
 my $cf_global_data      = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 
 my $serializer_function    = __get_serializer_function();
-my $json_load_function     = __get_json_load_function();
-my $json_loadfile_function = __get_json_loadfile_function();
+my $json_load_function     = Cpanel::CloudFlare::Helper::__get_json_load_function();
+my $json_loadfile_function = Cpanel::CloudFlare::Helper::__get_json_loadfile_function();
 
 __PACKAGE__->run unless caller;
 
@@ -63,7 +55,7 @@ sub run {
     }
     chomp($theargs);
 
-    if ($cf_debug_mode) {
+    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
         $logger->info($theargs);
     }
 
@@ -106,8 +98,7 @@ sub run {
                 "unique_id"        => Digest::MD5::md5_hex( $OPTS{"email"} . $cf_host_key ),
             };
 
-            my $result = __https_post_req->($query);
-            $result = $json_load_function->($result);
+            my $result = Cpanel::CloudFlare::Api::host_api_request($query);
 
             if ($result->{"result"} == "success" && defined($result->{"response"}->{"unique_id"})) {
                 $logger->info( "Creating Cloudflare user for " . $OPTS{"email"} );
@@ -128,7 +119,7 @@ sub run {
             __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
 
             if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
-                if ($cf_debug_mode) {
+                if (Cpanel::CloudFlare::Config::is_debug_mode()) {
                     $logger->info("Using user token");
                 }
                 my $query = {
@@ -136,8 +127,8 @@ sub run {
                     "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
                 };
 
-                my $result = $json_load_function->( __https_post_req->($query) );
-                $result->{"on_cloud_message"} = $cf_host_on_cloud_msg;
+                my $result = Cpanel::CloudFlare::Api::host_api_request($query);
+                $result->{"on_cloud_message"} = Cpanel::CloudFlare::Config::get_on_cloud_message();
                 $logger->info($result);
 
                 $serializer_function->($result);
@@ -156,7 +147,7 @@ sub run {
                 "act"        => "zone_set",
                 "user_key"   => $OPTS{"user_key"},
                 "zone_name"  => $OPTS{"zone_name"},
-                "resolve_to" => $cf_host_prefix . "." . $OPTS{"zone_name"},
+                "resolve_to" => Cpanel::CloudFlare::Config::get_host_prefix() . "." . $OPTS{"zone_name"},
                 "subdomains" => $subs
             };
 
@@ -165,7 +156,7 @@ sub run {
                 $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
             }
 
-            my $result = $json_load_function->( __https_post_req->($query) );
+            my $result = Cpanel::CloudFlare::Api::host_api_request($query);
 
             $serializer_function->($result);
         },
@@ -182,7 +173,7 @@ sub run {
                 "zone_name" => $OPTS{"zone_name"}
             };
 
-            my $result = $json_load_function->( __https_post_req->($query) );
+            my $result = Cpanel::CloudFlare::Api::host_api_request($query);
 
             $serializer_function->($result);
         }
@@ -233,8 +224,8 @@ sub run {
         ];
     }
 
-    if ( !$cf_host_key || !$cf_host_prefix ) {
-        $logger->info("Missing cf_host_key or $cf_host_prefix! Define these in $cf_host_key_file and $cf_config_file.");
+    ## No use making a request without this
+    if ( !Cpanel::CloudFlare::Host::get_host_api_key()) {
         return [];
     }
 
@@ -247,34 +238,7 @@ sub run {
 
 ########## BEGIN Internal Functions #########
 sub CloudFlare_init {
-    my $data = $json_loadfile_function->($cf_config_file);
-
-    $cf_host_name         = $data->{"host_name"};
-    $cf_host_uri          = $data->{"host_uri"};
-    $cf_host_port         = $data->{"host_port"};
-    $cf_host_prefix       = $data->{"host_prefix"};
-    $cf_debug_mode        = $data->{"debug"};
-    $cf_user_name         = $data->{"user_name"};
-    $cf_user_uri          = $data->{"user_uri"};
-    $cf_cp_version        = $data->{"cp_version"};
-    $hoster_name          = $data->{"host_formal_name"};
-    $cf_host_on_cloud_msg = ( $data->{"cloudflare_on_message"} ) ? $data->{"cloudflare_on_message"} : "";
-    if ( !$hoster_name ) {
-        $hoster_name = $DEFAULT_HOSTER_NAME;
-    }
-
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Net::SSLeay; $has_ssl = 1; };
-    if ( !$has_ssl ) {
-        $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
-        return 0;
-    }
-
-    my $file     = "/root/.cpanel/datastore/cf_api";
-    my $response = "";
-    $response = Cpanel::LoadFile::loadfile($file);
-    $response =~ s/\n//;
-    $cf_host_key = $response;
-
+    Cpanel::CloudFlare::Host::load();
     return 1;
 }
 
@@ -285,7 +249,7 @@ sub __load_data_file {
     __verify_file_with_user($user);
 
     if ( Cpanel::DataStore::load_ref( $cf_data_file, $cf_global_data ) ) {
-        if ($cf_debug_mode) {
+        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
             $logger->info("Successfully loaded cf data -- $cf_data_file");
         }
     } else {
@@ -332,40 +296,6 @@ sub __verify_file_with_user{
     }
 }
 
-sub __https_post_req {
-    my ($query) = @_;
-
-    # Use standard host, uri, and port
-    my $args_hr = {
-        "host"  => $cf_host_name,
-        "uri"   => $cf_host_uri,
-        "port"  => $cf_host_port,
-        "query" => $query
-    };
-
-    # Add host_key to all queries
-    $args_hr->{'query'}->{'host_key'} = $cf_host_key;
-
-    if ( $args_hr->{'port'} ne "443" ) {
-        die "POST request not defined to be Port 443, this should not happen.";
-    }
-
-    my $headers = Net::SSLeay::make_headers(
-        'CF-Integration' => 'cpanel',
-        'CF-Integration-Version' => $cf_cp_version
-    );
-    my ( $page, $response, %reply_headers ) = Net::SSLeay::post_https(
-        $args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'},
-        $headers,
-        Net::SSLeay::make_form( %{ $args_hr->{'query'} } )
-    );
-    if ($cf_debug_mode) {
-        $logger->info($response);
-        $logger->info($page);
-    }
-    return $page;
-}
-
 sub __get_serializer_function {
     eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::AdminBin::Serializer; };
     if ( $INC{'Cpanel/AdminBin/Serializer.pm'} ) {
@@ -408,30 +338,6 @@ sub __get_current_version {
     }
 
     return 'unknown';
-}
-
-sub __get_json_load_function {
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
-    if ( $INC{'Cpanel/JSON.pm'} ) {
-        return \&Cpanel::JSON::Load;
-    }
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
-    if ( $INC{'JSON/Syck.pm'} ) {
-        return \&JSON::Syck::Load;
-    }
-    die "Failed to find JSON load funcition";
-}
-
-sub __get_json_loadfile_function {
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::JSON; };
-    if ( $INC{'Cpanel/JSON.pm'} && 'Cpanel::JSON'->can('LoadFile') ) {
-        return \&Cpanel::JSON::LoadFile;
-    }
-    eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require JSON::Syck; };
-    if ( $INC{'JSON/Syck.pm'} ) {
-        return \&JSON::Syck::LoadFile;
-    }
-    die "Failed to find JSON load funcition";
 }
 
 ########## END Internal Functions #########
