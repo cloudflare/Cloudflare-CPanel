@@ -3,6 +3,7 @@ package Cpanel::CloudFlare::Api;
 use Cpanel::Logger();
 use Cpanel::CloudFlare::Config();
 use Cpanel::CloudFlare::Helper();
+use Cpanel::CloudFlare::Host();
 use Cpanel::CloudFlare::User();
 
 my $logger = Cpanel::Logger->new();
@@ -52,8 +53,10 @@ sub railgun_api_request {
 sub host_api_request {
     my ( $query ) = @_;
 
-    $base = Cpanel::CloudFlare::Config::get_client_api_base();
-    $base->query = $query;
+    $base = Cpanel::CloudFlare::Config::get_host_api_base();
+    $base->{"query"} = $query;
+
+    $base->{'query'}->{'host_key'} = Cpanel::CloudFlare::Host::get_host_api_key();
 
     return cf_api_request($base);
 }

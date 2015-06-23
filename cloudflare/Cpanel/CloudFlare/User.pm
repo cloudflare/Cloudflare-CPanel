@@ -1,5 +1,7 @@
 package Cpanel::CloudFlare::User;
 
+use Cpanel::CloudFlare::UserStore;
+
 {
     my $homedir;
     my $user;
