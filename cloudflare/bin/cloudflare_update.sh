@@ -28,10 +28,10 @@ new_version=`echo $installed_version $current_version | awk '{ print ($1 < $2) ?
 
 if [[ $new_version == 0 || "$forceinstall" == "force" ]] 
 	then
-		curl -s -k -L https://github.com/cloudflare/CloudFlare-CPanel/tarball/master > cloudflare.tar.gz
+		curl -s -k -L "https://github.com/cloudflare/CloudFlare-CPanel/archive/v${current_version}.tar.gz" > cloudflare.tar.gz
 		download_sha=`shasum cloudflare.tar.gz | awk '{print $1}'`
 		
-		if [[ $download_sha == $current_version_sha || "$forceinstall" == "force" ]] 
+		if [[ $download_sha == $current_version_sha ]]
 			then
 			# If a new file exists, install it
 			if [ ! -d cloudflare_tmp ] && [ -e "cloudflare.tar.gz" ] && [ `stat -c %u cloudflare.tar.gz` -eq 0 ]; then
