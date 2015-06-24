@@ -65,6 +65,17 @@ sub api2_get_stats {
     });
 }
 
+sub api2_get_settings {
+    my %OPTS = @_;
+
+    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/", {
+        #"z" => $OPTS{"zone_name"},
+       # "u" => $OPTS{"user_email"}
+    });
+}
+
 sub api2_edit_cf_setting {
     my %OPTS = @_;
 
@@ -353,6 +364,8 @@ sub api2 {
     $API{'getbasedomains'}{'engine'}                   = 'hasharray';
     $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
     $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
+    $API{'zone_get_settings'}{'func'}                  = 'api2_get_settings';
+    $API{'zone_get_settings'}{'engine'}                = 'hasharray';
     $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
     $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
     $API{'get_railguns'}{'func'}                        = 'api2_get_railguns';

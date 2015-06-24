@@ -9,13 +9,13 @@ my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_global_data = {};
 my $logger = Cpanel::Logger->new();
 
-sub __load_user_api_key {
+sub __load_user {
     my $home_dir = shift;
     my $user = shift;
 
     my $user_lookup = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', "user $user homedir $home_dir" );
 
-    return $user_lookup->{"response"}->{"user_api_key"};
+    return $user_lookup->{"response"};
 }
 
 sub __load_data_file {
