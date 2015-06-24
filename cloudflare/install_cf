@@ -52,6 +52,7 @@ fi
 
 ## First install the CF files
 cp Cpanel/CloudFlare.pm /usr/local/cpanel/Cpanel
+\cp -rf Cpanel/CloudFlare /usr/local/cpanel/Cpanel/
 
 ## Clean up current instances of the updated version
 if [[ -d /usr/local/cloudflare_cpanel ]]; then
