@@ -2,8 +2,9 @@ CloudFlare plugin for CPanel.
 
 Requires: 
 
- * Net::SSLeay
- * Simplezoneedit or Zoneedit features
+ * HTTP::Request
+ * LWP::UserAgent
+ * Advanced Zone Edit feature
 
 Provides access to the CloudFlare service. Learn more about CloudFlare at cloudflare.com.
 

@@ -5,7 +5,12 @@ use Cpanel::CloudFlare::Config();
 use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::Host();
 use Cpanel::CloudFlare::User();
-use Data::Dumper;
+
+## Data::Dumper is only needed within debug mode
+## Some hosts do not have this installed
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
 
 use HTTP::Request::Common;
 require HTTP::Headers;
@@ -18,21 +23,6 @@ my $logger = Cpanel::Logger->new();
 my $initialized = false;
 my $has_ssl;
 my $json_load_function ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
-
-sub init {
-    ## only initialize once
-    if ( $initialized ) {
-        return true;
-    }
-
-    eval { use Net::SSLeay qw(get_https post_https make_headers make_form); $has_ssl = 1 };
-    if ( !$has_ssl ) {
-        $logger->warn("Failed to load Net::SSLeay: $@.\nDisabling functionality until fixed.");
-        return false;
-    }
-
-    return $initialized = true;
-}
 
 sub client_api_request_v1 {
     my ( $query ) = @_;
@@ -94,11 +84,6 @@ sub cf_api_request {
 sub https_post_request {
     my ( $args_hr ) = @_;
 
-    ## All requests will require SSLeay, so bail if that does not exist
-    if (!init()) {
-        return [{"result"=>"error", "msg" => "CloudFlare is disabled until Net::SSLeay is installed on this server."}];
-    }
-
     if ($args_hr->{'port'} ne "443") {
         ## Downgrade to http
         $logger->warn("Attempted to make call on non SSL Port");
@@ -109,25 +94,22 @@ sub https_post_request {
     $args_hr->{"headers"} ||= {};
     $args_hr->{"headers"}->{"CF-Integration"} = 'cpanel';
     $args_hr->{"headers"}->{"CF-Integration-Version"} = Cpanel::CloudFlare::Config::get_plugin_version();
-    #my $headers = make_headers(%{$args_hr->{"headers"}});
+    $args_hr->{'method'} = $args_hr->{'method'} || 'POST';
 
     if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("Headers: " . Dumper(%{$args_hr->{"headers"}}));
         $logger->info("Arguments: " . Dumper($args_hr));
     }
 
-    $args_hr->{'method'} ||= 'POST';
     ## TODO: Clean this up so that the absolute url is passed, and we no longer use 'port'
-
     my $uri = 'https://' . $args_hr->{'host'} . $args_hr->{'uri'};
     my $request;
-    if ($args_hr->{'method'} == 'GET') {
+    if ($args_hr->{'method'} eq 'GET') {
         ## TODO: Add query params to the URI in this case...
         $request = GET($uri, %{$args_hr->{"headers"}});
     } else {
         ## Load with the POST function of HTTP::Request::Common
         ## Then update the method to actually match what was sent
-        $request = POST($uri, %{$args_hr->{"headers"}}, make_form(%{$args_hr->{'query'}}));
+        $request = POST($uri, %{$args_hr->{"headers"}}, Content => $args_hr->{'query'});
         $request->method($args_hr->{'method'});
     }
 
@@ -137,21 +119,6 @@ sub https_post_request {
 
     $ua = LWP::UserAgent->new;
     $response = $ua->request($request);
-
-
-#    if ($args_hr->{'method'} == 'GET') {
-#        my ($page, $response, %reply_headers)
-#            = get_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'},
-#                        $headers,
-#                        make_form(%{$args_hr->{'query'}})
-#            );
-#    } else {
-#        my ($page, $response, %reply_headers)
-#            = post_https($args_hr->{'host'}, $args_hr->{'port'}, $args_hr->{'uri'},
-#                        $headers,
-#                        make_form(%{$args_hr->{'query'}})
-#            );
-#    }
 
     if (Cpanel::CloudFlare::Config::is_debug_mode()) {
         $logger->info("Response: " . Dumper($response));

@@ -215,18 +215,14 @@ sub run {
         exit;
     }
 
-    if (!CloudFlare_init()) {
+    ## No use making a request without this
+    if ( !CloudFlare_init() || !Cpanel::CloudFlare::Host::get_host_api_key()) {
         return [
             {
                 "result" => "error",
-                "msg"    => "CloudFlare is disabled until Net::SSLeay is installed on this server."
+                "msg"    => "Error retrieving host_key. Please contact the system administrator."
             }
         ];
-    }
-
-    ## No use making a request without this
-    if ( !Cpanel::CloudFlare::Host::get_host_api_key()) {
-        return [];
     }
 
     # Execute the action in question
