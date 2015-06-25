@@ -10,9 +10,17 @@ use Cpanel::AdminBin             ();
 use Cpanel::Logger               ();
 use Cpanel::DomainLookup         ();
 
+use Cpanel();
+
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::UserStore();
+
+## Data::Dumper is only needed within debug mode
+## Some hosts do not have this installed
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
 
 use strict;
 
@@ -29,7 +37,6 @@ my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
 sub CloudFlare_init {
     $json_dump_function     ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
     $json_load_function     ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
-    Cpanel::CloudFlare::Api::init();
 }
 
 sub api2_user_create {
@@ -51,11 +58,22 @@ sub api2_user_lookup {
     return $result;
 }
 
+## START Client API v4 Entry Points
+
+sub api2_get_settings {
+    my %OPTS = @_;
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/", {
+        #"z" => $OPTS{"zone_name"},
+       # "u" => $OPTS{"user_email"}
+    });
+}
+
+## END Client API v4 Entry Points
+
 ## Pulls certain stats for the passed in zone.
 sub api2_get_stats {
     my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => "stats",
@@ -65,21 +83,8 @@ sub api2_get_stats {
     });
 }
 
-sub api2_get_settings {
-    my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
-    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/", {
-        #"z" => $OPTS{"zone_name"},
-       # "u" => $OPTS{"user_email"}
-    });
-}
-
 sub api2_edit_cf_setting {
     my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => $OPTS{"a"},
@@ -287,8 +292,6 @@ sub api2_getbasedomains {
 sub api2_get_railguns {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_get_actives_list", {
         "email" => $OPTS{"user_email"},
         "z" => $OPTS{"zone_name"}
@@ -297,8 +300,6 @@ sub api2_get_railguns {
 
 sub api2_zone_get_active_railgun {
     my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_conn_get_active", {
         "z" => $OPTS{"zone_name"},
@@ -309,8 +310,6 @@ sub api2_zone_get_active_railgun {
 
 sub api2_set_railgun {
     my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     api2_remove_railgun(%OPTS);
 
@@ -325,8 +324,6 @@ sub api2_set_railgun {
 sub api2_remove_railgun {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_multi_delete", {
        "z" => $OPTS{"zone_name"},
        "email" => $OPTS{"user_email"},
@@ -335,8 +332,6 @@ sub api2_remove_railgun {
 
 sub api2_railgun_mode {
     my %OPTS = @_;
-
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_setmode_" . $OPTS{"mode"} . "_by_tag", {
        "z" => $OPTS{"zone_name"},
@@ -349,6 +344,14 @@ sub api2 {
     my $func = shift;
     $logger->info($func);
     my %API;
+
+    ## Load the current user so it is available to other requests
+    Cpanel::CloudFlare::User::load($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+
+    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+        $logger->info("User: " . Dumper($Cpanel::CPDATA{'USER'}));
+        $logger->info("Homedir: " . Dumper($Cpanel::homedir));
+    }
 
     $API{'user_create'}{'func'}                        = 'api2_user_create';
     $API{'user_create'}{'engine'}                      = 'hasharray';

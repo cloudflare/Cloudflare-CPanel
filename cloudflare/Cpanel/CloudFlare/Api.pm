@@ -40,6 +40,7 @@ sub client_api_request_v4 {
     my ( $query ) = @_;
 
     $base = Cpanel::CloudFlare::Config::get_client_api_base_v4();
+    $base->{"method"} = $method;
     $base->{"query"} = $query;
     $base->{"uri"} = $base->{"uri"} . $uri;
 
@@ -126,7 +127,7 @@ sub https_post_request {
 
     if (!$response->is_success) {
         $logger->info("Error Page: " . "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error header received: $response\"}");
-        return "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error header received: $response\"}";
+        return "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error " . $response->code . " received: " . $response->message . "\"}";
     } else {
         if (Cpanel::CloudFlare::Config::is_debug_mode()) {
             $logger->info("Page: " . $response->decoded_content);

@@ -6,15 +6,31 @@ use Cpanel::Logger();
 my $logger = Cpanel::Logger->new();
 
 {
-    my $homedir;
+    # Store the loaded user
     my $user;
-    my $user;
+
+    # Object loaded and stored by Cpanel::CloudFlare::UserStore
+    my $user_cache;
 
     sub load {
         $homedir = shift;
         $user = shift;
 
+        if (!$homedir || !$user) {
+            return 0;
+        }
+
         $user = Cpanel::CloudFlare::UserStore::__load_user($homedir, $user);
+
+        if ($user) {
+            $user_cache = Cpanel::CloudFlare::UserStore::__load_data_file($homedir, $user);
+        }
+
+        return 1;
+    }
+
+    sub write_cache {
+        Cpanel::CloudFlare::UserStore::__save_data_file($user_cache);
     }
 
     sub get_user_api_key {
