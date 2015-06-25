@@ -1,12 +1,12 @@
 package Cpanel::CloudFlare::UserStore;
 
+## HELPER METHOD FOR Cpanel::CloudFlare::User ##
+
 use Cpanel::AdminBin();
 use Cpanel::DataStore();
 
 my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
-
-my $cf_global_data = {};
 
 sub __load_user {
     my $home_dir = shift;
@@ -21,6 +21,7 @@ sub __load_data_file {
     my $home_dir = shift;
     my $user = shift;
     $cf_data_file = $home_dir . "/" . $cf_data_file_name;
+    my $cf_global_data = {};
 
     __verify_file_with_user();
 
