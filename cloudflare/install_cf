@@ -148,16 +148,6 @@ then
 fi
 ## End Hack for paper lantern
 
-## Update Net/SSLeay.pm so that cpanel will work.
-if [ -f /usr/local/cpanel/perl/Net/SSLeay.pm ]; then
-    line62=`sed 62q /usr/local/cpanel/perl/Net/SSLeay.pm | tail -1`
-
-    if [[ "$line62" =~ 'use 5.' ]]; then
-        cp /usr/local/cpanel/perl/Net/SSLeay.pm /usr/local/cpanel/perl/Net/SSLeay.pm.backup
-        sed -i -e '62,1d' /usr/local/cpanel/perl/Net/SSLeay.pm
-    fi
-fi
-
 ## cleanup old dynamicui files if they exist, they will be recreated as needed
 rm -f /usr/local/cpanel/base/frontend/x3/dynamicui/dynamicui_cloudflare*.conf
 rm -f /usr/local/cpanel/base/frontend/paper_lantern/dynamicui/dynamicui_cloudflare*.conf
