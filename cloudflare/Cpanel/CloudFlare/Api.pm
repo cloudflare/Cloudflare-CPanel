@@ -105,7 +105,11 @@ sub https_post_request {
     my $uri = 'https://' . $args_hr->{'host'} . $args_hr->{'uri'};
     my $request;
     if ($args_hr->{'method'} eq 'GET') {
-        ## TODO: Add query params to the URI in this case...
+        if ($args_hr->{'query'}) {
+            foreach my $key (keys %{ $args_hr->{'query'} }) {
+                $uri .= ((index($uri, '?') != -1) ? '&' : '?') . $key . '=' . $args_hr->{'query'}->{$key};
+            }
+        }
         $request = GET($uri, %{$args_hr->{"headers"}});
     } else {
         ## Load with the POST function of HTTP::Request::Common
