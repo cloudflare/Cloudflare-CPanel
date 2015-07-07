@@ -10,11 +10,10 @@ use Cpanel::AdminBin             ();
 use Cpanel::Logger               ();
 use Cpanel::DomainLookup         ();
 
-use Cpanel();
-
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::UserStore();
+use Cpanel::CloudFlare::Zone();
 
 ## Data::Dumper is only needed within debug mode
 ## Some hosts do not have this installed
@@ -60,13 +59,30 @@ sub api2_user_lookup {
 
 ## START Client API v4 Entry Points
 
-sub api2_get_settings {
+sub api2_get_zone_settings {
     my %OPTS = @_;
 
-    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/", {
-        #"z" => $OPTS{"zone_name"},
-       # "u" => $OPTS{"user_email"}
-    });
+    if (!$OPTS{"domain"}) {
+        return [
+            {
+                "result" => "error",
+                "msg"    => "Missing domain."
+            }
+        ];
+    }
+
+    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"domain"});
+
+    if (!$zone_tag) {
+        return [
+            {
+                "result" => "error",
+                "msg"    => "Unable to load zone. Domain may not be currently associated with this account."
+            }
+        ];
+    }
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag . "/settings", {});
 }
 
 ## END Client API v4 Entry Points
@@ -367,7 +383,7 @@ sub api2 {
     $API{'getbasedomains'}{'engine'}                   = 'hasharray';
     $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
     $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
-    $API{'zone_get_settings'}{'func'}                  = 'api2_get_settings';
+    $API{'zone_get_settings'}{'func'}                  = 'api2_get_zone_settings';
     $API{'zone_get_settings'}{'engine'}                = 'hasharray';
     $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
     $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
