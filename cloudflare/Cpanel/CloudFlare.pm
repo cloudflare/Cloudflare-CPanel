@@ -12,6 +12,7 @@ use Cpanel::DomainLookup         ();
 
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
+use Cpanel::CloudFlare::User();
 use Cpanel::CloudFlare::UserStore();
 use Cpanel::CloudFlare::Zone();
 
@@ -216,6 +217,42 @@ sub api2_zone_set {
     return $result;
 }
 
+sub api2_full_zone_set {
+    my %OPTS = @_;
+
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'full_zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
+    my $domain = "." . $OPTS{"zone_name"} . ".";
+    my $subs   = $OPTS{"subdomains"};
+    $subs =~ s/${domain}//g;
+
+    ## Args for updating local DNS.
+    my %zone_args = (
+        "domain" => $OPTS{"zone_name"},
+        "class"  => "IN",
+        "type"   => "CNAME",
+        "name"   => Cpanel::CloudFlare::Config::get_host_prefix(),
+        "ttl"    => 1400,
+        "cname"  => $OPTS{"zone_name"},
+    );
+
+    ## If we get an error, do nothing and return the error to the user.
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+        return $result;
+    }
+
+    ## TODO: Sync DNS Records to CloudFlare
+
+
+    ## Save the updated global data arg.
+    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
+    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+
+    return $result;
+}
+
 sub api2_zone_delete {
     my %OPTS = @_;
 
@@ -393,6 +430,7 @@ sub api2_railgun_mode {
         $API{'user_create'}                       = 'api2_user_create';
         $API{'user_lookup'}                       = 'api2_user_lookup';
         $API{'zone_set'}                          = 'api2_zone_set';
+        $API{'full_zone_set'}                     = 'api2_full_zone_set';
         $API{'zone_delete'}                       = 'api2_zone_delete';
         $API{'fetchzone'}                         = 'api2_fetchzone';
         $API{'getbasedomains'}                    = 'api2_getbasedomains';
@@ -407,6 +445,10 @@ sub api2_railgun_mode {
 
         my $response;
         eval {
+            if (!main::hasfeature('zoneedit')) {
+                die "CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable \"Advanced DNS Zone Editor\".\n";
+            }
+
             # nasty way to call a method based on a string...
             $response = &{\&{$API{$action}}}(%OPTS);
         };
