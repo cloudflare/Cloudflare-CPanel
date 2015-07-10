@@ -62,24 +62,18 @@ sub api2_user_lookup {
 sub api2_get_zone_settings {
     my %OPTS = @_;
 
-    if (!$OPTS{"domain"}) {
-        return [
-            {
-                "result" => "error",
-                "msg"    => "Missing domain."
-            }
-        ];
+    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+        $logger->info("Opts: " . Dumper(%OPTS));
     }
 
-    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"domain"});
+    if (!$OPTS{"zone_name"}) {
+        die "Missing required parameter 'zone_name'.\n";
+    }
+
+    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
 
     if (!$zone_tag) {
-        return [
-            {
-                "result" => "error",
-                "msg"    => "Unable to load zone. Domain may not be currently associated with this account."
-            }
-        ];
+        die "Unable to load zone. Domain may not be currently associated with this account.\n"
     }
 
     return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag . "/settings", {});
@@ -113,7 +107,7 @@ sub api2_edit_cf_setting {
 sub api2_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key()) );
 
     $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
@@ -208,7 +202,7 @@ sub api2_zone_set {
 sub api2_zone_delete {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key()) );
 
     $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"} , $OPTS{"user"});
     my $domain = "." . $OPTS{"zone_name"} . ".";
@@ -356,49 +350,64 @@ sub api2_railgun_mode {
     });
 }
 
-sub api2 {
-    my $func = shift;
-    $logger->info($func);
-    my %API;
+{
+    # static action storage to allow us to map all functions call to a universal sub while tracking to multiple functions ultimately
+    my $action;
 
-    ## Load the current user so it is available to other requests
-    Cpanel::CloudFlare::User::load($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+    sub api2 {
+        $action = shift;
+        $logger->info($action);
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("User: " . Dumper($Cpanel::CPDATA{'USER'}));
-        $logger->info("Homedir: " . Dumper($Cpanel::homedir));
+        return ( \%{ {'func' => 'api2_front_controller', 'engine' => 'hasharray'} } );
     }
 
-    $API{'user_create'}{'func'}                        = 'api2_user_create';
-    $API{'user_create'}{'engine'}                      = 'hasharray';
-    $API{'user_lookup'}{'func'}                        = 'api2_user_lookup';
-    $API{'user_lookup'}{'engine'}                      = 'hasharray';
-    $API{'zone_set'}{'func'}                           = 'api2_zone_set';
-    $API{'zone_set'}{'engine'}                         = 'hasharray';
-    $API{'zone_delete'}{'func'}                        = 'api2_zone_delete';
-    $API{'zone_delete'}{'engine'}                      = 'hasharray';
-    $API{'fetchzone'}{'func'}                          = 'api2_fetchzone';
-    $API{'fetchzone'}{'engine'}                        = 'hasharray';
-    $API{'getbasedomains'}{'func'}                     = 'api2_getbasedomains';
-    $API{'getbasedomains'}{'engine'}                   = 'hasharray';
-    $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
-    $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
-    $API{'zone_get_settings'}{'func'}                  = 'api2_get_zone_settings';
-    $API{'zone_get_settings'}{'engine'}                = 'hasharray';
-    $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
-    $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
-    $API{'get_railguns'}{'func'}                        = 'api2_get_railguns';
-    $API{'get_railguns'}{'engine'}                      = 'hasharray';
-    $API{'get_active_railguns'}{'func'}                 = 'api2_zone_get_active_railgun';
-    $API{'get_active_railguns'}{'engine'}               = 'hasharray';
-    $API{'set_railgun'}{'func'}                         = 'api2_set_railgun';
-    $API{'set_railgun'}{'engine'}                       = 'hasharray';
-    $API{'remove_railgun'}{'func'}                      = 'api2_remove_railgun';
-    $API{'remove_railgun'}{'engine'}                    = 'hasharray';
-    $API{'set_railgun_mode'}{'func'}                    = 'api2_railgun_mode';
-    $API{'set_railgun_mode'}{'engine'}                  = 'hasharray';
+    sub api2_front_controller {
+        ## Load the current user so it is available to other requests
+        Cpanel::CloudFlare::User::load($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
 
-    return ( \%{ $API{$func} } );
+        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+            $logger->info("User: " . Dumper($Cpanel::CPDATA{'USER'}));
+            $logger->info("Homedir: " . Dumper($Cpanel::homedir));
+        }
+
+        my %API;
+        my %OPTS = @_;
+
+        $API{'user_create'}                       = 'api2_user_create';
+        $API{'user_lookup'}                       = 'api2_user_lookup';
+        $API{'zone_set'}                          = 'api2_zone_set';
+        $API{'zone_delete'}                       = 'api2_zone_delete';
+        $API{'fetchzone'}                         = 'api2_fetchzone';
+        $API{'getbasedomains'}                    = 'api2_getbasedomains';
+        $API{'zone_get_stats'}                    = 'api2_get_stats';
+        $API{'zone_get_settings'}                 = 'api2_get_zone_settings';
+        $API{'zone_edit_cf_setting'}              = 'api2_edit_cf_setting';
+        $API{'get_railguns'}                      = 'api2_get_railguns';
+        $API{'get_active_railguns'}               = 'api2_zone_get_active_railgun';
+        $API{'set_railgun'}                       = 'api2_set_railgun';
+        $API{'remove_railgun'}                    = 'api2_remove_railgun';
+        $API{'set_railgun_mode'}                  = 'api2_railgun_mode';
+
+        my $response;
+        eval {
+            # nasty way to call a method based on a string...
+            $response = &{\&{$API{$action}}}(%OPTS);
+        };
+        if ($@) {
+            if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+                $logger->warn("Exception caught: " . Dumper($@));
+            }
+
+            return [
+                {
+                    "result" => "error",
+                    "msg"    => $@
+                }
+            ];
+        }
+
+        return $response;
+    }
 }
 
 ########## Internal Functions Defined Below #########
