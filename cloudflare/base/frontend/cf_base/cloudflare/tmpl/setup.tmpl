@@ -46,7 +46,6 @@ END;
 //<![CDATA[
 var LANG = [% js_lang.json() %];
 var USER = "[% CPANEL.CPDATA.USER %]";
-var USER_EMAIL = [% (cf_user.response.cloudflare_email)? cf_user.response.cloudflare_email.json(): 0 %];
 var USER_HOME_DIR = [% CPANEL.homedir.json() %];
 var CF_ON_CLOUD_MESSAGE = [% cf_user.on_cloud_message.json()? cf_user.on_cloud_message.json(): "\"\"" %];
 //]]>
