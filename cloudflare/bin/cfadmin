@@ -86,11 +86,6 @@ sub run {
         'user_create' => sub {
             my %OPTS = @args;
 
-            # This is the one case where we need to do __load_data_file among other things, because of the
-            # host_key salt with the user token.
-            __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
-
-            ## Otherwise, try to create this user.
             my $query = {
                 "act"              => "user_create",
                 "cloudflare_email" => $OPTS{"email"},
@@ -116,8 +111,6 @@ sub run {
         'user_lookup' => sub {
             my %OPTS = @args;
 
-            __load_data_file( $OPTS{"homedir"} , $OPTS{"user"} );
-
             if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
                 if (Cpanel::CloudFlare::Config::is_debug_mode()) {
                     $logger->info("Using user token");
@@ -137,7 +130,6 @@ sub run {
         'zone_set' => sub {
             my %OPTS = @args;
 
-            __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
             my $domain = "." . $OPTS{"zone_name"} . ".";
             my $subs   = $OPTS{"subdomains"};
             $subs =~ s/${domain}//g;
@@ -160,10 +152,23 @@ sub run {
 
             $serializer_function->($result);
         },
+        'full_zone_set' => sub {
+            my %OPTS = @args;
+
+            ## Set up the zone_set args.
+            my $query = {
+                "act"        => "full_zone_set",
+                "user_key"   => $OPTS{"user_key"},
+                "zone_name"  => $OPTS{"zone_name"}
+            };
+
+            my $result = Cpanel::CloudFlare::Api::host_api_request($query);
+
+            $serializer_function->($result);
+        },
         'zone_delete' => sub {
             my %OPTS = @args;
 
-            __load_data_file( $OPTS{"homedir"} , (getpwuid($uid))[0] );
             my $domain = "." . $OPTS{"zone_name"} . ".";
 
             ## Set up the zone_set args.
@@ -214,6 +219,10 @@ sub run {
     if (defined($temp{"user"}) && ! $getpwuid_result[0] eq $temp{"user"} ) {
         exit;
     }
+
+    # User has been verified, so let's load the data file
+    # Information is loaded into $cf_global_data
+    __load_data_file( $home, $user );
 
     ## No use making a request without this
     if ( !CloudFlare_init() || !Cpanel::CloudFlare::Host::get_host_api_key()) {

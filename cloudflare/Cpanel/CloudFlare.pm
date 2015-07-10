@@ -41,7 +41,7 @@ sub CloudFlare_init {
 sub api2_user_create {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
@@ -53,7 +53,7 @@ sub api2_user_create {
 # a non-standard return
 sub api2_user_lookup {
     my %OPTS = @_;
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
     return $result;
 }
 
@@ -98,6 +98,7 @@ sub api2_get_zone_analytics {
 ## END Client API v4 Entry Points
 
 ## Pulls certain stats for the passed in zone.
+## TODO: Remove these methods once the plugin has been updated to use v4 of the client api
 sub api2_get_stats {
     my %OPTS = @_;
 
@@ -123,9 +124,9 @@ sub api2_edit_cf_setting {
 sub api2_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key()) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -218,9 +219,9 @@ sub api2_zone_set {
 sub api2_zone_delete {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key()) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"} , $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'});
     my $domain = "." . $OPTS{"zone_name"} . ".";
     $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
 
@@ -271,7 +272,7 @@ sub api2_fetchzone {
     my $results = [];
     my %OPTS    = @_;    
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($OPTS{"homedir"} , $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
     my $domain = $OPTS{'domain'}.".";
 
 
@@ -301,7 +302,7 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {
     my %OPTS = @_;
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($OPTS{"homedir"}, $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
