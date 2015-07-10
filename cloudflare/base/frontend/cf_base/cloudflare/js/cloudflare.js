@@ -87,8 +87,7 @@ _.extend(CloudFlare, {
         // Add cpanel specific data
         _.extend(data, {
             "cpanel_jsonapi_version" : 2,
-            "cpanel_jsonapi_module" : "CloudFlare",
-            "homedir" : USER_HOME_DIR
+            "cpanel_jsonapi_module" : "CloudFlare"
         });
 
         var errorhandler = function(xhr, status) {
@@ -508,7 +507,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_edit_cf_setting",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user": USER,
             "v" : value,
             "a" : action
         }, callback, $('#user_records_div'));
@@ -542,7 +540,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : action,
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user": USER,
             "tag" : tag
         }, callback, $('#user_records_div'));
         return false;
@@ -568,7 +565,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "set_railgun_mode",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user": USER,
             "tag" : tag,
             "mode" : action
         }, callback, $('#user_records_div'));
@@ -629,8 +625,7 @@ _.extend(CloudFlare, {
         // send the AJAX request
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_get_stats",
-            "zone_name" : this.ACTIVE_DOMAIN,
-            "user": USER
+            "zone_name" : this.ACTIVE_DOMAIN
         }, callback, $('#user_records_div'));
     },
 
@@ -649,8 +644,7 @@ _.extend(CloudFlare, {
 
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "get_active_railguns",
-            "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-            "user": USER
+            "zone_name" : CloudFlare.ACTIVE_DOMAIN
         }, callback1);
 
         setTimeout(function ()
@@ -667,8 +661,7 @@ _.extend(CloudFlare, {
 
             CloudFlare.ajax({
                 "cpanel_jsonapi_func" : "get_railguns",
-                "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-                "user": USER
+                "zone_name" : CloudFlare.ACTIVE_DOMAIN
             }, callback2);                                                         
         }, 500);
 
