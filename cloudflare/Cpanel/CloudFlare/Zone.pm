@@ -45,7 +45,7 @@ my $logger = Cpanel::Logger->new();
 
         if (!defined $zones->{$zone_name}) {
             if (!load($zone_name)) {
-                return 0;
+                die "Unable to load zone. Domain may not be currently associated with this account.\n"
             }
         }
 

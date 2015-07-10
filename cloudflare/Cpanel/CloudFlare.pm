@@ -62,21 +62,37 @@ sub api2_user_lookup {
 sub api2_get_zone_settings {
     my %OPTS = @_;
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("Opts: " . Dumper(%OPTS));
-    }
-
     if (!$OPTS{"zone_name"}) {
         die "Missing required parameter 'zone_name'.\n";
     }
 
     my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
 
-    if (!$zone_tag) {
-        die "Unable to load zone. Domain may not be currently associated with this account.\n"
+    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag . "/settings", {});
+}
+
+sub api2_patch_zone_setting {
+    my %OPTS = @_;
+
+    if (!$OPTS{"zone_name"}) {
+        die "Missing required parameter 'zone_name'.\n";
     }
 
-    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag . "/settings", {});
+    if (!$OPTS{"setting"}) {
+        die "Missing required parameter 'setting'.\n";
+    }
+
+    if (!$OPTS{"value"}) {
+        die "Missing required parameter 'value'.\n";
+    }
+
+    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('PATCH', "/zones/" . $zone_tag . "/settings", {"value" => $OPTS{"value"}});
+}
+
+sub api2_get_zone_analytics {
+    # TODO: Pending release of v4 analytics endpoint
 }
 
 ## END Client API v4 Entry Points
@@ -88,7 +104,7 @@ sub api2_get_stats {
     return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => "stats",
         "z" => $OPTS{"zone_name"},
-        "u" => $OPTS{"user_email"},
+        "u" => Cpanel::CloudFlare::User::get_user_email(),
         "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
     });
 }
@@ -99,7 +115,7 @@ sub api2_edit_cf_setting {
     return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => $OPTS{"a"},
         "z" => $OPTS{"zone_name"},
-        "u" => $OPTS{"user_email"},
+        "u" => Cpanel::CloudFlare::User::get_user_email(),
         "v" => $OPTS{"v"}
     });
 }
@@ -303,7 +319,7 @@ sub api2_get_railguns {
     my %OPTS = @_;
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_get_actives_list", {
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "z" => $OPTS{"zone_name"}
     });
 }
@@ -313,7 +329,7 @@ sub api2_zone_get_active_railgun {
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_conn_get_active", {
         "z" => $OPTS{"zone_name"},
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "enabled" => "all"
     });
 }
@@ -325,7 +341,7 @@ sub api2_set_railgun {
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_set_by_tag", {
         "z" => $OPTS{"zone_name"},
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "tag" => $OPTS{"tag"},
         "mode" => "0",
     });
@@ -336,7 +352,7 @@ sub api2_remove_railgun {
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_multi_delete", {
        "z" => $OPTS{"zone_name"},
-       "email" => $OPTS{"user_email"},
+       "email" => Cpanel::CloudFlare::User::get_user_email(),
     });
 }
 
@@ -345,7 +361,7 @@ sub api2_railgun_mode {
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_setmode_" . $OPTS{"mode"} . "_by_tag", {
        "z" => $OPTS{"zone_name"},
-       "email" => $OPTS{"user_email"},
+       "email" => Cpanel::CloudFlare::User::get_user_email(),
        "tag" => $OPTS{"tag"},
     });
 }

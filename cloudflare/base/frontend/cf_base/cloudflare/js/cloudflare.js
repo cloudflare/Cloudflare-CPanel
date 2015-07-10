@@ -508,7 +508,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_edit_cf_setting",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user_email" : USER_EMAIL,
             "user": USER,
             "v" : value,
             "a" : action
@@ -543,7 +542,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : action,
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user_email" : USER_EMAIL,
             "user": USER,
             "tag" : tag
         }, callback, $('#user_records_div'));
@@ -570,7 +568,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "set_railgun_mode",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user_email" : USER_EMAIL,
             "user": USER,
             "tag" : tag,
             "mode" : action
@@ -633,7 +630,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_get_stats",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user_email" : USER_EMAIL,
             "user": USER
         }, callback, $('#user_records_div'));
     },
@@ -654,7 +650,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "get_active_railguns",
             "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-            "user_email" : USER_EMAIL,
             "user": USER
         }, callback1);
 
@@ -673,7 +668,6 @@ _.extend(CloudFlare, {
             CloudFlare.ajax({
                 "cpanel_jsonapi_func" : "get_railguns",
                 "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-                "user_email" : USER_EMAIL,
                 "user": USER
             }, callback2);                                                         
         }, 500);
