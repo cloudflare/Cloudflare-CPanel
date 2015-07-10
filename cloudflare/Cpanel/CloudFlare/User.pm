@@ -33,6 +33,14 @@ my $logger = Cpanel::Logger->new();
         Cpanel::CloudFlare::UserStore::__save_data_file($user_cache);
     }
 
+    sub get_user_key {
+        if (!$user->{"user_key"}) {
+            $logger->info("Missing user_key!");
+        }
+
+        return $user->{"user_key"};
+    }
+
     sub get_user_api_key {
         if (!$user->{"user_api_key"}) {
             $logger->info("Missing user_api_key!");

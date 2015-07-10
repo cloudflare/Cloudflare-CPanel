@@ -248,7 +248,6 @@ _.extend(CloudFlare, {
         var api2_call = {
             "cpanel_jsonapi_func" : "zone_set",
             "zone_name" : this.ACTIVE_DOMAIN,
-            "user_key" : USER_ID,
             "subdomains" : cf_zones.join(","),
             "cf_recs" : YAHOO.lang.JSON.stringify(this.CF_RECS)
         };
@@ -459,7 +458,6 @@ _.extend(CloudFlare, {
         CloudFlare.ajax({
             "cpanel_jsonapi_func" : "zone_delete",
             "zone_name" : CloudFlare.ACTIVE_DOMAIN,
-            "user_key" : USER_ID,
             "subdomains" : cf_zones.join(",")
         }, callback, $('#status_bar_' + 0));
     },
