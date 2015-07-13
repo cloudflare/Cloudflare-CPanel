@@ -103,12 +103,20 @@ sub api2_get_zone_analytics {
 sub api2_get_stats {
     my %OPTS = @_;
 
-    return Cpanel::CloudFlare::Api::client_api_request_v1({
+    my $result = Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => "stats",
         "z" => $OPTS{"zone_name"},
         "u" => Cpanel::CloudFlare::User::get_user_email(),
         "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
     });
+
+    ## We're out of sync! Clean the zone up to be off CloudFlare
+    if ($result->{"result"} eq "error" && ($result->{"err_code"} eq "err_zone_not_found" || $result->{"err_code"} eq "err_zone")) {
+        rec_cleanup(%OPTS);
+        die "This domain no longer appears to be on CloudFlare. Please reactivate CloudFlare before managing settings.\n";
+    }
+
+    return $result;
 }
 
 sub api2_edit_cf_setting {
@@ -259,8 +267,29 @@ sub api2_zone_delete {
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
     $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'});
-    my $domain = "." . $OPTS{"zone_name"} . ".";
     $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
+
+    ## If we get an error, do nothing and return the error to the user.
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    } else {
+        ## Otherwise, update the dns for this zone.
+        rec_cleanup(%OPTS);
+    }
+    
+    ## Save the updated global data arg.
+    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
+    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+
+    return $result;
+}
+
+# Remove any zones that are on CloudFlare
+sub rec_cleanup {
+    my %OPTS = @_;
+
+    my $domain = "." . $OPTS{"zone_name"} . ".";
+    my $dom = "." . $OPTS{"zone_name"};
 
     ## Args for updating local DNS.
     my %zone_args = (
@@ -272,36 +301,19 @@ sub api2_zone_delete {
         "cname"  => $OPTS{"zone_name"},
     );
 
-    ## If we get an error, do nothing and return the error to the user.
-    if ( $result->{"result"} eq "error" ) {
-        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    ## Loop over list of subs, removing from CF.
+    my $res;
+    foreach my $linecom ( split( /,/, $OPTS{"subdomains"} ) ) {
+        my @line = split( ':', $linecom );
+        $zone_args{"line"} = $line[1];
+        $zone_args{"name"} = $line[0];
+        $zone_args{"name"} =~ s/$domain//g;
+        $zone_args{"cname"} = $OPTS{"zone_name"};
+        $res = Cpanel::AdminBin::adminfetchnocache(
+            'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+            Cpanel::CloudFlare::Helper::__serialize_request( \%zone_args )
+        );
     }
-    else {
-        ## Otherwise, update the dns for this zone.
-        my $dom = "." . $OPTS{"zone_name"};
-
-        ## Loop over list of subs, removing from CF.
-        my $res;
-        foreach my $linecom ( split( /,/, $OPTS{"subdomains"} ) ) {
-            my @line = split( ':', $linecom );
-            $zone_args{"line"} = $line[1];
-            $zone_args{"name"} = $line[0];
-            $zone_args{"name"} =~ s/$domain//g;
-            $zone_args{"cname"} = $OPTS{"zone_name"};
-            $res = Cpanel::AdminBin::adminfetchnocache(
-                'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                Cpanel::CloudFlare::Helper::__serialize_request( \%zone_args )
-            );
-        }
-    }
-
-    
-    
-    ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
-
-    return $result;
 }
 
 sub api2_fetchzone {
@@ -445,6 +457,7 @@ sub api2_railgun_mode {
 
         my $response;
         eval {
+            ## DNS Records can't be managed properly without this, so require this for any action
             if (!main::hasfeature('zoneedit')) {
                 die "CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable \"Advanced DNS Zone Editor\".\n";
             }
