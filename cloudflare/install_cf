@@ -173,9 +173,17 @@ then
     then
         /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.tar.bz2
         /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.x3.tar.bz2 --theme x3
+        if [[ -d /usr/local/cpanel/base/frontend/FlatPanel ]]
+        then
+            /usr/local/cpanel/scripts/install_plugin installers/cloudflare_simple.tar.bz2 --theme FlatPanel
+        fi
     else
         /usr/local/cpanel/scripts/install_plugin installers/cloudflare.tar.bz2
         /usr/local/cpanel/scripts/install_plugin installers/cloudflare.x3.tar.bz2 --theme x3
+        if [[ -d /usr/local/cpanel/base/frontend/FlatPanel ]]
+        then
+            /usr/local/cpanel/scripts/install_plugin installers/cloudflare.tar.bz2 --theme FlatPanel
+        fi
     fi
 else
     ## fall back to older installer for those before 11.44
