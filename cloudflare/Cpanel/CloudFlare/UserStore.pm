@@ -7,6 +7,7 @@ my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 
 my $cf_global_data = {};
+my $logger = Cpanel::Logger->new();
 
 sub __load_user_api_key {
     my $home_dir = shift;
