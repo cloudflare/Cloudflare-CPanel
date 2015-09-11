@@ -27,8 +27,7 @@ sub __load_data_file {
     my $cf_global_data = {};
 
     __verify_file_with_user();
-
-    if( Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
+    if(-e $cf_data_file && Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
         if ($cf_debug_mode) {
             $logger->info("Successfully loaded cf data -- $cf_data_file");
         }
