@@ -23,6 +23,7 @@ my $logger = Cpanel::Logger->new();
 my $initialized = false;
 my $has_ssl;
 my $json_load_function ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
+my $json_dump_function ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
 
 sub client_api_request_v1 {
     my ( $query ) = @_;
@@ -114,7 +115,15 @@ sub https_post_request {
     } else {
         ## Load with the POST function of HTTP::Request::Common
         ## Then update the method to actually match what was sent
-        $request = POST($uri, %{$args_hr->{"headers"}}, Content => $args_hr->{'query'});
+
+        ## LWP will encode all data as multipart/form-data even if we specify application/json
+        ## so we have to manually encode it.
+        my $content = $args_hr->{'query'};
+        if($args_hr->{"headers"}->{"Content-Type"} eq "application/json") {
+            $content = $json_dump_function->($content);
+        }
+
+        $request = POST($uri, %{$args_hr->{"headers"}}, Content => $content);
         $request->method($args_hr->{'method'});
     }
 
@@ -123,6 +132,7 @@ sub https_post_request {
     }
 
     $ua = LWP::UserAgent->new;
+
     $response = $ua->request($request);
 
     if (Cpanel::CloudFlare::Config::is_debug_mode()) {
