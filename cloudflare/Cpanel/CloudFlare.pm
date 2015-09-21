@@ -96,6 +96,28 @@ sub api2_get_zone_analytics {
     # TODO: Pending release of v4 analytics endpoint
 }
 
+sub api2_post_create_dns_record {
+    my %OPTS = @_;
+
+    if (!$OPTS{"zone_tag"}) {
+        die "Missing required parameter 'zone_tag'.\n";
+    }
+
+    if (!$OPTS{"type"}) {
+        die "Missing required parameter 'type'.\n";
+    }
+
+    if (!$OPTS{"name"}) {
+        die "Missing required parameter 'name'.\n";
+    }
+
+    if (!$OPTS{"content"}) {
+        die "Missing required parameter 'content'.\n";
+    }
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('POST', "/zones/" . $OPTS{"zone_tag"} . "/dns_records", {"type" => $OPTS{"type"}, "name" => $OPTS{"name"}, "content" => $OPTS{"content"}});
+}
+
 ## END Client API v4 Entry Points
 
 ## Pulls certain stats for the passed in zone.
@@ -249,10 +271,44 @@ sub api2_full_zone_set {
     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
         return $result;
+    } else {
+        # Sync DNS Records to CloudFlare
+        my $zone_record_results = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'FETCH', 'storable', $OPTS{"zone_name"}, 0  );
+
+        if ( ref $zone_record_results->{'record'} eq 'ARRAY' ) {
+            my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
+            # excludes SOA, NS, RAW record types
+            my %accepted_zone_types = (A => 'A', AAAA => 'AAAA', CNAME => 'CNAME', MX => 'MX', TXT => 'TXT');
+
+            for(0 .. $#{ $zone_record_results->{'record'} }) {
+                my $record = $zone_record_results->{'record'}->[$_];
+
+                if(exists($accepted_zone_types{$record->{'type'}})) {
+                    my $content = "";
+
+                    if($record->{'type'} eq "MX") {
+                        $content = $record->{'exchange'};
+                    }
+                    elsif($record->{'type'} eq "CNAME") {
+                        $content = $record->{'cname'};
+                    }
+                    elsif($record->{'type'} eq "TXT") {
+                        $content = $record->{'txtdata'};
+                    }
+                    elsif($record->{'type'} eq "A" || $record->{'type'} eq "AAAA") {
+                        $content = $record->{'address'};
+                    }
+
+                    my $create_dns_record_result = api2_post_create_dns_record("zone_tag", $zone_tag."lol", "type", $record->{'type'}, "name", $record->{'name'}, "content", $content);
+
+                    ## If we get an error, do nothing and return the error to the user.
+                    if ( $create_dns_record_result->{"result"} eq "error" ) {
+                        $logger->info( "CloudFlare Error: " . $create_dns_record_result->{"msg"} );
+                    }
+                }
+            }
+         }
     }
-
-    ## TODO: Sync DNS Records to CloudFlare
-
 
     ## Save the updated global data arg.
     Cpanel::CloudFlare::UserStore::__verify_file_with_user();

@@ -44,10 +44,15 @@ sub client_api_request_v4 {
     $base->{"query"} = $query;
     $base->{"uri"} = $base->{"uri"} . $uri;
 
+    my $content_type = "application/json";
+    if($base->{"method"} eq "POST") {
+        $content_type = "multipart/form-data";
+    }
+
     $base->{"headers"} = {
         "X-Auth-Key" => Cpanel::CloudFlare::User::get_user_api_key(),
         "X-Auth-Email" => Cpanel::CloudFlare::User::get_user_email(),
-        "Content-Type" => "application/json"
+        "Content-Type" => $content_type
     };
 
     return cf_api_request($base);
