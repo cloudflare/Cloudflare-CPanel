@@ -20,7 +20,7 @@ my $logger = Cpanel::Logger->new();
             return 0;
         }
 
-        $user = Cpanel::CloudFlare::UserStore::__load_user($homedir, $user);
+        $user = Cpanel::CloudFlare::UserStore::__load_user_api_key($homedir, $user);
 
         if ($user) {
             $user_cache = Cpanel::CloudFlare::UserStore::__load_data_file($homedir, $user);

@@ -20,7 +20,6 @@ require LWP::UserAgent;
 my $logger = Cpanel::Logger->new();
 
 ## Helper variables
-my $initialized = false;
 my $has_ssl;
 my $json_load_function ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
 my $json_dump_function ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
@@ -119,7 +118,7 @@ sub https_post_request {
         ## LWP will encode all data as multipart/form-data even if we specify application/json
         ## so we have to manually encode it.
         my $content = $args_hr->{'query'};
-        if($args_hr->{"headers"}->{"Content-Type"} eq "application/json") {
+        if(defined $args_hr->{"headers"}->{"Content-Type"} && $args_hr->{"headers"}->{"Content-Type"} eq "application/json") {
             $content = $json_dump_function->($content);
         }
 

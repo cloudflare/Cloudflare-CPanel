@@ -8,8 +8,39 @@ use Cpanel::DataStore();
 my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 
+my $cf_data_file = "";
+
 my $logger = Cpanel::Logger->new();
 my $cf_global_data = {};
+
+use strict;
+
+sub new {
+    my $type = shift;
+
+    my %params = @_;
+
+    my $self = {};
+    bless $self, $type;
+
+    for my $required (qw{ user home_dir }) {
+        if(exists $params{$required}) {
+            $logger->info("Required parameter '".$required."' not passed to '".$type."' constructor");
+        }
+    }
+
+    # initialize all attributes by passing arguments to accessor methods.
+    for my $attribute ( keys %params ) {
+
+        if($self->can($attribute)) {
+            $logger->info("Invalid parameter '".$attribute."' passed to '".$type."' constructor");
+        }
+
+        $self->$attribute( $params{$attribute} );
+    }
+
+    return $self;
+}
 
 sub __load_user_api_key {
     my $home_dir = shift;
@@ -28,7 +59,7 @@ sub __load_data_file {
 
     __verify_file_with_user();
     if(-e $cf_data_file && Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
-        if ($cf_debug_mode) {
+        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
             $logger->info("Successfully loaded cf data -- $cf_data_file");
         }
     } else {

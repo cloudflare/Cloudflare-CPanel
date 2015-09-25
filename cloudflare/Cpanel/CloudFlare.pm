@@ -99,6 +99,8 @@ sub api2_get_zone_analytics {
 sub api2_post_create_dns_record {
     my %OPTS = @_;
 
+    my $cf_user_store = Cpanel::CloudFlare::UserStore->new();
+
     if (!$OPTS{"zone_tag"}) {
         die "Missing required parameter 'zone_tag'.\n";
     }
@@ -255,7 +257,7 @@ sub api2_full_zone_set {
     $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
-    $subs =~ s/${domain}//g;
+    $subs =~ s/${domain}//g if defined $subs;
 
     ## Args for updating local DNS.
     my %zone_args = (

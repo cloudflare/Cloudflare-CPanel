@@ -7,7 +7,7 @@ my $logger = Cpanel::Logger->new();
 
 {
     # Store the loaded user
-    my %zones = {};
+    my %zones;
 
     sub load {
         my $zone_name = shift;
