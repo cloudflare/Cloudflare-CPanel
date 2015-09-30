@@ -55,11 +55,13 @@ sub __load_user_api_key {
     my $self = shift;
     my $home_dir = $self->{"home_dir"};
     my $user = $self->{"user"};
-    $logger->info("user ".$user." home dir ".$home_dir);
 
     my $user_lookup = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', "user $user homedir $home_dir" );
 
-    return $user_lookup->{"response"};
+    if(ref $user_lookup eq 'HASH') {
+        return $user_lookup->{"response"};
+    }
+    return undef;
 }
 
 sub __load_data_file {

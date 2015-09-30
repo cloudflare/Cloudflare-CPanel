@@ -3,6 +3,13 @@ package Cpanel::CloudFlare::User;
 use Cpanel::CloudFlare::UserStore;
 
 use Cpanel::Logger();
+
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
+
+use strict;
+
 my $logger = Cpanel::Logger->new();
 
 {
@@ -13,7 +20,7 @@ my $logger = Cpanel::Logger->new();
     my $user_cache;
 
     sub load {
-        $homedir = shift;
+        my $homedir = shift;
         $user = shift;
 
         if (!$homedir || !$user) {
