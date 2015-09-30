@@ -27,6 +27,7 @@ use strict;
 my $logger = Cpanel::Logger->new();
 my $cf_data_file;
 my $cf_global_data = {};
+my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $Cpanel::homedir, "user" , $Cpanel::CPDATA{'USER'});
 my $json_dump_function;
 my $json_load_function;
 
@@ -157,7 +158,8 @@ sub api2_zone_set {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
+    $cf_global_data = $cf_user_store->__load_data_file();
+
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -241,8 +243,7 @@ sub api2_zone_set {
     }
 
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -252,10 +253,10 @@ sub api2_full_zone_set {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'full_zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
+    $cf_global_data = $cf_user_store->__load_data_file();
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
-    $subs =~ s/${domain}//g;
+    $subs =~ s/${domain}//g if defined $subs;
 
     ## Args for updating local DNS.
     my %zone_args = (
@@ -311,8 +312,7 @@ sub api2_full_zone_set {
     }
 
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -322,7 +322,8 @@ sub api2_zone_delete {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+    $cf_global_data = $cf_user_store->__load_data_file();
+
     $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
 
     ## If we get an error, do nothing and return the error to the user.
@@ -334,8 +335,7 @@ sub api2_zone_delete {
     }
     
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -377,7 +377,8 @@ sub api2_fetchzone {
     my $results = [];
     my %OPTS    = @_;    
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+    $cf_global_data = $cf_user_store->__load_data_file();
+
     my $domain = $OPTS{'domain'}.".";
 
 
@@ -399,15 +400,16 @@ sub api2_fetchzone {
         }
     }
 
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $results;
 }
 
 sub api2_getbasedomains {
     my %OPTS = @_;
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+
+    $cf_global_data = $cf_user_store->__load_data_file();
+
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {

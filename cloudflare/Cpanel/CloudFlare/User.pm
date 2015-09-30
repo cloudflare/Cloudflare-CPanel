@@ -3,6 +3,13 @@ package Cpanel::CloudFlare::User;
 use Cpanel::CloudFlare::UserStore;
 
 use Cpanel::Logger();
+
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
+
+use strict;
+
 my $logger = Cpanel::Logger->new();
 
 {
@@ -13,24 +20,21 @@ my $logger = Cpanel::Logger->new();
     my $user_cache;
 
     sub load {
-        $homedir = shift;
+        my $homedir = shift;
         $user = shift;
 
         if (!$homedir || !$user) {
             return 0;
         }
 
-        $user = Cpanel::CloudFlare::UserStore::__load_user($homedir, $user);
+        my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $homedir, "user" , $user);
+        $user = $cf_user_store->__load_user_api_key();
 
         if ($user) {
-            $user_cache = Cpanel::CloudFlare::UserStore::__load_data_file($homedir, $user);
+            $user_cache = $cf_user_store->__load_data_file();
         }
 
         return 1;
-    }
-
-    sub write_cache {
-        Cpanel::CloudFlare::UserStore::__save_data_file($user_cache);
     }
 
     sub get_user_key {
