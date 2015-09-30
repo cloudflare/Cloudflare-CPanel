@@ -5,15 +5,21 @@ package Cpanel::CloudFlare::UserStore;
 use Cpanel::AdminBin();
 use Cpanel::DataStore();
 
-my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
-my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
-
-my $cf_data_file = "";
-
-my $logger = Cpanel::Logger->new();
-my $cf_global_data = {};
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
 
 use strict;
+
+my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
+my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
+# $cf_data_file set in new()
+my $cf_data_file;
+my $cf_global_data = {};
+
+my $logger = Cpanel::Logger->new();
+
+use constant CF_ZONE_TAGS_KEY => "cf_zone_tags";
 
 sub new {
     my $type = shift;
@@ -23,8 +29,10 @@ sub new {
     my $self = {};
     bless $self, $type;
 
+    # make sure home_dir, user args were passed
     for my $required (qw{ user home_dir }) {
-        if(exists $params{$required}) {
+
+        if(exists $params{$required} eq 0) {
             $logger->info("Required parameter '".$required."' not passed to '".$type."' constructor");
         }
     }
@@ -35,16 +43,19 @@ sub new {
         if($self->can($attribute)) {
             $logger->info("Invalid parameter '".$attribute."' passed to '".$type."' constructor");
         }
-
-        $self->$attribute( $params{$attribute} );
+        $self->{$attribute} = $params{$attribute};
     }
+
+    $cf_data_file = $self->{"home_dir"} . "/". $cf_data_file_name;
 
     return $self;
 }
 
 sub __load_user_api_key {
-    my $home_dir = shift;
-    my $user = shift;
+    my $self = shift;
+    my $home_dir = $self->{"home_dir"};
+    my $user = $self->{"user"};
+    $logger->info("user ".$user." home dir ".$home_dir);
 
     my $user_lookup = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', "user $user homedir $home_dir" );
 
@@ -52,13 +63,12 @@ sub __load_user_api_key {
 }
 
 sub __load_data_file {
-    my $home_dir = shift;
-    my $user = shift;
-    $cf_data_file = $home_dir . "/" . $cf_data_file_name;
-    my $cf_global_data = {};
+    my $self = shift;
+    my $home_dir = $self->{"home_dir"};
+    my $user = $self->{"user"};
 
-    __verify_file_with_user();
-    if(-e $cf_data_file && Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data ) ) {
+    $self->__verify_file_with_user();
+    if(Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data)) {
         if (Cpanel::CloudFlare::Config::is_debug_mode()) {
             $logger->info("Successfully loaded cf data -- $cf_data_file");
         }
@@ -75,7 +85,8 @@ sub __load_data_file {
             $cf_global_data = {"cf_zones" => {}};
             $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
         }
-        Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data);
+
+        Cpanel::AccessIds::do_as_user( $user, sub { Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data); } );
         chmod 0600, $cf_data_file;
     }
 
@@ -87,25 +98,35 @@ sub __save_data_file {
     Cpanel::DataStore::store_ref($cf_data_file, $data);
 }
 
-sub __verify_file_with_user{
+#TODO check if $Cpanel::CPDATA{'USER'} == my @getpwuid_result = getpwuid( int($uid) ); my ( $user, $gid, $home ) = @getpwuid_result[ 0, 3, 7 ];
+sub __verify_file_with_user {
+    my $self = shift;
+    my $user = $self->{"user"};
 
-    if ( -l $cf_data_file )
-    {
-        $logger->info("Symlink found. Removing cloudflare_data.yaml");
+    $logger->info("cf_data_file: ". $cf_data_file);
+
+    if ( -l $cf_data_file ) {
+        $logger->info("Symlink found. Removing cloudflare_data.yaml.");
         unlink($cf_data_file);
     }
 
-    if ( (stat($cf_data_file))[4] != $< )
-    {
-        if ( -e $cf_data_file)
-        {
-            $logger->info("Permissions incorrect on inode. Removing cloudflare_data.yaml");
+    # does the yaml file exist?
+    if ( -e $cf_data_file ) {
+        my $temp_uid = (getpwnam($user))[2];
+
+        my $inode = (stat($cf_data_file))[4];
+
+        $logger->info("inode: ". $inode);
+        $logger->info("temp uid: ". $temp_uid);
+
+        #Is the UID of the file not equal to the UID of the user?
+        if ( $inode != (getpwnam($user))[2] ) {
+            $logger->info("Permisisons incorrect on inode. Removing cloudflare_data.yaml");
+            $logger->info("Expected: ".(getpwnam($user))[2]." but received: ".$inode);
             unlink($cf_data_file);
         }
-        else
-        {
-            $logger->info("cloudflare_data.yaml does not exist.");
-        }
+    } else {
+        $logger->info($cf_data_file ." does not exist.");
     }
 }
 
