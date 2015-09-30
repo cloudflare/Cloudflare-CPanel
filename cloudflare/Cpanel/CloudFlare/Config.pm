@@ -28,6 +28,14 @@ use Cpanel::CloudFlare::Helper();
         }
     }
 
+    sub get_client_api_base_v4 {
+        return {
+            "host" => "api.cloudflare.com",
+            "uri" => "/client/v4",
+            "port" => $data->{"host_port"}
+        }
+    }
+
     sub get_host_prefix {
         return $data->{"host_prefix"};
     }

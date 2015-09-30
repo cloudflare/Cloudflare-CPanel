@@ -12,7 +12,15 @@ use Cpanel::DomainLookup         ();
 
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
+use Cpanel::CloudFlare::User();
 use Cpanel::CloudFlare::UserStore();
+use Cpanel::CloudFlare::Zone();
+
+## Data::Dumper is only needed within debug mode
+## Some hosts do not have this installed
+if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+    use Data::Dumper;
+}
 
 use strict;
 
@@ -29,13 +37,12 @@ my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
 sub CloudFlare_init {
     $json_dump_function     ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
     $json_load_function     ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
-    Cpanel::CloudFlare::Api::init();
 }
 
 sub api2_user_create {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
@@ -47,33 +54,100 @@ sub api2_user_create {
 # a non-standard return
 sub api2_user_lookup {
     my %OPTS = @_;
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
     return $result;
 }
 
+## START Client API v4 Entry Points
+
+sub api2_get_zone_settings {
+    my %OPTS = @_;
+
+    if (!$OPTS{"zone_name"}) {
+        die "Missing required parameter 'zone_name'.\n";
+    }
+
+    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag . "/settings", {});
+}
+
+sub api2_patch_zone_setting {
+    my %OPTS = @_;
+
+    if (!$OPTS{"zone_name"}) {
+        die "Missing required parameter 'zone_name'.\n";
+    }
+
+    if (!$OPTS{"setting"}) {
+        die "Missing required parameter 'setting'.\n";
+    }
+
+    if (!$OPTS{"value"}) {
+        die "Missing required parameter 'value'.\n";
+    }
+
+    my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('PATCH', "/zones/" . $zone_tag . "/settings", {"value" => $OPTS{"value"}});
+}
+
+sub api2_get_zone_analytics {
+    # TODO: Pending release of v4 analytics endpoint
+}
+
+sub api2_post_create_dns_record {
+    my %OPTS = @_;
+
+    if (!$OPTS{"zone_tag"}) {
+        die "Missing required parameter 'zone_tag'.\n";
+    }
+
+    if (!$OPTS{"type"}) {
+        die "Missing required parameter 'type'.\n";
+    }
+
+    if (!$OPTS{"name"}) {
+        die "Missing required parameter 'name'.\n";
+    }
+
+    if (!$OPTS{"content"}) {
+        die "Missing required parameter 'content'.\n";
+    }
+
+    return Cpanel::CloudFlare::Api::client_api_request_v4('POST', "/zones/" . $OPTS{"zone_tag"} . "/dns_records", {"type" => $OPTS{"type"}, "name" => $OPTS{"name"}, "content" => $OPTS{"content"}});
+}
+
+## END Client API v4 Entry Points
+
 ## Pulls certain stats for the passed in zone.
+## TODO: Remove these methods once the plugin has been updated to use v4 of the client api
 sub api2_get_stats {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
-    return Cpanel::CloudFlare::Api::client_api_request_v1({
+    my $result = Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => "stats",
         "z" => $OPTS{"zone_name"},
-        "u" => $OPTS{"user_email"},
+        "u" => Cpanel::CloudFlare::User::get_user_email(),
         "interval" => 30, # 30 = last 7 days, 20 = last 30 days 40 = last 24 hours
     });
+
+    ## We're out of sync! Clean the zone up to be off CloudFlare
+    if ($result->{"result"} eq "error" && ($result->{"err_code"} eq "err_zone_not_found" || $result->{"err_code"} eq "err_zone")) {
+        rec_cleanup(%OPTS);
+        die "This domain no longer appears to be on CloudFlare. Please reactivate CloudFlare before managing settings.\n";
+    }
+
+    return $result;
 }
 
 sub api2_edit_cf_setting {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::client_api_request_v1({
         "a" => $OPTS{"a"},
         "z" => $OPTS{"zone_name"},
-        "u" => $OPTS{"user_email"},
+        "u" => Cpanel::CloudFlare::User::get_user_email(),
         "v" => $OPTS{"v"}
     });
 }
@@ -81,9 +155,9 @@ sub api2_edit_cf_setting {
 sub api2_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"}, $OPTS{"user"} );
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -173,14 +247,15 @@ sub api2_zone_set {
     return $result;
 }
 
-sub api2_zone_delete {
+sub api2_full_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', %OPTS );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'full_zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $OPTS{"homedir"} , $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'} );
     my $domain = "." . $OPTS{"zone_name"} . ".";
-    $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
+    my $subs   = $OPTS{"subdomains"};
+    $subs =~ s/${domain}//g;
 
     ## Args for updating local DNS.
     my %zone_args = (
@@ -195,27 +270,68 @@ sub api2_zone_delete {
     ## If we get an error, do nothing and return the error to the user.
     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+        return $result;
+    } else {
+        # Sync DNS Records to CloudFlare
+        my $zone_record_results = Cpanel::AdminBin::adminfetchnocache( 'zone', '', 'FETCH', 'storable', $OPTS{"zone_name"}, 0  );
+
+        if ( ref $zone_record_results->{'record'} eq 'ARRAY' ) {
+            my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
+            # excludes SOA, NS, RAW record types
+            my %accepted_zone_types = (A => 'A', AAAA => 'AAAA', CNAME => 'CNAME', MX => 'MX', TXT => 'TXT');
+
+            for(0 .. $#{ $zone_record_results->{'record'} }) {
+                my $record = $zone_record_results->{'record'}->[$_];
+
+                if(exists($accepted_zone_types{$record->{'type'}})) {
+                    my $content = "";
+
+                    if($record->{'type'} eq "MX") {
+                        $content = $record->{'exchange'};
+                    }
+                    elsif($record->{'type'} eq "CNAME") {
+                        $content = $record->{'cname'};
+                    }
+                    elsif($record->{'type'} eq "TXT") {
+                        $content = $record->{'txtdata'};
+                    }
+                    elsif($record->{'type'} eq "A" || $record->{'type'} eq "AAAA") {
+                        $content = $record->{'address'};
+                    }
+
+                    my $create_dns_record_result = api2_post_create_dns_record("zone_tag", $zone_tag, "type", $record->{'type'}, "name", $record->{'name'}, "content", $content);
+
+                    ## If we get an error, do nothing and return the error to the user.
+                    if ( $create_dns_record_result->{"result"} eq "error" ) {
+                        $logger->info( "CloudFlare Error: " . $create_dns_record_result->{"msg"} );
+                    }
+                }
+            }
+         }
     }
-    else {
+
+    ## Save the updated global data arg.
+    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
+    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+
+    return $result;
+}
+
+sub api2_zone_delete {
+    my %OPTS = @_;
+
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file( $Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+    $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
+
+    ## If we get an error, do nothing and return the error to the user.
+    if ( $result->{"result"} eq "error" ) {
+        $logger->info( "CloudFlare Error: " . $result->{"msg"} );
+    } else {
         ## Otherwise, update the dns for this zone.
-        my $dom = "." . $OPTS{"zone_name"};
-
-        ## Loop over list of subs, removing from CF.
-        my $res;
-        foreach my $linecom ( split( /,/, $OPTS{"subdomains"} ) ) {
-            my @line = split( ':', $linecom );
-            $zone_args{"line"} = $line[1];
-            $zone_args{"name"} = $line[0];
-            $zone_args{"name"} =~ s/$domain//g;
-            $zone_args{"cname"} = $OPTS{"zone_name"};
-            $res = Cpanel::AdminBin::adminfetchnocache(
-                'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
-                Cpanel::CloudFlare::Helper::__serialize_request( \%zone_args )
-            );
-        }
+        rec_cleanup(%OPTS);
     }
-
-    
     
     ## Save the updated global data arg.
     Cpanel::CloudFlare::UserStore::__verify_file_with_user();
@@ -224,12 +340,44 @@ sub api2_zone_delete {
     return $result;
 }
 
+# Remove any zones that are on CloudFlare
+sub rec_cleanup {
+    my %OPTS = @_;
+
+    my $domain = "." . $OPTS{"zone_name"} . ".";
+    my $dom = "." . $OPTS{"zone_name"};
+
+    ## Args for updating local DNS.
+    my %zone_args = (
+        "domain" => $OPTS{"zone_name"},
+        "class"  => "IN",
+        "type"   => "CNAME",
+        "name"   => Cpanel::CloudFlare::Config::get_host_prefix(),
+        "ttl"    => 1400,
+        "cname"  => $OPTS{"zone_name"},
+    );
+
+    ## Loop over list of subs, removing from CF.
+    my $res;
+    foreach my $linecom ( split( /,/, $OPTS{"subdomains"} ) ) {
+        my @line = split( ':', $linecom );
+        $zone_args{"line"} = $line[1];
+        $zone_args{"name"} = $line[0];
+        $zone_args{"name"} =~ s/$domain//g;
+        $zone_args{"cname"} = $OPTS{"zone_name"};
+        $res = Cpanel::AdminBin::adminfetchnocache(
+            'zone', '', 'EDIT', 'storable', $OPTS{"zone_name"},
+            Cpanel::CloudFlare::Helper::__serialize_request( \%zone_args )
+        );
+    }
+}
+
 sub api2_fetchzone {
     my $raw = __fetchzone(@_);
     my $results = [];
     my %OPTS    = @_;    
 
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($OPTS{"homedir"} , $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
     my $domain = $OPTS{'domain'}.".";
 
 
@@ -259,7 +407,7 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {
     my %OPTS = @_;
-    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($OPTS{"homedir"}, $OPTS{"user"});
+    $cf_global_data = Cpanel::CloudFlare::UserStore::__load_data_file($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
@@ -276,10 +424,8 @@ sub api2_getbasedomains {
 sub api2_get_railguns {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_get_actives_list", {
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "z" => $OPTS{"zone_name"}
     });
 }
@@ -287,11 +433,9 @@ sub api2_get_railguns {
 sub api2_zone_get_active_railgun {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/zone_conn_get_active", {
         "z" => $OPTS{"zone_name"},
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "enabled" => "all"
     });
 }
@@ -299,13 +443,11 @@ sub api2_zone_get_active_railgun {
 sub api2_set_railgun {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     api2_remove_railgun(%OPTS);
 
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_set_by_tag", {
         "z" => $OPTS{"zone_name"},
-        "email" => $OPTS{"user_email"},
+        "email" => Cpanel::CloudFlare::User::get_user_email(),
         "tag" => $OPTS{"tag"},
         "mode" => "0",
     });
@@ -314,59 +456,86 @@ sub api2_set_railgun {
 sub api2_remove_railgun {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_multi_delete", {
        "z" => $OPTS{"zone_name"},
-       "email" => $OPTS{"user_email"},
+       "email" => Cpanel::CloudFlare::User::get_user_email(),
     });
 }
 
 sub api2_railgun_mode {
     my %OPTS = @_;
 
-    Cpanel::CloudFlare::User::load($OPTS{"homedir"} , $OPTS{"user"});
-
     return Cpanel::CloudFlare::Api::railgun_api_request("/api/v2/railgun/conn_setmode_" . $OPTS{"mode"} . "_by_tag", {
        "z" => $OPTS{"zone_name"},
-       "email" => $OPTS{"user_email"},
+       "email" => Cpanel::CloudFlare::User::get_user_email(),
        "tag" => $OPTS{"tag"},
     });
 }
 
-sub api2 {
-    my $func = shift;
-    $logger->info($func);
-    my %API;
+{
+    # static action storage to allow us to map all functions call to a universal sub while tracking to multiple functions ultimately
+    my $action;
 
-    $API{'user_create'}{'func'}                        = 'api2_user_create';
-    $API{'user_create'}{'engine'}                      = 'hasharray';
-    $API{'user_lookup'}{'func'}                        = 'api2_user_lookup';
-    $API{'user_lookup'}{'engine'}                      = 'hasharray';
-    $API{'zone_set'}{'func'}                           = 'api2_zone_set';
-    $API{'zone_set'}{'engine'}                         = 'hasharray';
-    $API{'zone_delete'}{'func'}                        = 'api2_zone_delete';
-    $API{'zone_delete'}{'engine'}                      = 'hasharray';
-    $API{'fetchzone'}{'func'}                          = 'api2_fetchzone';
-    $API{'fetchzone'}{'engine'}                        = 'hasharray';
-    $API{'getbasedomains'}{'func'}                     = 'api2_getbasedomains';
-    $API{'getbasedomains'}{'engine'}                   = 'hasharray';
-    $API{'zone_get_stats'}{'func'}                     = 'api2_get_stats';
-    $API{'zone_get_stats'}{'engine'}                   = 'hasharray';
-    $API{'zone_edit_cf_setting'}{'func'}               = 'api2_edit_cf_setting';
-    $API{'zone_edit_cf_setting'}{'engine'}             = 'hasharray';
-    $API{'get_railguns'}{'func'}                        = 'api2_get_railguns';
-    $API{'get_railguns'}{'engine'}                      = 'hasharray';
-    $API{'get_active_railguns'}{'func'}                 = 'api2_zone_get_active_railgun';
-    $API{'get_active_railguns'}{'engine'}               = 'hasharray';
-    $API{'set_railgun'}{'func'}                         = 'api2_set_railgun';
-    $API{'set_railgun'}{'engine'}                       = 'hasharray';
-    $API{'remove_railgun'}{'func'}                      = 'api2_remove_railgun';
-    $API{'remove_railgun'}{'engine'}                    = 'hasharray';
-    $API{'set_railgun_mode'}{'func'}                    = 'api2_railgun_mode';
-    $API{'set_railgun_mode'}{'engine'}                  = 'hasharray';
+    sub api2 {
+        $action = shift;
+        $logger->info($action);
 
-    return ( \%{ $API{$func} } );
+        return ( \%{ {'func' => 'api2_front_controller', 'engine' => 'hasharray'} } );
+    }
+
+    sub api2_front_controller {
+        ## Load the current user so it is available to other requests
+        Cpanel::CloudFlare::User::load($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+
+        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+            $logger->info("User: " . Dumper($Cpanel::CPDATA{'USER'}));
+            $logger->info("Homedir: " . Dumper($Cpanel::homedir));
+        }
+
+        my %API;
+        my %OPTS = @_;
+
+        $API{'user_create'}                       = 'api2_user_create';
+        $API{'user_lookup'}                       = 'api2_user_lookup';
+        $API{'zone_set'}                          = 'api2_zone_set';
+        $API{'full_zone_set'}                     = 'api2_full_zone_set';
+        $API{'zone_delete'}                       = 'api2_zone_delete';
+        $API{'fetchzone'}                         = 'api2_fetchzone';
+        $API{'getbasedomains'}                    = 'api2_getbasedomains';
+        $API{'zone_get_stats'}                    = 'api2_get_stats';
+        $API{'zone_get_settings'}                 = 'api2_get_zone_settings';
+        $API{'zone_edit_cf_setting'}              = 'api2_edit_cf_setting';
+        $API{'get_railguns'}                      = 'api2_get_railguns';
+        $API{'get_active_railguns'}               = 'api2_zone_get_active_railgun';
+        $API{'set_railgun'}                       = 'api2_set_railgun';
+        $API{'remove_railgun'}                    = 'api2_remove_railgun';
+        $API{'set_railgun_mode'}                  = 'api2_railgun_mode';
+
+        my $response;
+        eval {
+            ## DNS Records can't be managed properly without this, so require this for any action
+            if (!main::hasfeature('zoneedit')) {
+                die "CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable \"Advanced DNS Zone Editor\".\n";
+            }
+
+            # nasty way to call a method based on a string...
+            $response = &{\&{$API{$action}}}(%OPTS);
+        };
+        if ($@) {
+            if (Cpanel::CloudFlare::Config::is_debug_mode()) {
+                $logger->warn("Exception caught: " . Dumper($@));
+            }
+
+            return [
+                {
+                    "result" => "error",
+                    "msg"    => $@
+                }
+            ];
+        }
+
+        return $response;
+    }
 }
 
 ########## Internal Functions Defined Below #########

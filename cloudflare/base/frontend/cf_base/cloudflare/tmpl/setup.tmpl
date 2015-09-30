@@ -21,7 +21,6 @@ END;
 
 SET ip_result = Api2.exec('DnsLookup', 'name2ip', {'domain' => CPANEL.CPDATA.DNS});
 SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
-SET cpanel_domains = Api2.exec('ZoneEdit','fetch_cpanel_generated_domains').ofeach('domain').grep('.');
 SET cf_user = Api2.exec('CloudFlare','user_lookup', {'user' => CPANEL.CPDATA.USER, 'homedir' => CPANEL.homedir}).0;
 
 SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
@@ -29,7 +28,6 @@ SET domain_ip = ip_result.0.ip || CPANEL.CPDATA.IP;
 FOR domain_data = base_domains_result.0.res;
         SET temp = Api2.exec('CloudFlare','fetchzone', {'domain'=> domain_data.domain, 'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 END;
-SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' => CPANEL.homedir, 'user' => CPANEL.CPDATA.USER});
 -%]
 
 <div class="cloudflare-content">
@@ -46,12 +44,7 @@ SET base_domains_result = Api2.exec('CloudFlare','getbasedomains', {'homedir' =>
 
 <script type="text/javascript">
 //<![CDATA[
-var CPANEL_CONTROLLED_DOMAINS = [% cpanel_domains.json() %];
 var LANG = [% js_lang.json() %];
-var USER_ID = [% (cf_user.response.user_key)? cf_user.response.user_key.json(): 0 %];
-var USER = "[% CPANEL.CPDATA.USER %]";
-var USER_EMAIL = [% (cf_user.response.cloudflare_email)? cf_user.response.cloudflare_email.json(): 0 %];
-var USER_HOME_DIR = [% CPANEL.homedir.json() %];
 var CF_ON_CLOUD_MESSAGE = [% cf_user.on_cloud_message.json()? cf_user.on_cloud_message.json(): "\"\"" %];
 //]]>
 </script>
