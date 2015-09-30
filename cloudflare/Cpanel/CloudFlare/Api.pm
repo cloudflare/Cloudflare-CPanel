@@ -118,6 +118,7 @@ sub https_post_request {
         ## LWP will encode all data as multipart/form-data even if we specify application/json
         ## so we have to manually encode it.
         my $content = $args_hr->{'query'};
+
         if(defined $args_hr->{"headers"}->{"Content-Type"} && $args_hr->{"headers"}->{"Content-Type"} eq "application/json") {
             $content = $json_dump_function->($content);
         }

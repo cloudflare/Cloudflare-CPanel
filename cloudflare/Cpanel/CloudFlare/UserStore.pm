@@ -15,6 +15,7 @@ my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 # $cf_data_file set in new()
 my $cf_data_file;
+
 my $cf_global_data = {};
 
 my $logger = Cpanel::Logger->new();

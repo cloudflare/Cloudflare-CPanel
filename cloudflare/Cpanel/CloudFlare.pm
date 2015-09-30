@@ -159,6 +159,7 @@ sub api2_zone_set {
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
     $cf_global_data = $cf_user_store->__load_data_file();
+
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -322,6 +323,7 @@ sub api2_zone_delete {
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
 
     $cf_global_data = $cf_user_store->__load_data_file();
+
     $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
 
     ## If we get an error, do nothing and return the error to the user.
@@ -376,6 +378,7 @@ sub api2_fetchzone {
     my %OPTS    = @_;    
 
     $cf_global_data = $cf_user_store->__load_data_file();
+
     my $domain = $OPTS{'domain'}.".";
 
 
@@ -404,7 +407,9 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {
     my %OPTS = @_;
+
     $cf_global_data = $cf_user_store->__load_data_file();
+
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
