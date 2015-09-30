@@ -52,26 +52,31 @@ my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $Cpanel::home
         my $cf_global_data = $cf_user_store->__load_data_file();
 
         # Are there any zone tags in the YAML file?
-        if(defined $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}) {
+        if((defined $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}) && (defined $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name})) {
             # Is our zone tag cached?
             if(defined $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name}) {
+                $logger->info("Zone tag for '". $zone_name ."' was found in the YAML cache.");
                 $zone_tag = $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name};
             } else {
-                # Make an API call to get the zone tag
-                if (!defined $zones->{$zone_name}) {
-                    if (!load($zone_name)) {
-                        die "Unable to load zone. Domain may not be currently associated with this account.\n"
-                    }
-                }
 
-                $zone_tag = $zones->{$zone_name}->{"id"};
-
-                # save the zone tag to the yaml file
-                $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name} = $zone_tag;
-                $cf_user_store->__save_data_file($cf_global_data);
             }
         } else {
-            $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY} = {};
+            if(!defined $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}) {
+                $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY} = {};
+            }
+
+            # Make an API call to get the zone tag
+            if (!defined $zones->{$zone_name}) {
+                if (!load($zone_name)) {
+                    die "Unable to load zone. Domain may not be currently associated with this account.\n"
+                }
+            }
+
+            $zone_tag = $zones->{$zone_name}->{"id"};
+            $logger->info("Zone tag for '". $zone_name ."' was NOT in the YAML cache.");
+
+            # save the zone tag to the yaml file
+            $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name} = $zone_tag;
             $cf_user_store->__save_data_file($cf_global_data);
         }
 

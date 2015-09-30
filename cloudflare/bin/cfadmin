@@ -233,7 +233,6 @@ sub run {
     }
 
     # User has been verified, so let's load the data file
-    $cf_user_store->__verify_file_with_user();
     $cf_global_data = $cf_user_store->__load_data_file();
 
     ## No use making a request without this

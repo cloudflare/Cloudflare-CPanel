@@ -37,10 +37,6 @@ my $logger = Cpanel::Logger->new();
         return 1;
     }
 
-    sub write_cache {
-        Cpanel::CloudFlare::UserStore::__save_data_file($user_cache);
-    }
-
     sub get_user_key {
         if (!$user->{"user_key"}) {
             $logger->info("Missing user_key!");

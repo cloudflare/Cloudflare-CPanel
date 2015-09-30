@@ -242,8 +242,7 @@ sub api2_zone_set {
     }
 
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -312,8 +311,7 @@ sub api2_full_zone_set {
     }
 
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -335,8 +333,7 @@ sub api2_zone_delete {
     }
     
     ## Save the updated global data arg.
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -400,8 +397,7 @@ sub api2_fetchzone {
         }
     }
 
-    Cpanel::CloudFlare::UserStore::__verify_file_with_user();
-    Cpanel::CloudFlare::UserStore::__save_data_file($cf_global_data);
+    $cf_user_store->__save_data_file($cf_global_data);
 
     return $results;
 }

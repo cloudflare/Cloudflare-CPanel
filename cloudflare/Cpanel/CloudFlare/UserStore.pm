@@ -96,11 +96,13 @@ sub __load_data_file {
 }
 
 sub __save_data_file {
+    my $self = shift;
     my ( $data ) = @_;
+    $self->__verify_file_with_user();
     Cpanel::DataStore::store_ref($cf_data_file, $data);
 }
 
-#TODO check if $Cpanel::CPDATA{'USER'} == my @getpwuid_result = getpwuid( int($uid) ); my ( $user, $gid, $home ) = @getpwuid_result[ 0, 3, 7 ];
+# this method is called in load and save and should never really be called outside of this file.
 sub __verify_file_with_user {
     my $self = shift;
     my $user = $self->{"user"};
@@ -132,4 +134,4 @@ sub __verify_file_with_user {
     }
 }
 
-1;
+1; #Ah, perl
