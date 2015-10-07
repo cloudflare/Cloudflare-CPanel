@@ -5,10 +5,6 @@ package Cpanel::CloudFlare::UserStore;
 use Cpanel::AdminBin();
 use Cpanel::DataStore();
 
-if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-    use Data::Dumper;
-}
-
 use strict;
 
 my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
@@ -46,7 +42,6 @@ sub new {
         }
         $self->{$attribute} = $params{$attribute};
     }
-
     $cf_data_file = $self->{"home_dir"} . "/". $cf_data_file_name;
 
     return $self;
@@ -72,9 +67,7 @@ sub __load_data_file {
 
     $self->__verify_file_with_user();
     if(Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data)) {
-        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-            $logger->info("Successfully loaded cf data -- $cf_data_file");
-        }
+        $logger->debug("Successfully loaded cf data -- $cf_data_file");
     } else {
         ## Try to load the data from the old default data file (if it exists)
         if (-e $cf_old_data_file_name) {

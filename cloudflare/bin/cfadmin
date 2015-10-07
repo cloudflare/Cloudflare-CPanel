@@ -15,6 +15,7 @@ BEGIN {
 }
 
 use strict;
+
 use Cpanel::Logger    ();
 use Cpanel::DataStore ();
 use Cpanel::LoadFile  ();
@@ -27,18 +28,10 @@ use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::Host();
 use Cpanel::CloudFlare::UserStore();
 
-## Data::Dumper is only needed within debug mode
-## Some hosts do not have this installed
-if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-    use Data::Dumper;
-}
-
 my $logger = Cpanel::Logger->new();
-my $cf_host_key_file	  = "/root/.cpanel/datastore/cf_api";
 my $cf_data_file_name     = ".cpanel/datastore/cloudflare_data.yaml";
 my $cf_old_data_file_name = "/usr/local/cpanel/etc/cloudflare_data.yaml";
 my $cf_data_file;
-my $cf_host_key;
 my $cf_host_on_cloud_msg;
 my $cf_global_data      = {};
 my $DEFAULT_HOSTER_NAME = "your web hosting provider";
@@ -54,16 +47,16 @@ sub run {
     # Parse the arguments passed to the testadmin scripts via stdin
     my $theargs = <STDIN>;
 
-    #unless ( $theargs =~ /^(\d+) ([A-Z]+) (\S+)/ ) {
+    my $cf_host = Cpanel::CloudFlare::Host->new(); #only runs as root, securely loads host API key
+    my $cf_host_key = $cf_host->get_host_api_key();
+
     unless ( $theargs =~ /^(\d+) ([A-Za-z_]+) (\S+)/ ) {
         print STDERR "$0 : Syntax Mismatch\n";
         exit 1;
     }
     chomp($theargs);
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info($theargs);
-    }
+    $logger->debug($theargs);
 
     my ( $uid, $action, @args ) = split( / /, $theargs );
 
@@ -124,9 +117,8 @@ sub run {
             my %OPTS = @args;
 
             if ( $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} } ) {
-                if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-                    $logger->info("Using user token");
-                }
+                $logger->debug("Using user token");
+
                 my $query = {
                     "act"       => "user_lookup",
                     "unique_id" => $cf_global_data->{"cf_user_tokens"}->{ $OPTS{"user"} },
@@ -198,21 +190,19 @@ sub run {
 
     # Verify that the command exists
     if ( !exists $commands{$action} ) {
-        print "not a valid action: $action\n";
+        $logger->warn("not a valid action: $action");
         exit 1;
     }
 
     # Code used to ensure that the correct user is being run.
-    my @getpwuid_result = getpwuid( int($uid) );
-    my ( $user, $gid, $home ) = @getpwuid_result[ 0, 3, 7 ];
 
     if ( $user eq 'root' || $user eq '' ) {
-        print "Admin Binary called with invalid user\n";
+        $logger->warn("Admin Binary called with invalid user");
         exit;
     }
 
     if ( !-e "/var/cpanel/users/$user" && $user ne 'cpanel' ) {
-        print "Admin binary called with invalid user\n";
+        $logger->warn("Admin binary called with invalid user");
         exit;
     }
 
@@ -221,14 +211,17 @@ sub run {
 
     # Additional validation to make sure we are operating in the correct user
     if (!defined($temp{"homedir"}) && !defined($temp{"user"})) {
+        $logger->warn("temp User and homedir not defined.");
         exit;
     }
 
     if (defined($temp{"homedir"}) && ! $getpwuid_result[7] eq $temp{"homedir"} ) {
+        $logger->warn("Temp home dir not equal ot home dir.");
         exit;
     }
 
     if (defined($temp{"user"}) && ! $getpwuid_result[0] eq $temp{"user"} ) {
+        $logger->warn("temp user not equal to user.");
         exit;
     }
 
@@ -236,7 +229,7 @@ sub run {
     $cf_global_data = $cf_user_store->__load_data_file();
 
     ## No use making a request without this
-    if ( !CloudFlare_init() || !Cpanel::CloudFlare::Host::get_host_api_key()) {
+    if ($cf_host_key eq "") {
         return [
             {
                 "result" => "error",
@@ -252,10 +245,6 @@ sub run {
 }
 
 ########## BEGIN Internal Functions #########
-sub CloudFlare_init {
-    Cpanel::CloudFlare::Host::load();
-    return 1;
-}
 
 sub __get_serializer_function {
     eval { local $SIG{'__DIE__'}; local $SIG{'__WARN__'}; require Cpanel::AdminBin::Serializer; };

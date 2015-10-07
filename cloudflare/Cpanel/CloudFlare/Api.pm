@@ -1,33 +1,32 @@
 package Cpanel::CloudFlare::Api;
 
 use Cpanel::Logger();
+
 use Cpanel::CloudFlare::Config();
 use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::Host();
 use Cpanel::CloudFlare::User();
-
-## Data::Dumper is only needed within debug mode
-## Some hosts do not have this installed
-if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-    use Data::Dumper;
-}
 
 use HTTP::Request::Common;
 require HTTP::Headers;
 require HTTP::Request;
 require LWP::UserAgent;
 
+use Data::Dumper;
+
+use strict;
+
 my $logger = Cpanel::Logger->new();
 
 ## Helper variables
 my $has_ssl;
-my $json_load_function ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
-my $json_dump_function ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
+my $json_load_function ||= Cpanel::CloudFlare::Helper::__get_json_load_function(); #json_decode
+my $json_dump_function ||= Cpanel::CloudFlare::Helper::__get_json_dump_function(); #json_encode
 
 sub client_api_request_v1 {
     my ( $query ) = @_;
 
-    $base = Cpanel::CloudFlare::Config::get_client_api_base();
+    my $base = Cpanel::CloudFlare::Config::get_client_api_base();
     $base->{"query"} = $query;
     $base->{"query"}->{"tkn"} = Cpanel::CloudFlare::User::get_user_api_key();
 
@@ -39,7 +38,7 @@ sub client_api_request_v4 {
     my $uri = shift;
     my ( $query ) = @_;
 
-    $base = Cpanel::CloudFlare::Config::get_client_api_base_v4();
+    my $base = Cpanel::CloudFlare::Config::get_client_api_base_v4();
     $base->{"method"} = $method;
     $base->{"query"} = $query;
     $base->{"uri"} = $base->{"uri"} . $uri;
@@ -57,7 +56,7 @@ sub railgun_api_request {
     my $uri = shift;
     my ( $query ) = @_;
 
-    $base = Cpanel::CloudFlare::Config::get_client_api_base();
+    my $base = Cpanel::CloudFlare::Config::get_client_api_base();
     $base->{"uri"} = $uri;
     $base->{"query"} = $query;
     $base->{"query"}->{"tkn"} = Cpanel::CloudFlare::User::get_user_api_key();
@@ -68,17 +67,20 @@ sub railgun_api_request {
 sub host_api_request {
     my ( $query ) = @_;
 
-    $base = Cpanel::CloudFlare::Config::get_host_api_base();
+    my $base = Cpanel::CloudFlare::Config::get_host_api_base();
+    my $cf_host = Cpanel::CloudFlare::Host->new();
     $base->{"query"} = $query;
 
-    $base->{'query'}->{'host_key'} = Cpanel::CloudFlare::Host::get_host_api_key();
-
+    #TODO: I thought the whole point of cfadmin was to avoid getting host key as user other than root?
+    # Am I running as root right now?
+    $base->{'query'}->{'host_key'} = $cf_host->get_host_api_key();
     return cf_api_request($base);
 }
 
 sub cf_api_request {
     my ( $args_hr ) = @_;
-    $result = https_post_request($args_hr);
+
+    my $result = https_post_request($args_hr);
     return $json_load_function->($result);
 }
 
@@ -97,9 +99,7 @@ sub https_post_request {
     $args_hr->{"headers"}->{"CF-Integration-Version"} = Cpanel::CloudFlare::Config::get_plugin_version();
     $args_hr->{'method'} = $args_hr->{'method'} || 'POST';
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("Arguments: " . Dumper($args_hr));
-    }
+    $logger->debug("Arguments: " . $json_dump_function->($args_hr));
 
     ## TODO: Clean this up so that the absolute url is passed, and we no longer use 'port'
     my $uri = 'https://' . $args_hr->{'host'} . $args_hr->{'uri'};
@@ -127,24 +127,32 @@ sub https_post_request {
         $request->method($args_hr->{'method'});
     }
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("Request: " . Dumper($request));
-    }
+    $logger->debug("Request: " . $request->as_string);
 
-    $ua = LWP::UserAgent->new;
+    my $ua = LWP::UserAgent->new;
 
-    $response = $ua->request($request);
+    my $response = $ua->request($request);
 
-    if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-        $logger->info("Response: " . Dumper($response));
-    }
+    $logger->debug("Response: " . $response->as_string);
 
+    # Was there a HTTP request error?
     if (!$response->is_success) {
-        $logger->info("Error Page: " . "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error header received: $response\"}");
-        return "{\"result\":\"error\", \"msg\":\"There was an error communicating with CloudFlare. Error " . $response->code . " received: " . $response->message . "\"}";
+        my $error_response = {};
+        $error_response->{"result"} = "error";
+        $error_response->{"msg"} = "There was an error communicating with CloudFlare. Error Code: ". $response->code ." Message: ". $response->message;
+
+        $logger->warn("ERROR REQUEST: ". $request->as_string);
+        $logger->warn("ERROR RESPONSE: ". $response->as_string);
+
+        return $json_dump_function->($error_response);
     } else {
-        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-            $logger->info("Page: " . $response->decoded_content);
+        my $response_content = $json_load_function->($response->{"_content"});
+        #Did the API return an error?
+        if(uc($response_content->{'result'}) eq uc('error')) {
+            $logger->warn("ERROR ENDPOINT: ". $uri);
+            $logger->warn("ERROR REQUEST: ". $request->{"_content"});
+            #response content is the actual JSON response from the API
+            $logger->warn("ERROR RESPONSE: ".$response->{"_content"});
         }
         return $response->decoded_content;
     }

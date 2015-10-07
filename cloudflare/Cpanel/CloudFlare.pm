@@ -7,8 +7,9 @@ package Cpanel::CloudFlare;
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
 
 use Cpanel::AdminBin             ();
-use Cpanel::Logger               ();
 use Cpanel::DomainLookup         ();
+use Cpanel::LiveAPI              ();
+use Cpanel::Logger               ();
 
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
@@ -16,38 +17,35 @@ use Cpanel::CloudFlare::User();
 use Cpanel::CloudFlare::UserStore();
 use Cpanel::CloudFlare::Zone();
 
-## Data::Dumper is only needed within debug mode
-## Some hosts do not have this installed
-if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-    use Data::Dumper;
-}
-
 use strict;
 
 my $logger = Cpanel::Logger->new();
 my $cf_data_file;
 my $cf_global_data = {};
-my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $Cpanel::homedir, "user" , $Cpanel::CPDATA{'USER'});
-my $json_dump_function;
-my $json_load_function;
+my $USER = $Cpanel::CPDATA{'USER'};
+my $HOME_DIR = $Cpanel::homedir;
+my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $HOME_DIR, "user" , $USER);
+my $json_dump_function = Cpanel::CloudFlare::Helper::__get_json_dump_function();
+my $json_load_function = Cpanel::CloudFlare::Helper::__get_json_load_function();
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
                'class' => 'class', 'address' => 'address', 'type' => 'type',
                'txtdata' => 'txtdata', 'preference' => 'preference', 'exchange' => 'exchange' );
 
+#CPanel Module init method
 sub CloudFlare_init {
-    $json_dump_function     ||= Cpanel::CloudFlare::Helper::__get_json_dump_function();
-    $json_load_function     ||= Cpanel::CloudFlare::Helper::__get_json_load_function();
+    $json_dump_function = Cpanel::CloudFlare::Helper::__get_json_dump_function();
+    $json_load_function = Cpanel::CloudFlare::Helper::__get_json_load_function();
 }
 
 sub api2_user_create {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_create', 'storable', (%OPTS, 'homedir', $HOME_DIR, 'user' , $USER) );
 
-    if ( $result->{"result"} eq "error" ) {
+     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
-    }
+     }
     return $result;
 }
 
@@ -55,7 +53,7 @@ sub api2_user_create {
 # a non-standard return
 sub api2_user_lookup {
     my %OPTS = @_;
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', (%OPTS, 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'user_lookup', 'storable', (%OPTS, 'homedir', $HOME_DIR, 'user' , $USER) );
     return $result;
 }
 
@@ -156,7 +154,7 @@ sub api2_edit_cf_setting {
 sub api2_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
     $cf_global_data = $cf_user_store->__load_data_file();
 
@@ -251,7 +249,7 @@ sub api2_zone_set {
 sub api2_full_zone_set {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'full_zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'full_zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
     $cf_global_data = $cf_user_store->__load_data_file();
     my $domain = "." . $OPTS{"zone_name"} . ".";
@@ -320,7 +318,7 @@ sub api2_full_zone_set {
 sub api2_zone_delete {
     my %OPTS = @_;
 
-    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $Cpanel::homedir, 'user' , $Cpanel::CPDATA{'USER'}) );
+    my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
     $cf_global_data = $cf_user_store->__load_data_file();
 
@@ -385,12 +383,12 @@ sub api2_fetchzone {
     foreach my $res (@{$raw->{"record"}}) {
         if (
             (($res->{"type"} eq "CNAME") || ($res->{"type"} eq "A")) &&
-            ($res->{"name"} !~ /(^autoconfig|^autodiscover|^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost)/) &&
+            (defined($res->{"name"}) && ($res->{"name"} !~ /(^autoconfig|^autodiscover|^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost)/)) &&
             ($res->{"name"} ne $domain) &&
 	        ($res->{"name"} ne Cpanel::CloudFlare::Config::get_host_prefix() .".". $domain) &&
-            ($res->{"cname"} !~ /google.com/)
+            ((defined($res->{"cname"})) && ($res->{"cname"} !~ /google.com/))
         ){
-            if ($res->{"cname"} =~ /cdn.cloudflare.net$/) {
+            if (defined($res->{"cname"}) && ($res->{"cname"} =~ /cdn.cloudflare.net$/)) {
                 $res->{"cloudflare"} = 1;
                 $cf_global_data->{"cf_zones"}->{$OPTS{'domain'}} = 1;
             } else {
@@ -487,12 +485,10 @@ sub api2_railgun_mode {
 
     sub api2_front_controller {
         ## Load the current user so it is available to other requests
-        Cpanel::CloudFlare::User::load($Cpanel::homedir , $Cpanel::CPDATA{'USER'});
+        Cpanel::CloudFlare::User::load($HOME_DIR , $USER);
 
-        if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-            $logger->info("User: " . Dumper($Cpanel::CPDATA{'USER'}));
-            $logger->info("Homedir: " . Dumper($Cpanel::homedir));
-        }
+        $logger->debug("User: " . $json_dump_function->($USER));
+        $logger->debug("Homedir: " . $json_dump_function->($HOME_DIR));
 
         my %API;
         my %OPTS = @_;
@@ -524,9 +520,7 @@ sub api2_railgun_mode {
             $response = &{\&{$API{$action}}}(%OPTS);
         };
         if ($@) {
-            if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-                $logger->warn("Exception caught: " . Dumper($@));
-            }
+            $logger->warn("Exception caught: " . $@);
 
             return [
                 {
