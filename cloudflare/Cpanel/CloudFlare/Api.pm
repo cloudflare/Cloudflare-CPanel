@@ -12,8 +12,6 @@ require HTTP::Headers;
 require HTTP::Request;
 require LWP::UserAgent;
 
-use Data::Dumper;
-
 use strict;
 
 my $logger = Cpanel::Logger->new();
