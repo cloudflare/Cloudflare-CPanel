@@ -51,10 +51,6 @@ use Cpanel::CloudFlare::Helper();
     sub get_on_cloud_message {
         return  $data->{"cloudflare_on_message"} ? $data->{"cloudflare_on_message"} : "";
     }
-
-    sub is_debug_mode {
-        return $data->{"debug"} ? true : false;
-    }
 }
 
-1;
+1; #Ah, perl

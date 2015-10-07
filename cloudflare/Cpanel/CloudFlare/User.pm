@@ -4,10 +4,6 @@ use Cpanel::CloudFlare::UserStore;
 
 use Cpanel::Logger();
 
-if (Cpanel::CloudFlare::Config::is_debug_mode()) {
-    use Data::Dumper;
-}
-
 use strict;
 
 my $logger = Cpanel::Logger->new();
