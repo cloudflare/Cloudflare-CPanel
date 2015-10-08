@@ -1,13 +1,14 @@
 package Cpanel::CloudFlare::Host;
 
 ## This package is only useful when running requests as root
+use Cpanel::CloudFlare::Logger();
 
 use strict;
 
 {
     my $host_api_key_file = "/root/.cpanel/datastore/cf_api";
     use constant HOST_API_KEY => "host_api_key";
-    my $logger = Cpanel::Logger->new();
+    my $logger = Cpanel::CloudFlare::Logger->new();
 
     sub new {
         my $type = shift;

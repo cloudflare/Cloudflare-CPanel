@@ -1,10 +1,9 @@
 package Cpanel::CloudFlare::Api;
 
-use Cpanel::Logger();
-
 use Cpanel::CloudFlare::Config();
 use Cpanel::CloudFlare::Helper();
 use Cpanel::CloudFlare::Host();
+use Cpanel::CloudFlare::Logger();
 use Cpanel::CloudFlare::User();
 
 use HTTP::Request::Common;
@@ -14,7 +13,7 @@ require LWP::UserAgent;
 
 use strict;
 
-my $logger = Cpanel::Logger->new();
+my $logger = Cpanel::CloudFlare::Logger->new();
 
 ## Helper variables
 my $has_ssl;

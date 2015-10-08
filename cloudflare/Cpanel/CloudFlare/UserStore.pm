@@ -5,6 +5,8 @@ package Cpanel::CloudFlare::UserStore;
 use Cpanel::AdminBin();
 use Cpanel::DataStore();
 
+use Cpanel::CloudFlare::Logger();
+
 use strict;
 
 my $cf_data_file_name = ".cpanel/datastore/cloudflare_data.yaml";
@@ -14,7 +16,7 @@ my $cf_data_file;
 
 my $cf_global_data = {};
 
-my $logger = Cpanel::Logger->new();
+my $logger = Cpanel::CloudFlare::Logger->new();
 
 use constant CF_ZONE_TAGS_KEY => "cf_zone_tags";
 
