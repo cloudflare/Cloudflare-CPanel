@@ -1,7 +1,6 @@
 package Cpanel::CloudFlare::Config;
 
 use Cpanel::CloudFlare::Helper();
-use Cpanel::Logger();
 
 {
     ## default host name, in case one is not set in the config
