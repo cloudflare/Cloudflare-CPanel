@@ -1,6 +1,7 @@
 package Cpanel::CloudFlare::Config;
 
 use Cpanel::CloudFlare::Helper();
+use Cpanel::Logger();
 
 {
     ## default host name, in case one is not set in the config
@@ -9,8 +10,13 @@ use Cpanel::CloudFlare::Helper();
     ## Global cPanel plugin configuration
     my $cf_config_file = "/usr/local/cpanel/etc/cloudflare.json";
 
-    ## stores the loaded configuration data within the static variable `$data`
-    my $data = Cpanel::CloudFlare::Helper::__get_json_loadfile_function()->($cf_config_file);
+    my $data;
+
+    # Cpanel::JSON::_create_new_json_object in 11.52 does not like being called in BEGIN or CHECK
+    sub INIT {
+        ## stores the loaded configuration data within the static variable `$data`
+        $data = Cpanel::CloudFlare::Helper::__get_json_loadfile_function()->($cf_config_file);
+    }
 
     sub get_host_api_base {
         return {
