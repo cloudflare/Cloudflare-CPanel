@@ -207,7 +207,7 @@ sub api2_zone_set {
         foreach my $ft ( keys %{ $result->{"response"}->{"forward_tos"} } ) {
             $zone_args{"line"} = $recs2lines->{ $ft . "." };
             $zone_args{"name"} = $ft;
-            $zone_args{"name"} =~ s/$dom//g;
+            $zone_args{"name"} =~ s/$dom//g; # replace spaces globally
             $zone_args{"cname"} = $result->{"response"}->{"forward_tos"}->{$ft};
 
             $res = Cpanel::AdminBin::adminfetchnocache(
@@ -225,7 +225,10 @@ sub api2_zone_set {
 
             if ( !$res->{"status"} ) {
                 $logger->info("Failed to set DNS for CloudFlare record $ft!");
-                $logger->info( $json_dump_function->($res) );
+                $logger->info("Zone: ". $OPTS{"zone_name"});
+                $logger->info("Error Request: ". $json_dump_function->(\%zone_args));
+                $logger->info("Error Response: ". $json_dump_function->($res) );
+
                 $result->{"result"} = "error";
                 $result->{"msg"}    = $res->{"statusmsg"};
             }
