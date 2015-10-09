@@ -67,7 +67,7 @@ sub __load_data_file {
 
     $self->__verify_file_with_user();
     if(Cpanel::DataStore::load_ref($cf_data_file, $cf_global_data)) {
-        $logger->debug("Successfully loaded cf data -- $cf_data_file");
+        $logger->info("Successfully loaded cf data -- $cf_data_file");
     } else {
         ## Try to load the data from the old default data file (if it exists)
         if (-e $cf_old_data_file_name) {
@@ -101,7 +101,7 @@ sub __verify_file_with_user {
     my $self = shift;
     my $user = $self->{"user"};
 
-    $logger->info("cf_data_file: ". $cf_data_file);
+    $logger->debug("cf_data_file: ". $cf_data_file);
 
     if ( -l $cf_data_file ) {
         $logger->info("Symlink found. Removing cloudflare_data.yaml.");
@@ -114,8 +114,8 @@ sub __verify_file_with_user {
 
         my $inode = (stat($cf_data_file))[4];
 
-        $logger->info("inode: ". $inode);
-        $logger->info("temp uid: ". $temp_uid);
+        $logger->debug("inode: ". $inode);
+        $logger->debug("temp uid: ". $temp_uid);
 
         #Is the UID of the file not equal to the UID of the user?
         if ( $inode != (getpwnam($user))[2] ) {
