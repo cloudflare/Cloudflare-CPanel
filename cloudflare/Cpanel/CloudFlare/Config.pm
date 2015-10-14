@@ -61,7 +61,8 @@ use strict;
     }
 
     sub is_debug_mode {
-        return $data->{"debug"};
+        my $data = Cpanel::CloudFlare::Helper::__get_json_loadfile_function()->($cf_config_file);
+        return $data->{"debug"} ? $data->{"debug"} : 0;
     }
 }
 

@@ -11,14 +11,6 @@ use strict;
 
 my $logger;
 
-use constant IS_DEBUG_MODE => Cpanel::CloudFlare::Config::is_debug_mode();
-
-## Data::Dumper is only needed within debug mode
-## Some hosts do not have this installed
-if (IS_DEBUG_MODE) {
-    use Data::Dumper;
-}
-
 sub new {
     my ($type, $args) = @_;
     my $self = {};
@@ -43,15 +35,6 @@ sub debug {
     if(Cpanel::CloudFlare::Config::is_debug_mode()) {
         $logger->info(@_);
     }
-}
-
-# Wrapping Dumper() so we dont have to worry about including it everywhere.
-sub dumper {
-    my $self = shift;
-    if(Cpanel::CloudFlare::Config::is_debug_mode()) {
-        return Dumper(@_);
-    }
-    return;
 }
 
 # Cpanel::Logger->error() doesn't exist yet.
