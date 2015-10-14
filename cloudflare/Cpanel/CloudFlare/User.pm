@@ -2,11 +2,11 @@ package Cpanel::CloudFlare::User;
 
 use Cpanel::CloudFlare::UserStore;
 
-use Cpanel::Logger();
+use Cpanel::CloudFlare::Logger();
 
 use strict;
 
-my $logger = Cpanel::Logger->new();
+my $logger = Cpanel::CloudFlare::Logger->new();
 
 {
     # Store the loaded user

@@ -59,6 +59,10 @@ use strict;
         my $data = Cpanel::CloudFlare::Helper::__get_json_loadfile_function()->($cf_config_file);
         return  $data->{"cloudflare_on_message"} ? $data->{"cloudflare_on_message"} : "";
     }
+
+    sub is_debug_mode {
+        return $data->{"debug"};
+    }
 }
 
 1; #Ah, perl

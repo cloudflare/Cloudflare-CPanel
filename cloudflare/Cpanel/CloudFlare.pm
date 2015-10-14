@@ -9,7 +9,7 @@ package Cpanel::CloudFlare;
 use Cpanel::AdminBin             ();
 use Cpanel::DomainLookup         ();
 use Cpanel::LiveAPI              ();
-use Cpanel::Logger               ();
+use Cpanel::CloudFlare::Logger   ();
 
 use Cpanel::CloudFlare::Api();
 use Cpanel::CloudFlare::Helper();
@@ -19,7 +19,7 @@ use Cpanel::CloudFlare::Zone();
 
 use strict;
 
-my $logger = Cpanel::Logger->new();
+my $logger = Cpanel::CloudFlare::Logger->new();
 my $cf_data_file;
 my $cf_global_data = {};
 my $USER = $Cpanel::CPDATA{'USER'};

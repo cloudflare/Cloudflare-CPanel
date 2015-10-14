@@ -3,11 +3,11 @@ package Cpanel::CloudFlare::Zone;
 use Cpanel::CloudFlare::Api;
 use Cpanel::CloudFlare::UserStore;
 
-use Cpanel::Logger();
+use Cpanel::CloudFlare::Logger();
 
 use strict;
 
-my $logger = Cpanel::Logger->new();
+my $logger = Cpanel::CloudFlare::Logger->new();
 my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $Cpanel::homedir , "user" , $Cpanel::CPDATA{'USER'});
 {
     # Store the loaded user
