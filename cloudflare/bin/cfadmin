@@ -39,6 +39,7 @@ my $DEFAULT_HOSTER_NAME = "your web hosting provider";
 
 my $serializer_function    = __get_serializer_function();
 my $json_load_function     = Cpanel::CloudFlare::Helper::__get_json_load_function();
+my $json_dump_function     = Cpanel::CloudFlare::Helper::__get_json_dump_function();
 my $json_loadfile_function = Cpanel::CloudFlare::Helper::__get_json_loadfile_function();
 
 __PACKAGE__->run unless caller;
@@ -77,7 +78,7 @@ sub run {
         die "User mismatch";
     }
     
-    $logger->info("Homedir Owner: " . $temp_homedir_owner);
+    $logger->debug("Homedir Owner: " . $temp_homedir_owner);
 
     if ( $uid == $temp_homedir_owner ) {
         $cf_data_file = $temp{"homedir"} . "/" . $cf_data_file_name;
@@ -126,7 +127,6 @@ sub run {
 
                 my $result = Cpanel::CloudFlare::Api::host_api_request($query);
                 $result->{"on_cloud_message"} = Cpanel::CloudFlare::Config::get_on_cloud_message();
-                $logger->info($result);
 
                 $serializer_function->($result);
             }
@@ -153,6 +153,17 @@ sub run {
             }
 
             my $result = Cpanel::CloudFlare::Api::host_api_request($query);
+
+            # Did the user try to sign up with a subdomain as their main Cpanel account?
+            if(defined($result) && ($result->{"request"}->{"zone_name"} ne $result->{"response"}->{"zone_name"})) {
+                $logger->warn("Error: ". $OPTS{"zone_name"} . " is a subdomain, CloudFlare must be provisioned as the root domain in CPanel.");
+
+                my $error_result = {};
+                $error_result->{"result"} = "error";
+                $error_result->{"msg"} = "You are attempting to provision CloudFlare for a subdomain. Please update your cPanel to the root domain and try again.";
+                return $serializer_function->($error_result);
+            }
+
 
             $serializer_function->($result);
         },
