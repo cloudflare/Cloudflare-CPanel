@@ -6,6 +6,9 @@ package Cpanel::CloudFlare;
 # @author ian@cloudflare.com
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
 
+use JSON();
+use JSON::PP();
+
 use Cpanel::AdminBin             ();
 use Cpanel::DomainLookup         ();
 use Cpanel::LiveAPI              ();
@@ -27,6 +30,10 @@ my $HOME_DIR = $Cpanel::homedir;
 my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $HOME_DIR, "user" , $USER);
 my $json_dump_function = Cpanel::CloudFlare::Helper::__get_json_dump_function();
 my $json_load_function = Cpanel::CloudFlare::Helper::__get_json_load_function();
+
+# Because Cpanel::JSON doesn't convert true/false to 1/0.
+my $JSON_TRUE = $JSON::PP::true;
+my $JSON_FALSE = $JSON::PP::false;
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
                'class' => 'class', 'address' => 'address', 'type' => 'type',
@@ -156,8 +163,6 @@ sub api2_zone_set {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
-    $cf_global_data = $cf_user_store->__load_data_file();
-
     my $domain = "." . $OPTS{"zone_name"} . ".";
     my $subs   = $OPTS{"subdomains"};
     $subs =~ s/${domain}//g;
@@ -232,19 +237,8 @@ sub api2_zone_set {
                 $result->{"result"} = "error";
                 $result->{"msg"}    = $res->{"statusmsg"};
             }
-
-            ## Note that if at least one rec is on, this zone is on CF.
-            $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 1;
-            $is_cf = 1;
         }
     }
-
-    if ( !$is_cf ) {
-        $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
-    }
-
-    ## Save the updated global data arg.
-    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -323,10 +317,6 @@ sub api2_zone_delete {
 
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_delete', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
-    $cf_global_data = $cf_user_store->__load_data_file();
-
-    $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
-
     ## If we get an error, do nothing and return the error to the user.
     if ( $result->{"result"} eq "error" ) {
         $logger->info( "CloudFlare Error: " . $result->{"msg"} );
@@ -334,9 +324,6 @@ sub api2_zone_delete {
         ## Otherwise, update the dns for this zone.
         rec_cleanup(%OPTS);
     }
-    
-    ## Save the updated global data arg.
-    $cf_user_store->__save_data_file($cf_global_data);
 
     return $result;
 }
@@ -376,9 +363,7 @@ sub rec_cleanup {
 sub api2_fetchzone {
     my $raw = __fetchzone(@_);
     my $results = [];
-    my %OPTS    = @_;    
-
-    $cf_global_data = $cf_user_store->__load_data_file();
+    my %OPTS    = @_;
 
     my $domain = $OPTS{'domain'}.".";
 
@@ -392,8 +377,7 @@ sub api2_fetchzone {
             ((defined($res->{"cname"})) && ($res->{"cname"} !~ /google.com/))
         ){
             if (defined($res->{"cname"}) && ($res->{"cname"} =~ /cdn.cloudflare.net$/)) {
-                $res->{"cloudflare"} = 1;
-                $cf_global_data->{"cf_zones"}->{$OPTS{'domain'}} = 1;
+                $res->{"cloudflare"} = 1;;
             } else {
                 $res->{"cloudflare"} = 0;
 	    }
@@ -401,26 +385,32 @@ sub api2_fetchzone {
         }
     }
 
-    $cf_user_store->__save_data_file($cf_global_data);
-
     return $results;
 }
 
 sub api2_getbasedomains {
     my %OPTS = @_;
+    my $cpanel_domains_result = Cpanel::DomainLookup::api2_getbasedomains(@_);
 
-    $cf_global_data = $cf_user_store->__load_data_file();
-    my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
-    foreach my $dom (@$res) {
-        if ($cf_global_data->{"cf_zones"}->{$dom->{"domain"}}) {
-            $dom->{"cloudflare"} = 1;
-            $has_cf = 1;
-        } else {
-            $dom->{"cloudflare"} = 0;
+    foreach my $domain (@$cpanel_domains_result) {
+        $domain->{"cloudflare"} = 0;
+        my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($domain->{"domain"});
+
+        if($zone_tag) { #If we don't have a zone tag the domain isn't on CF or doesn't belong to this user.
+            my $get_zone_details_response = Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag , {});
+
+            #Did we get a successful response and is the domain not paused?
+            if ($get_zone_details_response->{"success"} == $JSON_TRUE &&
+                ((exists($get_zone_details_response->{"result"}) && exists($get_zone_details_response->{"result"}->{"paused"}))
+                && $get_zone_details_response->{"result"}->{"paused"} == $JSON_FALSE)) {
+
+                $domain->{"cloudflare"} = 1;
+                $has_cf = 1;
+            }
         }
     }
-    return {"has_cf" => $has_cf, "res" => $res, "hoster" => Cpanel::CloudFlare::Config::get_host_formal_name()};
+    return {"has_cf" => $has_cf, "res" => $cpanel_domains_result, "hoster" => Cpanel::CloudFlare::Config::get_host_formal_name()};
 }
 
 sub api2_get_railguns {

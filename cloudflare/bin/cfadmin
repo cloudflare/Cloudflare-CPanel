@@ -149,7 +149,6 @@ sub run {
 
             if ( !$subs ) {
                 $query->{"act"} = "zone_delete";
-                $cf_global_data->{"cf_zones"}->{ $OPTS{"zone_name"} } = 0;
             }
 
             my $result = Cpanel::CloudFlare::Api::host_api_request($query);

@@ -77,10 +77,8 @@ sub __load_data_file {
             my $tmp_data = {};
             Cpanel::DataStore::load_ref($cf_old_data_file_name, $tmp_data);
             $cf_global_data->{"cf_user_tokens"}->{$user} = $tmp_data->{"cf_user_tokens"}->{$user};
-            $cf_global_data->{"cf_zones"} = $tmp_data->{"cf_zones"};
 
         } else {
-            $cf_global_data = {"cf_zones" => {}};
             $logger->info( "Failed to load cf data -- storing blank data at $cf_data_file");
         }
 

@@ -66,15 +66,12 @@ my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $Cpanel::home
             }
 
             # Make an API call to get the zone tag
-            if (!defined $zones->{$zone_name}) {
-                if (!load($zone_name)) {
-                    die "Unable to load zone. Domain may not be currently associated with this account.\n"
-                }
+            if (!defined $zones->{$zone_name} && !load($zone_name)) {
+                   $logger->warn("Unable to load zone '". $zone_name ."'.  Domain may not be currently associated with this account.\n");
+            } else {
+                $zone_tag = $zones->{$zone_name}->{"id"};
+                $logger->info("Zone tag for '". $zone_name ."' was NOT in the YAML cache.");
             }
-
-            $zone_tag = $zones->{$zone_name}->{"id"};
-            $logger->info("Zone tag for '". $zone_name ."' was NOT in the YAML cache.");
-
             # save the zone tag to the yaml file
             $cf_global_data->{$cf_user_store->CF_ZONE_TAGS_KEY}->{$zone_name} = $zone_tag;
             $cf_user_store->__save_data_file($cf_global_data);
