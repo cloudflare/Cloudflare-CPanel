@@ -400,10 +400,15 @@ sub api2_getbasedomains {
         if($zone_tag) { #If we don't have a zone tag the domain isn't on CF or doesn't belong to this user.
             my $get_zone_details_response = Cpanel::CloudFlare::Api::client_api_request_v4('GET', "/zones/" . $zone_tag , {});
 
-            #Did we get a successful response and is the domain not paused?
+            #Did we get a successful response and is the domain paused == false and status == 'active'?
             if ($get_zone_details_response->{"success"} == $JSON_TRUE &&
-                ((exists($get_zone_details_response->{"result"}) && exists($get_zone_details_response->{"result"}->{"paused"}))
-                && $get_zone_details_response->{"result"}->{"paused"} == $JSON_FALSE)) {
+                exists($get_zone_details_response->{"result"}) &&
+                    (
+                        (exists($get_zone_details_response->{"result"}->{"paused"}) && $get_zone_details_response->{"result"}->{"paused"} == $JSON_FALSE)
+                        &&
+                        (exists($get_zone_details_response->{"result"}->{"status"}) && $get_zone_details_response->{"result"}->{"status"} eq "active")
+                    )
+                ) {
 
                 $domain->{"cloudflare"} = 1;
                 $has_cf = 1;
