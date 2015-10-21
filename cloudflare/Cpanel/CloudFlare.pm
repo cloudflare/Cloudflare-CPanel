@@ -410,7 +410,6 @@ sub api2_getbasedomains {
     my %OPTS = @_;
 
     $cf_global_data = $cf_user_store->__load_data_file();
-
     my $res = Cpanel::DomainLookup::api2_getbasedomains(@_);
     my $has_cf = 0;
     foreach my $dom (@$res) {
@@ -523,7 +522,8 @@ sub api2_railgun_mode {
             $response = &{\&{$API{$action}}}(%OPTS);
         };
         if ($@) {
-            $logger->warn("Exception caught: " . $@);
+            #This can't be $logger->warn because it keeps the error messages from being passed back to the front end.
+            $logger->info("Exception caught: " . $@);
 
             return [
                 {
