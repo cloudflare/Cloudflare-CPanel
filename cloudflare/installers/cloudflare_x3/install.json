@@ -21,7 +21,8 @@
         "order" : 2,
         "type" : "link",
         "id" : "cloudflare_status",
-        "uri" : "cloudflare/status.html"
+        "uri" : "https://www.cloudflarestatus.com/",
+        "target" : "_blank"
     },
     {
         "icon" : "cloudflare_security.png",
