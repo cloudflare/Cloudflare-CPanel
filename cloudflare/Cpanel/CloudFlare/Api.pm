@@ -68,8 +68,6 @@ sub host_api_request {
     my $cf_host = Cpanel::CloudFlare::Host->new();
     $base->{"query"} = $query;
 
-    #TODO: I thought the whole point of cfadmin was to avoid getting host key as user other than root?
-    # Am I running as root right now?
     $base->{'query'}->{'host_key'} = $cf_host->get_host_api_key();
     return cf_api_request($base);
 }
