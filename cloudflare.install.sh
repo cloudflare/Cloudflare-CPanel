@@ -44,5 +44,9 @@ cd "CloudFlare-CPanel-${latest_version}/cloudflare"
 echo "Finalizing install..."
 ./install_cf "$host_key" mod_cf "$formal_name" $install_mode
 
+echo "Cleaning up"
+cd "../../"
+rm -rf "CloudFlare-CPanel-${latest_version}"
+
 echo "Verify Host Name:"
 cat /usr/local/cpanel/etc/cloudflare.json
