@@ -6,7 +6,6 @@ package Cpanel::CloudFlare;
 # @author ian@cloudflare.com
 # This code is subject to the cPanel license. Unauthorized copying is prohibited
 
-use JSON();
 use JSON::PP();
 
 use Cpanel::AdminBin             ();
@@ -30,10 +29,6 @@ my $HOME_DIR = $Cpanel::homedir;
 my $cf_user_store = Cpanel::CloudFlare::UserStore->new("home_dir", $HOME_DIR, "user" , $USER);
 my $json_dump_function = Cpanel::CloudFlare::Helper::__get_json_dump_function();
 my $json_load_function = Cpanel::CloudFlare::Helper::__get_json_load_function();
-
-# Because Cpanel::JSON doesn't convert true/false to 1/0.
-my $JSON_TRUE = $JSON::PP::true;
-my $JSON_FALSE = $JSON::PP::false;
 
 my %KEYMAP = ( 'line' => 'Line', 'ttl' => 'ttl', 'name' => 'name',
                'class' => 'class', 'address' => 'address', 'type' => 'type',
@@ -377,7 +372,7 @@ sub api2_fetchzone {
             ((defined($res->{"cname"})) && ($res->{"cname"} !~ /google.com/))
         ){
             if (defined($res->{"cname"}) && ($res->{"cname"} =~ /cdn.cloudflare.net$/)) {
-                $res->{"cloudflare"} = 1;;
+                $res->{"cloudflare"} = 1;
             } else {
                 $res->{"cloudflare"} = 0;
 	    }
@@ -390,9 +385,15 @@ sub api2_fetchzone {
 
 sub api2_getbasedomains {
     my %OPTS = @_;
+
+    # Because Cpanel::JSON doesn't convert true/false to 1/0.
+    my $JSON_TRUE = $JSON::PP::true;
+    my $JSON_FALSE = $JSON::PP::false;
+    
     my $cpanel_domains_result = Cpanel::DomainLookup::api2_getbasedomains(@_);
 
     my $has_cf = 0;
+
     foreach my $domain (@$cpanel_domains_result) {
         $domain->{"cloudflare"} = 0;
         my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($domain->{"domain"});
