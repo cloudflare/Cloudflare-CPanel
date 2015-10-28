@@ -280,7 +280,7 @@ __p += '" width="80" height="80"> </div> \n                        </td>\n      
  print(saved_bw + saved_units_bw) ;
 __p += '</span> bandwidth saved by CloudFlare</div> <div class="analytics-speed-total"><span id="analytics-speed-bandwidth-total">';
  print(total_bw + total_units_bw) ;
-__p += '</span> total bandwidth</div>  \n                        </td>\n                    </tr>\n                </table>\n            </div>    \n        </div>\n    </div>    \n    \n    <p><a href="http://www.cloudflare.com/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>\n    \n    <p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>\n\n    <hr />\n\n';
+__p += '</span> total bandwidth</div>  \n                        </td>\n                    </tr>\n                </table>\n            </div>    \n        </div>\n    </div>    \n    \n    <p><a href="http://www.cloudflare.com/a/analytics" target="_blank"><div id="analytics-cta" class="btn btn-primary">See more statistics</div></a></p>\n    \n    <p>Note: Basic statistics update every 24 hours. For 15 minute statistics updates, advanced security and faster performance, upgrade to the <a href="https://www.cloudflare.com/plans" target="_blank">Pro service</a>.</p>\n\n    <hr />\n\n';
  } ;
 __p += '\n';
 
