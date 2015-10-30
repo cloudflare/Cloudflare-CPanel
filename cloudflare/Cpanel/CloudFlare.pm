@@ -90,7 +90,7 @@ sub api2_patch_zone_setting {
 
     my $zone_tag = Cpanel::CloudFlare::Zone::get_zone_tag($OPTS{"zone_name"});
 
-    return Cpanel::CloudFlare::Api::client_api_request_v4('PATCH', "/zones/" . $zone_tag . "/settings", {"value" => $OPTS{"value"}});
+    return Cpanel::CloudFlare::Api::client_api_request_v4('PATCH', "/zones/" . $zone_tag . "/settings/" . $OPTS{"setting"} , {"value" => $OPTS{"value"}});
 }
 
 sub api2_get_zone_analytics {
@@ -501,6 +501,7 @@ sub api2_railgun_mode {
         $API{'zone_get_stats'}                    = 'api2_get_stats';
         $API{'zone_get_settings'}                 = 'api2_get_zone_settings';
         $API{'zone_edit_cf_setting'}              = 'api2_edit_cf_setting';
+        $API{'zone_patch_setting'}                = 'api2_patch_zone_setting',
         $API{'get_railguns'}                      = 'api2_get_railguns';
         $API{'get_active_railguns'}               = 'api2_zone_get_active_railgun';
         $API{'set_railgun'}                       = 'api2_set_railgun';
