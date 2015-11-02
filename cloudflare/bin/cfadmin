@@ -159,7 +159,7 @@ sub run {
 
                 my $error_result = {};
                 $error_result->{"result"} = "error";
-                $error_result->{"msg"} = "You are attempting to provision CloudFlare for a subdomain. Please update your cPanel to the root domain and try again.";
+                $error_result->{"msg"} = "We have detected that you are attempting to add a subdomain, or a zone that is already active on CloudFlare under a different account.";
                 return $serializer_function->($error_result);
             }
 
