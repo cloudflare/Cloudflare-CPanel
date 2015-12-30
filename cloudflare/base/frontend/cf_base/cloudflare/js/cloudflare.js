@@ -486,6 +486,7 @@ _.extend(CloudFlare, {
 
     change_cf_setting: function (domain, action, value) {
         this.ACTIVE_DOMAIN = domain;
+
         var callback = {
             success: function(data) {
                 CloudFlare.load_zone_features(CloudFlare.ACTIVE_SECTION);
@@ -493,8 +494,11 @@ _.extend(CloudFlare, {
             }
         };
 
+        var use_v1_api = true;
+
         if (value == "SecurityLevelSetting") {
             value = YAHOO.util.Dom.get(value).value;
+            use_v1_api = false;
         } else if (value == "AlwaysOnline") {
             value = YAHOO.util.Dom.get(value).value;
         } else if (value == "AutomaticIPv6") {
@@ -502,14 +506,24 @@ _.extend(CloudFlare, {
         } else if (value == "CachingLevel") {
             value = YAHOO.util.Dom.get(value).value;
         }
-        
-        // send the AJAX request
-        CloudFlare.ajax({
-            "cpanel_jsonapi_func" : "zone_edit_cf_setting",
-            "zone_name" : this.ACTIVE_DOMAIN,
-            "v" : value,
-            "a" : action
-        }, callback, $('#user_records_div'));
+
+        if(use_v1_api) {
+            // send the AJAX request
+            CloudFlare.ajax({
+                "cpanel_jsonapi_func": "zone_edit_cf_setting",
+                "zone_name": this.ACTIVE_DOMAIN,
+                "v": value,
+                "a": action
+            }, callback, $('#user_records_div'));
+        } else {
+            // send v4 API AJAX request
+            CloudFlare.ajax({
+                "cpanel_jsonapi_func": "zone_patch_setting",
+                "zone_name": this.ACTIVE_DOMAIN,
+                "value": value,
+                "setting": action
+            }, callback, $('#user_records_div'));
+        }
         return false;
     },
 
@@ -604,14 +618,28 @@ _.extend(CloudFlare, {
     load_zone_features: function(type) {
         var callback = {
             success: function(data) {
-                html = '';
-                if (typeof data.cpanelresult.data[0].response.result != "undefined") {
-                    var result = data.cpanelresult.data[0].response.result;
-                    var stats = result.objs[0];
+                var html = '';
+                var result;
+                var stats = {};
 
-                    html = CloudFlare[type](result, stats, CloudFlare.ACTIVE_DOMAIN);
+                if (typeof data.cpanelresult.data[0].response != "undefined" && typeof data.cpanelresult.data[0].response.result != "undefined") {
+                    //v1 api
+                    result = data.cpanelresult.data[0].response.result;
+                    stats = result.objs[0];
+                } else if (typeof data.cpanelresult.data[0].result != "undefined") {
+                    //v4 api
+                    result = data.cpanelresult.data[0].result;
+
+                    if(CloudFlare.ACTIVE_SECTION === "get_security") {
+                        for (var i = 0; i < result.length; i++) {
+                            var setting = result[i];
+                            if (setting.id == "security_level") {
+                                stats.userSecuritySetting = setting.value;
+                            }
+                        }
+                    }
                 }
-
+                html = CloudFlare[type](result, stats, CloudFlare.ACTIVE_DOMAIN);
                 $(this).html(html);
             }
         };
@@ -623,8 +651,14 @@ _.extend(CloudFlare, {
         }
 
         // send the AJAX request
+        var cpanel_function = "zone_get_stats"; //V1 API
+
+        if(CloudFlare.ACTIVE_SECTION == "get_security") {
+            cpanel_function = "zone_get_settings"; //v4 API
+        }
+
         CloudFlare.ajax({
-            "cpanel_jsonapi_func" : "zone_get_stats",
+            "cpanel_jsonapi_func" : cpanel_function,
             "zone_name" : this.ACTIVE_DOMAIN
         }, callback, $('#user_records_div'));
     },

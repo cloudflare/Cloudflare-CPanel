@@ -143,22 +143,18 @@ var timeOffset  = local_time.getTimezoneOffset() * 60 * 1000;
 ;
 __p += '\n\n<a NAME="infobox"></a>\n<h4>CloudFlare Security Settings for ' +
 ((__t = ( domain )) == null ? '' : __t) +
-'</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Account Type <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'pro\')"></i></span></label></div>\n    <div class="controls">\n        <select name="AccountType" id="AccountType" onChange="CloudFlare.change_cf_accnt()">\n            <option value="free" ';
- print(((!stats.pro_zone)? 'selected': '')) ;
-__p += '>Free</option>\'\n            <option value="pro" ';
- print(((stats.pro_zone)? 'selected': '')) ;
-__p += '>CloudFlare Pro</option>\'\n        </select>\n    </div>\n</div>\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'' +
+'</h4>\n<fieldset id="table_dns_zone" class="form-horizontal">\n\n<div class="control-group">\n    <div class="control-label"><label>Security Setting <span class="text-info"><i class="icon icon-info-sign" onclick="CloudFlare.showHelp(\'seclvl\')"></i></span></label></div>\n    <div class="controls">\n        <select name="SecurityLevelSetting" id="SecurityLevelSetting" onChange="CloudFlare.change_cf_setting(\'' +
 ((__t = ( domain )) == null ? '' : __t) +
-'\', \'sec_lvl\', \'SecurityLevelSetting\')">\n            <option value="high" ';
- print(((stats.userSecuritySetting == "High")? 'selected': '')) ;
-__p += '>High</option>\'\n            <option value="med" ';
- print(((stats.userSecuritySetting == "Medium")? 'selected': '')) ;
+'\', \'security_level\', \'SecurityLevelSetting\')">\n            <option value="high" ';
+ print(((stats.userSecuritySetting == "high")? 'selected': '')) ;
+__p += '>High</option>\'\n            <option value="medium" ';
+ print(((stats.userSecuritySetting == "medium")? 'selected': '')) ;
 __p += '>Medium</option>\'\n            <option value="low" ';
- print(((stats.userSecuritySetting == "Low")? 'selected': '')) ;
-__p += '>Low</option>\'\n            <option value="eoff" ';
- print(((stats.userSecuritySetting == "Essentially Off")? 'selected': ''));
-__p += '>Essentially Off</option>\'\n            <option value="help" ';
- print(((stats.userSecuritySetting == "I'm under attack!")? 'selected': '')) ;
+ print(((stats.userSecuritySetting == "low")? 'selected': '')) ;
+__p += '>Low</option>\'\n            <option value="essentially_off" ';
+ print(((stats.userSecuritySetting == "essentially_off")? 'selected': ''));
+__p += '>Essentially Off</option>\'\n            <option value="under_attack" ';
+ print(((stats.userSecuritySetting == "under_attack")? 'selected': '')) ;
 __p += '>I\'m under attack!</option>\'\n        </select>\n    </div>\n</div>\n\n</fieldset>\n<p>For more statistics and settings, sign into your account at <a href="https://www.cloudflare.com/analytics" target="_blank">CloudFlare</a>.</p>\n';
 
 }
