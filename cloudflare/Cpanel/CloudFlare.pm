@@ -155,7 +155,6 @@ sub api2_edit_cf_setting {
 
 sub api2_zone_set {
     my %OPTS = @_;
-
     my $result = Cpanel::AdminBin::adminfetchnocache( 'cf', '', 'zone_set', 'storable', (%OPTS, 'user_key', Cpanel::CloudFlare::User::get_user_key(), 'homedir', $HOME_DIR, 'user' , $USER) );
 
     my $domain = "." . $OPTS{"zone_name"} . ".";
@@ -361,15 +360,13 @@ sub api2_fetchzone {
     my %OPTS    = @_;
 
     my $domain = $OPTS{'domain'}.".";
-
-
     foreach my $res (@{$raw->{"record"}}) {
         if (
             (($res->{"type"} eq "CNAME") || ($res->{"type"} eq "A")) &&
             (defined($res->{"name"}) && ($res->{"name"} !~ /(^autoconfig|^autodiscover|^direct|^ssh|^ftp|^ssl|^ns[^.]*|^imap[^.]*|^pop[^.]*|smtp[^.]*|^mail[^.]*|^mx[^.]*|^exchange[^.]*|^smtp[^.]*|google[^.]*|^secure|^sftp|^svn|^git|^irc|^email|^mobilemail|^pda|^webmail|^e\.|^video|^vid|^vids|^sites|^calendar|^svn|^cvs|^git|^cpanel|^panel|^repo|^webstats|^local|localhost)/)) &&
             ($res->{"name"} ne $domain) &&
 	        ($res->{"name"} ne Cpanel::CloudFlare::Config::get_host_prefix() .".". $domain) &&
-            ((defined($res->{"cname"})) && ($res->{"cname"} !~ /google.com/))
+            (($res->{"cname"} !~ /google.com/))
         ){
             if (defined($res->{"cname"}) && ($res->{"cname"} =~ /cdn.cloudflare.net$/)) {
                 $res->{"cloudflare"} = 1;
@@ -379,7 +376,6 @@ sub api2_fetchzone {
             push @$results, $res;
         }
     }
-
     return $results;
 }
 

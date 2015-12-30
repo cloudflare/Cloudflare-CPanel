@@ -257,7 +257,12 @@ _.extend(CloudFlare, {
         }
 
         CloudFlare.ajax(api2_call, callback, $('#status_bar_' + rec_num));
-        YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+        //A records won't have this record created yet if provisioning for the first time
+        if(YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num) !== null) {
+            YAHOO.util.Dom.get("cloudflare_table_edit_" + rec_num).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+        } else {
+            YAHOO.util.Dom.get("cf_powered_check" + this.ACTIVE_DOMAIN).innerHTML = '<div style="padding: 20px">' + CPANEL.icons.ajax + " " + CPANEL.lang.ajax_loading + "</div>";
+        }
     },
 
     // Removes the given Rec from CF
@@ -304,10 +309,9 @@ _.extend(CloudFlare, {
                 } else {
                     this.REC_TEXT[i] = tooltip_zone_cf_off;
                 }
-
-                if (records[i]['name'].match(/^(www\.)/)) {
-                    this.WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
-                }
+            }
+            if (records[i]['name'].match(/^(www\.)/)) {
+                this.WWW_DOM_INFO = [i, records[i]['name'], records[i]['line']];
             }
         }
     },
