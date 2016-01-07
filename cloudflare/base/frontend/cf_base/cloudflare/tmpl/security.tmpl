@@ -24,7 +24,7 @@
 				<script type="text/javascript">
 				//<![CDATA[
 				var domain_data = '[% base_domains_result.0.res.json() %]';
-				domain_data = $.parseJSON(domain_data);
+				domain_data = CloudFlare.$.parseJSON(domain_data);
 				for (var i=0; i<domain_data.length; i++) {
 					document.write(CFT['zone']({cloudflare: domain_data[i].cloudflare, domain: domain_data[i].domain, 'action': 'get_security', 'action_text': 'Settings'}));
 				}
