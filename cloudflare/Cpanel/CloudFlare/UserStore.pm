@@ -83,7 +83,10 @@ sub __load_data_file {
         }
 
         Cpanel::AccessIds::do_as_user( $user, sub { Cpanel::DataStore::store_ref($cf_data_file, $cf_global_data); } );
-        chmod 0600, $cf_data_file;
+
+       if((-l $cf_data_file) == 0) {
+            chmod 0600, $cf_data_file;
+        }
     }
 
     return $cf_global_data;
