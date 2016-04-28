@@ -10,7 +10,7 @@ Step 1. Access cPanel for the server using root user by:
 
 Step 2. Download necessary files and run installation
 
-`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh) HOST_API_KEY 'YOUR_COMPANY_NAME' [install_mode]`
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/v5/cloudflare.install.sh) HOST_API_KEY 'YOUR_COMPANY_NAME' [install_mode]`
 
 NOTES:
 - Be sure to replace HOST_API_KEY and YOUR_COMPANY_NAME with the appropriate values
@@ -22,7 +22,7 @@ NOTES:
 
 The CloudFlare plugin is installed into the default 'x3' theme, as well as the new 'Paper Lantern' theme if installed. If you utilize a custom theme or have alternate themes installed, the following command can be used to install the CloudFlare plugin on these themes:
 
-`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/copy2theme.sh) BASE_THEME ALTERNATE_THEME`
+`bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/v5/copy2theme.sh) BASE_THEME ALTERNATE_THEME`
 
 `BASE_THEME` should be either 'x3' or 'paper_lantern', based on what theme the alternate was based on.
 
@@ -56,4 +56,4 @@ NOTE: This will not remove zones or users from CloudFlare that have been registe
 
 The following set of commands will download the necessary files, execute the uninstall script and ultimately remove the uninstall script as well:
 
-`wget https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare/installers/cloudflare.cpanelplugin && bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare/uninstall_cf) && rm -f uninstall_cf`
+`wget https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/v5/cloudflare/installers/cloudflare.cpanelplugin && bash <(curl -s https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/v5/cloudflare/uninstall_cf) && rm -f uninstall_cf`
