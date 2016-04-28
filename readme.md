@@ -1,3 +1,26 @@
+### Attention:
+
+Version 5 of the CloudFlare CPanel plugin is _deprecated_ and will only receive security updates.
+If you install this plugin be sure run the following code to disable the auto update cron job so
+the plugin doesn't automatically update itself to the newest version.
+
+```
+
+## Remove update script
+iscf=`crontab -l | grep cloudflare`
+if [ "$iscf" != "" ]; then
+    crontab -l > c.cur
+    sed -i '/cloudflare_update.sh/d' c.cur
+    crontab c.cur
+fi
+
+## Remove post update call
+cfonupgrade=`grep -F "cloudflare_update" /scripts/postupcp`
+if [ "$cfonupgrade" != "" ]; then
+	sed -i '/cloudflare_update.sh/d' /scripts/postupcp
+fi
+```
+
 Refer to the [cpanel readme](cloudflare/README) for specific installation requirements
 
 ## CloudFlare cPanel Quick Installation Instructions
