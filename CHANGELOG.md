@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.0.0](#6.0.0) - 2016-03-29
+## [6.0.0](#6.0.0) - 2016-04-28
 ### Added
 - Added the ability to configure the IPV6 functionality on the Performance Page
 - Added the ability to configure the "Always Online" functionality on the Performance Page
@@ -19,8 +19,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Added the ability to purge your website's cache on the Performance page.
 
 ### Removed
-- Removed the ability to toggle the always online setting of your website on the Performance page.
-- Removed the ability to toggle the IPv6 setting of your website on the Performance page.
 - Removed the header navigation link to http://cloudflarestatus.com/.
 - Removed support for the X3 theme because CPanel is deprecating it in [v11.60](https://blog.cpanel.com/its-time-to-say-goodbye-to-x3/).
 
