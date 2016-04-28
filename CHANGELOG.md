@@ -2,15 +2,28 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [5.3.11](#5.3.11) - 2016-01-14
-### Fixed
-- Cpanel 11.54 RC broke JS in some .tmpl files, those files now use CloudFlare.$ instead of $ for Jquery [#75](https://github.com/cloudflare/CloudFlare-CPanel/pull/75)
-- Fixed an issue where a malicious symlink could allow changing permissions on arbitrary files. [#76](https://github.com/cloudflare/CloudFlare-CPanel/pull/76)
+## [6.0.0](#6.0.0) - 2016-03-29
+### Added
+- Added the ability to configure the IPV6 functionality on the Performance Page
+- Added the ability to configure the "Always Online" functionality on the Performance Page
+- Added the ability to provision domain names with CloudFlare's "full zone" setup.
+- Added a button to quickly toggle "I'm Under Attack" mode.
+- Added the ability to view requests, bandwidth, unique visitors, and threats blocked on the Analytics page.
+- Added the ability to configure the security level setting of your website on the Security page.
+- Added the ability to configure the challenge passage setting of your website on the Security page.
+- Added the ability to toggle the browser integrity check setting of your website on the Security page.
+- Added the ability to configure the cache level setting of your website on the Performance page.
+- Added the ability to configure the auto minify setting of your website on the Performance page.
+- Added the ability to toggle the development mode setting of your website on the Performance page.
+- Added the ability to configure the browser cache time to live setting on the Perfromance page.
+- Added the ability to purge your website's cache on the Performance page.
 
-## [5.3.10](#5.3.10) - 2016-01-06
-### Changed
-- Updated error messaging when plugin detects that a zone is already active on CloudFlare [#71](https://github.com/cloudflare/CloudFlare-CPanel/pull/71)
-- Plugin now supports v4 Client API. Security page now uses v4 zones/[identifier]/settings/security_level to set the the security level [#70](https://github.com/cloudflare/CloudFlare-CPanel/pull/70)
+### Removed
+- Removed the ability to toggle the always online setting of your website on the Performance page.
+- Removed the ability to toggle the IPv6 setting of your website on the Performance page.
+- Removed the header navigation link to http://cloudflarestatus.com/.
+- Removed support for the X3 theme because CPanel is deprecating it in [v11.60](https://blog.cpanel.com/its-time-to-say-goodbye-to-x3/).
 
-### Fixed
-- Fixed a bug where activation failed when www is an A record. [#73](https://github.com/cloudflare/CloudFlare-CPanel/pull/73)
+### Updated
+- The plugin now runs on a React/Redux front end and PHP (with one Perl module) on the backend.
+- The structure of the YAML file has been changed and the data store code will automatically convert old YAML files to the new format.

@@ -1,0 +1,10 @@
+export const ANALYTICS_PAGE = "/analytics";
+export const CLOUDFLARE_UPGRADE_PAGE = "http://cloudflare.com/plans";
+export const DOMAINS_OVERVIEW_PAGE = "/zones";
+export const LOGIN_PAGE = "/login";
+export const PERFORMANCE_PAGE = "/performance";
+export const SECURITY_PAGE = "/security";
+export const SIGN_UP_PAGE = "/sign-up";
+export const SUPPORT_PAGE = "https://support.cloudflare.com/hc/en-us/";
+export const TERMS_AND_CONDITIONS_PAGE = "https://www.cloudflare.com/terms";
+export const PRIVACY_POLICY_PAGE = "https://www.cloudflare.com/security-policy";
