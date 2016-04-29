@@ -20,7 +20,7 @@ use Data::Dumper;
 # Constants go here.
 
 # Globals
-my $logger = Cpanel::Logger->new();;
+my $logger = Cpanel::Logger->new();
 
 # Caches go here.
 
