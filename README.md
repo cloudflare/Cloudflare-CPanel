@@ -13,6 +13,19 @@ Step 2. Download necessary files and run installation
 NOTES:
 - Be sure to replace [YOUR_HOST_API_KEY] and [YOUR_COMPANY_NAME] with the appropriate values
 
+## Localization
+
+The English localization will always be up to date and is located at `config/en.js`.  In the future we
+plan to support more languages by default but if you would like to localize the plugin in your language
+in the mean time follow these steps:
+1. Copy `config/en.js` as `config/[LANGUAGE CODE].js` and translate it.
+2. Edit `config.js` and set `"locale": "[LANGUAGE CODE]"` using the same language code from step 1.
+
+## Full Zone Provisioning
+
+The plugin now supports Full Zone Provisioning but it is disabled by default.  If you would like to enable
+it for your customers simple edit `config.js` so that `"featureManagerIsFullZoneProvisioningEnabled": true,`
+
 ### Uninstalling the cPanel Plugin
 
 An uninstall script has been provided to unregister the plugin with cPanel and remove all CloudFlare specific files from the server to deactivate the plugin.
