@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git@stash.cfops.it:7999/hp/cpanel2.git"
+    "url": "ssh://git@github.com:cloudflare/CloudFlare-CPanel.git"
   },
   "keywords": [
     "cpanel"
