@@ -36,10 +36,10 @@ else
 fi
 
 # download and extract
-download_url="https://github.com/cloudflare/CloudFlare-CPanel/archive/v${latest_version}.tar.gz"
+download_url="https://github.com/cloudflare/CloudFlare-CPanel/archive/v5.3.11.tar.gz"
 curl -skL $download_url | tar xzf -
 
-cd "CloudFlare-CPanel-${latest_version}/cloudflare"
+cd "CloudFlare-CPanel-5.3.11/cloudflare"
 
 echo "Finalizing install..."
 ./install_cf "$host_key" mod_cf "$formal_name" $install_mode
