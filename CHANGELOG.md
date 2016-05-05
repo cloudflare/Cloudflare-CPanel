@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [6.0.1](#6.0.1) - 2016-05-05
 ### Fixed
-- The cloudflare_update.sh bash script was incorrectly checking the current version number causing the update to fail. [#79](https://github.com/cloudflare/CloudFlare-CPanel/pull/79)
+- The cloudflare_update.sh bash script was incorrectly checking the current version number causing the update to fail. [#82](https://github.com/cloudflare/CloudFlare-CPanel/pull/82)
 
 ## [6.0.0](#6.0.0) - 2016-04-28
 ### Added
