@@ -13,11 +13,15 @@ Step 2. Download necessary files and run installation
 NOTES:
 - Be sure to replace [YOUR_HOST_API_KEY] and [YOUR_COMPANY_NAME] with the appropriate values
 
+## cPanel X3 Theme Support Deprecated
+We deprecated support for the cPanel X3 theme because the theme itself is deprecated and [scheduled for removal in a future version of cPanel](https://blog.cpanel.com/its-time-to-say-goodbye-to-x3/).  We realize everyone may not be able to deprecate support for the x3 theme immedietely and have made the old v5 version of the plugin available on the `v5` branch.  This deprecated branch will not receive any updates aside from security fixes.
+
 ## Localization
 
 The English localization will always be up to date and is located at `config/en.js`.  In the future we
 plan to support more languages by default but if you would like to localize the plugin in your language
 in the mean time follow these steps:
+
 1. Copy `config/en.js` as `config/[LANGUAGE CODE].js` and translate it.
 2. Edit `config.js` and set `"locale": "[LANGUAGE CODE]"` using the same language code from step 1.
 
