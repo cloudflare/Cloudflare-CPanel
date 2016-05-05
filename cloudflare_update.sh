@@ -29,7 +29,7 @@ if [ "$HOST_KEY" = "" ]; then
 fi
 
 # Get the version of the plugin currently installed on the server
-INSTALLED_VERSION=`cat /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/composer.json | grep version | cut -d "\"" -f 4`
+INSTALLED_VERSION=`cat /usr/local/cpanel/base/frontend/paper_lantern/cloudflare/config.js | grep version | cut -d "\"" -f 4`
 
 # What is the latest version of the plugin that is available
 CURRENT_VERSION=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_info" -d "host_key=$HOST_KEY" | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}' | grep cpanel_latest | cut -d "\"" -f 6`
