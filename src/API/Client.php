@@ -7,6 +7,8 @@ class Client extends AbstractAPIClient
 {
     const CLIENT_API_NAME = "CLIENT API";
     const ENDPOINT = "https://api.cloudflare.com/client/v4/";
+    const X_AUTH_KEY = "X-Auth-Key";
+    const X_AUTH_EMAIL = "X-Auth-Email";
 
 
     /**
@@ -16,8 +18,8 @@ class Client extends AbstractAPIClient
     public function beforeSend(Request $request)
     {
         $headers = array(
-            "X-Auth-Key" => $this->data_store->getClientV4APIKey(),
-            "X-Auth-Email" => $this->data_store->getCloudFlareEmail(),
+            self::X_AUTH_KEY => $this->data_store->getClientV4APIKey(),
+            self::X_AUTH_EMAIL => $this->data_store->getCloudFlareEmail(),
             self::CONTENT_TYPE_KEY => self::APPLICATION_JSON_KEY
         );
         $request->setHeaders($headers);
