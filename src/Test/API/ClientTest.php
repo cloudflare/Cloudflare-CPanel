@@ -36,6 +36,28 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->mockClientAPI = new Client($this->mockCpanelIntegration);
     }
 
+    public function testBeforeSendAddsRequestHeaders() {
+        $apiKey = "apiKey";
+        $email = "email";
+
+        $this->mockDataStore->method('getClientV4APIKey')->willReturn($apiKey);
+        $this->mockDataStore->method('getCloudFlareEmail')->willReturn($email);
+
+        $request = new \CF\API\Request(null, null, null, null);
+        $beforeSendRequest = $this->mockClientAPI->beforeSend($request);
+
+        $actualRequestHeaders = $beforeSendRequest->getHeaders();
+        $expectedRequestHeaders = array(
+            $this->mockClientAPI->X_AUTH_KEY => $apiKey,
+            $this->mockClientAPI->X_AUTH_EMAIL => $email,
+            $this->mockClientAPI->CONTENT_TYPE_KEY => $this->mockClientAPI->APPLICATION_JSON_KEY
+        );
+
+        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->X_AUTH_KEY], $actualRequestHeaders[$this->mockClientAPI->X_AUTH_KEY]);
+        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->X_AUTH_EMAIL], $actualRequestHeaders[$this->mockClientAPI->X_AUTH_EMAIL]);
+        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->CONTENT_TYPE_KEY], $actualRequestHeaders[$this->mockClientAPI->CONTENT_TYPE_KEY]);
+    }
+
     public function testClientApiErrorReturnsValidStructure()
     {
         $expectedErrorResponse = array(
