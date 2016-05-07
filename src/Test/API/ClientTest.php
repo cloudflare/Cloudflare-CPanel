@@ -2,6 +2,7 @@
 
 namespace CF\API\Test;
 
+use CF\API\AbstractAPIClient;
 use CF\API\Client;
 use CF\Cpanel\CpanelIntegration;
 
@@ -17,9 +18,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     public function setup()
     {
         $this->mockConfig = $this->getMockBuilder('CF\Integration\DefaultConfig')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->mockClientAPI = $this->getMockBuilder('CF\API\Client')
             ->disableOriginalConstructor()
             ->getMock();
         $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
@@ -48,14 +46,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $actualRequestHeaders = $beforeSendRequest->getHeaders();
         $expectedRequestHeaders = array(
-            $this->mockClientAPI->X_AUTH_KEY => $apiKey,
-            $this->mockClientAPI->X_AUTH_EMAIL => $email,
-            $this->mockClientAPI->CONTENT_TYPE_KEY => $this->mockClientAPI->APPLICATION_JSON_KEY
+            Client::X_AUTH_KEY => $apiKey,
+            Client::X_AUTH_EMAIL => $email,
+            Client::CONTENT_TYPE_KEY => Client::APPLICATION_JSON_KEY
         );
 
-        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->X_AUTH_KEY], $actualRequestHeaders[$this->mockClientAPI->X_AUTH_KEY]);
-        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->X_AUTH_EMAIL], $actualRequestHeaders[$this->mockClientAPI->X_AUTH_EMAIL]);
-        $this->assertEquals($expectedRequestHeaders[$this->mockClientAPI->CONTENT_TYPE_KEY], $actualRequestHeaders[$this->mockClientAPI->CONTENT_TYPE_KEY]);
+        $this->assertEquals($expectedRequestHeaders[Client::X_AUTH_KEY], $actualRequestHeaders[Client::X_AUTH_KEY]);
+        $this->assertEquals($expectedRequestHeaders[Client::X_AUTH_EMAIL], $actualRequestHeaders[Client::X_AUTH_EMAIL]);
+        $this->assertEquals($expectedRequestHeaders[Client::CONTENT_TYPE_KEY], $actualRequestHeaders[Client::CONTENT_TYPE_KEY]);
     }
 
     public function testClientApiErrorReturnsValidStructure()

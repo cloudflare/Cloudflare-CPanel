@@ -6,22 +6,13 @@ use GuzzleHttp;
 class Host extends AbstractAPIClient
 {
 
+    const CF_INTEGRATION_HEADER = "CF-Integration";
+    const CF_INTEGRTATION_VERSION_HEADER = "CF-Integration-Version";
     const HOST_API_NAME = "HOST API";
     //self::ENDPOINT_BASE_URL . self::ENDPOINT_PATH isn't a thing so you have to update it twice if it changes.
     const ENDPOINT_BASE_URL = "https://api.cloudflare.com/";
     const ENDPOINT_PATH = "host-gw.html";
     const ENDPOINT = "https://api.cloudflare.com/host-gw.html";
-
-    /**
-     * @param Request $request
-     * @return array|mixed
-     */
-    public function callAPI(Request $request)
-    {
-        //Host API isn't restful so path must always self::ENDPOINT_PATH
-        $request->setUrl(self::ENDPOINT_PATH);
-        return parent::callAPI($request);
-    }
 
 
     /**
@@ -30,9 +21,12 @@ class Host extends AbstractAPIClient
      */
     public function beforeSend(Request $request)
     {
+        //Host API isn't restful so path must always self::ENDPOINT_PATH
+        $request->setUrl(self::ENDPOINT_PATH);
+
         $headers = array(
-            "CF-Integration" => $this->config->getValue("integrationName"),
-            "CF-Integration-Version" => $this->config->getValue("version"),
+            self::CF_INTEGRATION_HEADER => $this->config->getValue("integrationName"),
+            self::CF_INTEGRTATION_VERSION_HEADER => $this->config->getValue("version"),
         );
         $request->setHeaders($headers);
 
