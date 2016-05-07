@@ -33,6 +33,13 @@ class ClientActions
     }
 
     /**
+     * @param Partial $partialZoneSet
+     */
+    public function setPartialZoneSet(Partial $partialZoneSet) {
+        $this->partialZoneSet = $partialZoneSet;
+    }
+
+    /**
      * GET /zones
      * @return mixed
      */
@@ -118,6 +125,7 @@ class ClientActions
     {
         $path_array = explode("/", $this->request->getUrl());
         $zone_tag = $path_array[1];
+
         //try to remove partial zone set up IF it exists
         if ($zone_tag !== null) {
             $zone_get_details_response = $this->api->zoneGetDetails($zone_tag);
