@@ -34,6 +34,13 @@ class HostActions
     }
 
     /**
+     * @param Partial $partialZoneSet
+     */
+    public function setPartialZoneSet(Partial $partialZoneSet) {
+        $this->partialZoneSet = $partialZoneSet;
+    }
+
+    /**
      * ?act=zone_set
      * @return string
      */
