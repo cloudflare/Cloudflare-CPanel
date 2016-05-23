@@ -41,17 +41,53 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testMergeCpanelAndCFDomainsMergesCpanelMainDomains() {
-        $mainDomain = "test.com";
+        $mainDomain = "testmain.com";
+        $addonDomain = array("testaddon.com");
+        $parkedDomain = array("testparked.com");
+        $subDomain = array("testsub.com");
         $request = new Request(null, null, null, null);
 
         $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
-        $this->mockCpanelAPI->method('getDomainList')->willReturn(array('main_domain' => $mainDomain));
+        $this->mockCpanelAPI->method('getDomainList')->willReturn(
+            array(
+                'main_domain' => $mainDomain,
+                'addon_domains' => $addonDomain,
+                'parked_domains' => $parkedDomain,
+                'sub_domains' => $subDomain
+            )
+        );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockClientAPI->method('callAPI')->willReturn(array("result" => array()));
-
         $response = $clientActions->mergeCpanelAndCFDomains();
 
         $this->assertEquals($mainDomain, $response["result"][0]["name"]);
+        $this->assertEquals($addonDomain[0], $response["result"][1]["name"]);
+        $this->assertEquals($parkedDomain[0], $response["result"][2]["name"]);
+        $this->assertEquals(3, count($response["result"]));
+    }
+
+    public function testMergeCpanelAndCFDomainsMergesCpanelMainDomainsWithEmptyDomain() {
+        $mainDomain = "testmain.com";
+        $addonDomain = array();
+        $parkedDomain = array();
+        $subDomain = array();
+        $request = new Request(null, null, null, null);
+
+        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
+        $this->mockCpanelAPI->method('getDomainList')->willReturn(
+            array(
+                'main_domain' => $mainDomain,
+                'addon_domains' => $addonDomain,
+                'parked_domains' => $parkedDomain,
+                'sub_domains' => $subDomain
+            )
+        );
+        $this->mockClientAPI->method('responseOk')->willReturn(true);
+        $this->mockClientAPI->method('callAPI')->willReturn(array("result" => array()));
+        $response = $clientActions->mergeCpanelAndCFDomains();
+
+        $this->assertEquals($mainDomain, $response["result"][0]["name"]);
+        $this->assertEquals(1, count($response["result"]));
     }
 
     public function testCreateDNSRecordReturnsErrorIfPartialZoneSetFails() {
