@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.2](#6.0.2) - 2016-05-23
+### Added
+- Addon and Parked cPanel domains can now be provisioned. [#88](https://github.com/cloudflare/CloudFlare-CPanel/pull/88)
+
+### Fixed
+- Fixed typo in cloudflare_update.sh that was preventing upgrades from working.  [#90](https://github.com/cloudflare/CloudFlare-CPanel/pull/90)
+
 ## [6.0.1](#6.0.1) - 2016-05-05
 ### Fixed
 - The cloudflare_update.sh bash script was incorrectly checking the current version number causing the update to fail. [#82](https://github.com/cloudflare/CloudFlare-CPanel/pull/82)
