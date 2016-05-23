@@ -37,7 +37,7 @@ CURRENT_VERSION=`curl -s https://api.cloudflare.com/host-gw.html -d "act=cpanel_
 # Is CURRENT_VERSION > INSTALLED_VERSION
 NEW_VERSION=`echo $INSTALLED_VERSION $CURRENT_VERSION | awk '{ print ($1 < $2) ? 0 : 1 }'`
 
-if [[ $new_version == 0 || "$FORCE_INSTALL" == true ]]
+if [[ "$NEW_VERSION" == 0 || "$FORCE_INSTALL" == true ]]
     then
         curl -s -k -L "https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh"
 	    ./cloudflare.install.sh -k $HOST_KEY -n ' '
