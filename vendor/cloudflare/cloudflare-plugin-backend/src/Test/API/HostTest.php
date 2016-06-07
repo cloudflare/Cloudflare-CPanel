@@ -4,13 +4,13 @@ namespace CF\API\Test;
 
 use CF\API\Host;
 use CF\API\Request;
-use CF\Cpanel\CpanelIntegration;
+use CF\Integration\DefaultIntegration;
 
 class HostTest extends \PHPUnit_Framework_TestCase
 {
     private $hostAPI;
     private $mockConfig;
-    private $mockCpanelAPI;
+    private $mockAPI;
     private $mockDataStore;
     private $mockLogger;
     private $mockCpanelIntegration;
@@ -20,16 +20,16 @@ class HostTest extends \PHPUnit_Framework_TestCase
         $this->mockConfig = $this->getMockBuilder('CF\Integration\DefaultConfig')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelAPI= $this->getMockBuilder('CF\Cpanel\CpanelAPI')
+        $this->mockAPI= $this->getMockBuilder('CF\Integration\IntegrationAPIInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockDataStore = $this->getMockBuilder('CF\Cpanel\DataStore')
+        $this->mockDataStore = $this->getMockBuilder('CF\Integration\DataStoreInterface')
             ->disableOriginalConstructor()
             ->getMock();
         $this->mockLogger = $this->getMockBuilder('CF\Integration\DefaultLogger')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelIntegration = new CpanelIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
+        $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockAPI, $this->mockDataStore, $this->mockLogger);
 
         $this->hostAPI = new Host($this->mockCpanelIntegration);
 
@@ -93,7 +93,7 @@ class HostTest extends \PHPUnit_Framework_TestCase
 
     public function testBeforeSendSetsHostKey() {
         $hostKey = "hostKey";
-        $this->mockCpanelAPI->method('getHostAPIKey')->willReturn($hostKey);
+        $this->mockAPI->method('getHostAPIKey')->willReturn($hostKey);
 
         $request = new Request(null, null, null, null);
         $request = $this->hostAPI->beforeSend($request);
