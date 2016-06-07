@@ -3,7 +3,7 @@
 namespace CF\Router\Test;
 
 use CF\API\Request;
-use CF\Cpanel\CpanelIntegration;
+use CF\Integration\DefaultIntegration;
 use CF\Router\HostAPIRouter;
 
 class HostAPIRouterTest extends \PHPUnit_Framework_TestCase
@@ -12,8 +12,8 @@ class HostAPIRouterTest extends \PHPUnit_Framework_TestCase
     private $hostAPIRouter;
     private $mockConfig;
     private $mockClientAPI;
-    private $mockCpanelAPI;
-    private $mockCpanelIntegration;
+    private $mockAPI;
+    private $mockIntegration;
     private $mockDataStore;
     private $mockLogger;
     private $mockRoutes = array();
@@ -26,17 +26,17 @@ class HostAPIRouterTest extends \PHPUnit_Framework_TestCase
         $this->mockClientAPI = $this->getMockBuilder('CF\API\Host')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
+        $this->mockAPI = $this->getMockBuilder('CF\Integration\IntegrationAPIInterface')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockDataStore = $this->getMockBuilder('CF\Cpanel\DataStore')
+        $this->mockDataStore = $this->getMockBuilder('CF\Integration\DataStoreInterface')
             ->disableOriginalConstructor()
             ->getMock();
         $this->mockLogger = $this->getMockBuilder('CF\Integration\DefaultLogger')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelIntegration = new CpanelIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
-        $this->hostAPIRouter = new HostAPIRouter($this->mockCpanelIntegration, $this->mockClientAPI, $this->mockRoutes);
+        $this->mockIntegration = new DefaultIntegration($this->mockConfig, $this->mockAPI, $this->mockDataStore, $this->mockLogger);
+        $this->hostAPIRouter = new HostAPIRouter($this->mockIntegration, $this->mockClientAPI, $this->mockRoutes);
     }
 
     public function testGetPathReturnsHostAPIActParameter()

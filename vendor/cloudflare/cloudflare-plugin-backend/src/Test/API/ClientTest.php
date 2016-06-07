@@ -2,15 +2,14 @@
 
 namespace CF\API\Test;
 
-use CF\API\AbstractAPIClient;
 use CF\API\Client;
-use CF\Cpanel\CpanelIntegration;
+use CF\Integration\DefaultIntegration;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
     private $mockConfig;
     private $mockClientAPI;
-    private $mockCpanelAPI;
+    private $mockAPI;
     private $mockDataStore;
     private $mockLogger;
     private $mockCpanelIntegration;
@@ -20,16 +19,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->mockConfig = $this->getMockBuilder('CF\Integration\DefaultConfig')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
-            ->disableOriginalConstructor()
+        $this->mockAPI = $this->getMockBuilder('CF\Integration\IntegrationAPIInterface')
             ->getMock();
-        $this->mockDataStore = $this->getMockBuilder('CF\Cpanel\DataStore')
+        $this->mockDataStore = $this->getMockBuilder('CF\Integration\DataStoreInterface')
             ->disableOriginalConstructor()
             ->getMock();
         $this->mockLogger = $this->getMockBuilder('CF\Integration\DefaultLogger')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelIntegration = new CpanelIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
+        $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockAPI, $this->mockDataStore, $this->mockLogger);
 
         $this->mockClientAPI = new Client($this->mockCpanelIntegration);
     }

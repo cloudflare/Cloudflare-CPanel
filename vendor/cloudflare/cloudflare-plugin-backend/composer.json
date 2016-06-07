@@ -1,16 +1,15 @@
 {
-  "name": "cloudflare/cpanel-plugin",
-  "description": "A CloudFlare plugin for CPanel",
+  "name": "cloudflare/cloudflare-plugin-backend",
+  "description": "A PHP backend for CloudFlare plugins.",
   "license": "BSD-3-Clause",
-  "version": "5.3.11",
+  "version": "1.0.1",
   "scripts": {
     "test": "vendor/bin/phpunit",
     "format": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/"
   },
   "require": {
-    "symfony/yaml": "~2.6",
     "guzzlehttp/guzzle": "~5.0",
-    "cloudflare/cloudflare-plugin-backend": "^1.0"
+    "psr/log": "^1.0"
   },
   "require-dev": {
     "phpunit/phpunit": "4.8.*",
