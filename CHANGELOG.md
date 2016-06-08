@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.3](#6.0.3) - 2016-06-08
+## Changed
+- PHP code for CF\API, CF\Router, and CF\Integration moved to [CloudFlare-Plugin-Backend](https://github.com/cloudflare/CloudFlare-Plugin-Backend). [#96](https://github.com/cloudflare/CloudFlare-CPanel/pull/96)
+- React/Redux code now lives in [CloudFlare-Plugin-Frontend](https://github.com/cloudflare/CloudFlare-Frontend). [#91](https://github.com/cloudflare/CloudFlare-CPanel/pull/91)
+
+### Fixed
+- Fixed bug where active railguns were displaying as inactive. [#95](https://github.com/cloudflare/CloudFlare-CPanel/pull/95)
+
 ## [6.0.2](#6.0.2) - 2016-05-23
 ### Added
 - Addon and Parked cPanel domains can now be provisioned. [#88](https://github.com/cloudflare/CloudFlare-CPanel/pull/88)
