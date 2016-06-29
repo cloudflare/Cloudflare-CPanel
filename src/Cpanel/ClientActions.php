@@ -51,11 +51,11 @@ class ClientActions
 
         //addon and primary domains are A records to the main_domain so for Cpanel its always a list of one
         $cpanel_domain_list = array($get_cpanel_domains['main_domain']);
-        if (!is_null($get_cpanel_domains['addon_domains'])) {
+        if (array_key_exists('addon_domains', $get_cpanel_domains) && !is_null($get_cpanel_domains['addon_domains'])) {
             $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains['addon_domains']);
         }
 
-        if (!is_null($get_cpanel_domains['parked_domains'])) {
+        if (array_key_exists('parked_domains', $get_cpanel_domains) && !is_null($get_cpanel_domains['parked_domains'])) {
             $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains['parked_domains']);
         }
 
