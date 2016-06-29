@@ -1,8 +1,9 @@
 {
-  "name": "cloudflare/cpanel-plugin",
+  "name": "cloudflare/cloudflare-cpanel",
   "description": "A CloudFlare plugin for CPanel",
   "license": "BSD-3-Clause",
-  "version": "5.3.11",
+  "version": "6.0.4",
+  "homepage": "https://github.com/cloudflare/CloudFlare-CPanel",
   "scripts": {
     "test": "vendor/bin/phpunit",
     "format": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/"

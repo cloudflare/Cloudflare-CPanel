@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.4](#6.0.4) - 2016-06-29
+## Fixed
+- Fixed bug which was causing active domains to display as inactive because the client api doesn't support pagination. [#97](https://github.com/cloudflare/CloudFlare-CPanel/pull/97)
+
 ## [6.0.3](#6.0.3) - 2016-06-08
 ## Changed
 - PHP code for CF\API, CF\Router, and CF\Integration moved to [CloudFlare-Plugin-Backend](https://github.com/cloudflare/CloudFlare-Plugin-Backend). [#96](https://github.com/cloudflare/CloudFlare-CPanel/pull/96)
