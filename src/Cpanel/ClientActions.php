@@ -45,42 +45,48 @@ class ClientActions
      */
     public function mergeCpanelAndCFDomains()
     {
-        $cf_zones_list = $this->api->callAPI($this->request);
+        $get_cpanel_domains = $this->cpanelAPI->getDomainList();
 
-        if ($this->api->responseOk($cf_zones_list)) {
-            $get_cpanel_domains = $this->cpanelAPI->getDomainList();    
+        //addon and primary domains are A records to the main_domain so for Cpanel its always a list of one
+        $cpanel_domain_list = array($get_cpanel_domains['main_domain']);
+        if (!is_null($get_cpanel_domains['addon_domains'])) {
+            $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains['addon_domains']);
+        }
 
-            //addon and primary domains are A records to the main_domain so for Cpanel its always a list of one
-            $cpanel_domain_list = array($get_cpanel_domains["main_domain"]);
-            if (!is_null($get_cpanel_domains["addon_domains"])) {
-                $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains["addon_domains"]);
-            }
+        if (!is_null($get_cpanel_domains['parked_domains'])) {
+            $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains['parked_domains']);
+        }
 
-            if (!is_null($get_cpanel_domains["parked_domains"])) {
-                $cpanel_domain_list = array_merge($cpanel_domain_list, $get_cpanel_domains["parked_domains"]);
-            }
+        $merged_domain_list = array();
+        foreach ($cpanel_domain_list as $cpanel_domain) {
+            $found = false;
 
-            $merged_domain_list = array();
-            foreach ($cpanel_domain_list as $cpanel_domain) {
-                $found = false;
-                foreach ($cf_zones_list["result"] as $cf_zone) {
-                    if ($cf_zone["name"] === $cpanel_domain) {
+            $request = new Request('GET', 'zones/', array('name' => $cpanel_domain), array());
+            $cpanel_zone = $this->api->callAPI($request);
+
+            if ($this->api->responseOk($cpanel_zone)) {
+                foreach ($cpanel_zone['result'] as $cf_zone) {
+                    if ($cf_zone['name'] === $cpanel_domain) {
                         $found = true;
                         array_push($merged_domain_list, $cf_zone);
                     }
                 }
-                if ($found === false) {
-                    array_push($merged_domain_list, array(
+            }
+
+            if ($found === false) {
+                array_push($merged_domain_list, array(
                         'name' => $cpanel_domain,
                         'plan' => array('name' => ''),
                         'type' => '',
-                        'status' => 'inactive'
+                        'status' => 'inactive',
                     ));
-                }
             }
         }
 
-        $cf_zones_list["result"] = $merged_domain_list;
+        $cf_zones_list = array();
+        $cf_zones_list['result'] = $merged_domain_list;
+        $cf_zones_list['success'] = true;
+
         return $cf_zones_list;
     }
 
