@@ -214,6 +214,12 @@ cp -r $SOURCE_DIR/vendor/* $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/vendo
 install -d $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/src
 cp -r $SOURCE_DIR/src/* $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/src
 
+# cPanel 58 uses PHP 5.6, previous versions use 5.4
+if [ -d "$INSTALL_DIR/3rdparty/php/56/" ]; then
+    # Create sym link from php/54 to php/56
+    ln -s $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/ $INSTALL_DIR/3rdparty/php/56/lib/php/
+fi
+
 # Register the plugin buttons with Cpanel
 /usr/local/cpanel/scripts/install_plugin $SOURCE_DIR/installers/cloudflare_simple.tar.bz2
 
