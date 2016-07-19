@@ -287,10 +287,13 @@ class CpanelAPI implements IntegrationAPIInterface
         return $cloudflare_dns_record_name . ".";
     }
 
+    /**
+     * @return bool
+     */
     public function isAdvancedZoneEditEnabled() {
         /* Advanced Zone Editor is required to edit DNS records for partial zone provisioning.
          * https://documentation.cpanel.net/display/SDK/Guide+to+the+LiveAPI+System+-+The+cpanelfeature%28%29+Method
-         * Returns 1 = enabled, 0 = disabled
+         * cPanel returns 1 = enabled, 0 = disabled
          */
         return ($this->cpanel_api->cpanelfeature("zoneedit") === 1);
     }
