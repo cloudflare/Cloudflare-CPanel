@@ -46,6 +46,9 @@ class HostActions
      */
     public function partialZoneSet()
     {
+        if(!$this->cpanelAPI->isAdvancedZoneEditEnabled()) {
+            return $this->api->createAPIError(Partial::ADVANCED_ZONE_EDIT_DISABLED_ERROR);
+        }
         $bodyParameters = $this->request->getBody();
         if (isset($bodyParameters["zone_name"])) {
             if ($this->partialZoneSet->partialZoneSet("www." . $bodyParameters["zone_name"] . ".", $bodyParameters["zone_name"])) {

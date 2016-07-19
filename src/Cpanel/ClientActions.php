@@ -143,6 +143,10 @@ class ClientActions
      */
     public function deleteZone()
     {
+        if(!$this->cpanelAPI->isAdvancedZoneEditEnabled()) {
+            return $this->api->createAPIError(Partial::ADVANCED_ZONE_EDIT_DISABLED_ERROR);
+        }
+
         $path_array = explode('/', $this->request->getUrl());
         $zone_tag = $path_array[1];
 
