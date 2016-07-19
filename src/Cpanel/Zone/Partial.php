@@ -16,6 +16,7 @@ class Partial
 
     const FORWARD_TO_SUFFIX = "cdn.cloudflare.net";
     const RESOLVE_TO_PREFIX = "cloudflare-resolve-to.";
+    const ADVANCED_ZONE_EDIT_DISABLED_ERROR = "CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable \"Advanced DNS Zone Editor\"";
 
     /**
      * @param CpanelAPI $cpanel_api
