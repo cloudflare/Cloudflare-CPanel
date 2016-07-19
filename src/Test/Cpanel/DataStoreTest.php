@@ -5,7 +5,7 @@ namespace CF\Cpanel\Test;
 
 use CF\Cpanel\DataStore;
 
-class PartialTest extends \PHPUnit_Framework_TestCase
+class DataStoreTest extends \PHPUnit_Framework_TestCase
 {
     private $mockCpanelAPI;
     private $mockLogger;

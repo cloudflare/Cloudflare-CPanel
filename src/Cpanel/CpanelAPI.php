@@ -292,6 +292,6 @@ class CpanelAPI implements IntegrationAPIInterface
          * https://documentation.cpanel.net/display/SDK/Guide+to+the+LiveAPI+System+-+The+cpanelfeature%28%29+Method
          * Returns 1 = enabled, 0 = disabled
          */
-        return $this->cpanel_api->cpanelfeature("zoneedit");
+        return ($this->cpanel_api->cpanelfeature("zoneedit") === 1);
     }
 }
