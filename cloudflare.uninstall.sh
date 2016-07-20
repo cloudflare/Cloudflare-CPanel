@@ -8,7 +8,13 @@ INSTALL_DIR="/usr/local/cpanel"
 
 rm -rf $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 rm -rf $INSTALL_DIR/bin/admin/CloudFlare
+
 rm -rf $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare
+
+# cPanel 58 uses PHP 5.6, previous versions use 5.4
+if [ -d "$INSTALL_DIR/3rdparty/php/56/" ]; then
+    unlink $INSTALL_DIR/3rdparty/php/56/lib/php/cloudflare
+fi
 
 rm -rf $INSTALL_DIR/Cpanel/API/CloudFlare.pm
 
