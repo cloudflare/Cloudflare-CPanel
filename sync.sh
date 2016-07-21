@@ -1,4 +1,5 @@
 #!/bin/bash
+# Currently we put in $USRHOSTFLDR/cpanel/3rdparty/php/54/ folder. When upgrading PHP Version change this script to put in the correct folder.
 #$1 = username
 #$2 = hostname
 USRHOSTFLDR="$1@$2:/usr/local"
