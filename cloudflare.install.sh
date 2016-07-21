@@ -208,11 +208,15 @@ install $SOURCE_DIR/APIKey $INSTALL_DIR/bin/admin/CloudFlare/APIKey
 chmod 0700 $INSTALL_DIR/bin/admin/CloudFlare/APIKey
 echo "mode=simple" > $INSTALL_DIR/bin/admin/CloudFlare/APIKey.conf
 
+# Get PHP Version
+CPANELSUPPORTEDPHPPATH=`ls -al $INSTALL_DIR/3rdparty/bin/php | awk '{print $11}'`
+PHPVERSION=`echo $CPANELSUPPORTEDPHPPATH | rev | cut -d '/' -f 3 | rev`
+
 # Install PHP code
-install -d $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/vendor
-cp -r $SOURCE_DIR/vendor/* $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/vendor
-install -d $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/src
-cp -r $SOURCE_DIR/src/* $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare/src
+install -d $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/vendor
+cp -r $SOURCE_DIR/vendor/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/vendor
+install -d $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/src
+cp -r $SOURCE_DIR/src/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/src
 
 # Register the plugin buttons with Cpanel
 /usr/local/cpanel/scripts/install_plugin $SOURCE_DIR/installers/cloudflare_simple.tar.bz2
