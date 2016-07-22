@@ -6,9 +6,13 @@
 
 INSTALL_DIR="/usr/local/cpanel"
 
+# Get PHP Version
+CPANELSUPPORTEDPHPPATH=`ls -al $INSTALL_DIR/3rdparty/bin/php | awk '{print $11}'`
+PHPVERSION=`echo $CPANELSUPPORTEDPHPPATH | rev | cut -d '/' -f 3 | rev`
+
 rm -rf $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 rm -rf $INSTALL_DIR/bin/admin/CloudFlare
-rm -rf $INSTALL_DIR/3rdparty/php/54/lib/php/cloudflare
+rm -rf $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare
 
 rm -rf $INSTALL_DIR/Cpanel/API/CloudFlare.pm
 
