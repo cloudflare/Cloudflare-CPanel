@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.5](#6.0.5) - 2016-07-29
+## Changed
+- Changed Provisioning to check if Advance Zone Editor is enabled. [#100](https://github.com/cloudflare/CloudFlare-CPanel/pull/100)
+## Fixed
+- Fixed how the installer finds the php version for cPanel 58. [#101](https://github.com/cloudflare/CloudFlare-CPanel/pull/101)[#102](https://github.com/cloudflare/CloudFlare-CPanel/pull/102)
+
+
 ## [6.0.4](#6.0.4) - 2016-06-29
 ## Fixed
 - Fixed bug which was causing active domains to display as inactive because the client api doesn't support pagination. [#97](https://github.com/cloudflare/CloudFlare-CPanel/pull/97)

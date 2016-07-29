@@ -16,5 +16,5 @@
     "featureManagerIsSSLEnabled": false,
     "locale": "en",
     "integrationName": "cpanel",
-    "version": "6.0.4"
+    "version": "6.0.5"
 }
