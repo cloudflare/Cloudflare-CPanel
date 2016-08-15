@@ -25,10 +25,10 @@ class DataStore implements DataStoreInterface
 
 
     /**
-     * @param CpanelAPI $cpanel
-     * @param LoggerInterface $logger
+     * @param CpanelAPI     $cpanel
+     * @param DefaultLogger $logger
      */
-    public function __construct(CpanelAPI $cpanel, LoggerInterface $logger)
+    public function __construct(CpanelAPI $cpanel, DefaultLogger $logger)
     {
         $this->cpanel = $cpanel;
         $this->logger = $logger;
@@ -94,7 +94,8 @@ class DataStore implements DataStoreInterface
             self::HOST_USER_UNIQUE_ID_KEY => $unique_id,
             self::HOST_USER_KEY => $user_key
         );
-        return $this->saveYAMLFile();
+
+        $this->saveYAMLFile();
     }
 
     /**
@@ -102,7 +103,7 @@ class DataStore implements DataStoreInterface
      */
     public function getHostAPIUserUniqueId()
     {
-        return $this->yaml_data[self::HOST_USER_UNIQUE_ID_KEY];
+        return $this->get(self::HOST_USER_UNIQUE_ID_KEY);
     }
 
     /**
@@ -110,7 +111,7 @@ class DataStore implements DataStoreInterface
      */
     public function getClientV4APIKey()
     {
-        return $this->yaml_data[self::CLIENT_API_KEY];
+        return $this->get(self::CLIENT_API_KEY);
     }
 
     /**
@@ -118,7 +119,7 @@ class DataStore implements DataStoreInterface
      */
     public function getHostAPIUserKey()
     {
-        return $this->yaml_data[self::HOST_USER_KEY];
+        return $this->get(self::HOST_USER_KEY);
     }
 
     /**
@@ -126,6 +127,33 @@ class DataStore implements DataStoreInterface
      */
     public function getCloudFlareEmail()
     {
-        return $this->yaml_data[self::EMAIL_KEY];
+        return $this->get(self::EMAIL_KEY);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return mixed
+     */
+    public function get($key)
+    {
+        return $this->yaml_data[$key];
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function set($key, $value)
+    {
+        if (isEmpty($this->yaml_data)) {
+            $this->yaml_data = array();
+        }
+
+        $this->yaml_data[$key] = $value;
+
+        return $this->saveYAMLFile();
     }
 }
