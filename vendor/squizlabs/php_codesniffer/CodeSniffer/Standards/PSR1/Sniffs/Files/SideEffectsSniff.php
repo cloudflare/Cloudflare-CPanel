@@ -119,6 +119,11 @@ class PSR1_Sniffs_Files_SideEffectsSniff implements PHP_CodeSniffer_Sniff
                 continue;
             }
 
+            // Ignore shebang.
+            if (substr($tokens[$i]['content'], 0, 2) === '#!') {
+                continue;
+            }
+
             // Ignore entire namespace, declare, const and use statements.
             if ($tokens[$i]['code'] === T_NAMESPACE
                 || $tokens[$i]['code'] === T_USE
@@ -139,6 +144,12 @@ class PSR1_Sniffs_Files_SideEffectsSniff implements PHP_CodeSniffer_Sniff
 
             // Ignore function/class prefixes.
             if (isset(PHP_CodeSniffer_Tokens::$methodPrefixes[$tokens[$i]['code']]) === true) {
+                continue;
+            }
+
+            // Ignore anon classes.
+            if ($tokens[$i]['code'] === T_ANON_CLASS) {
+                $i = $tokens[$i]['scope_closer'];
                 continue;
             }
 

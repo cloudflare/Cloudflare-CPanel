@@ -68,12 +68,8 @@ class Generic_Sniffs_Functions_CallTimePassByReferenceSniff implements PHP_CodeS
         // within their definitions. For example: function myFunction...
         // "myFunction" is T_STRING but we should skip because it is not a
         // function or method *call*.
-        // Also skip if the return value is being assigned to a variable.
         $prevCode = $tokens[$prev]['code'];
-        if ($prevCode === T_FUNCTION
-            || $prevCode === T_CLASS
-            || isset(PHP_CodeSniffer_Tokens::$assignmentTokens[$prevCode]) === true
-        ) {
+        if ($prevCode === T_FUNCTION || $prevCode === T_CLASS) {
             return;
         }
 
@@ -98,8 +94,18 @@ class Generic_Sniffs_Functions_CallTimePassByReferenceSniff implements PHP_CodeS
         $closeBracket = $tokens[$openBracket]['parenthesis_closer'];
 
         $nextSeparator = $openBracket;
-        while (($nextSeparator = $phpcsFile->findNext(T_VARIABLE, ($nextSeparator + 1), $closeBracket)) !== false) {
+        $find          = array(
+                          T_VARIABLE,
+                          T_OPEN_SHORT_ARRAY,
+                         );
+
+        while (($nextSeparator = $phpcsFile->findNext($find, ($nextSeparator + 1), $closeBracket)) !== false) {
             if (isset($tokens[$nextSeparator]['nested_parenthesis']) === false) {
+                continue;
+            }
+
+            if ($tokens[$nextSeparator]['code'] === T_OPEN_SHORT_ARRAY) {
+                $nextSeparator = $tokens[$nextSeparator]['bracket_closer'];
                 continue;
             }
 
@@ -134,6 +140,7 @@ class Generic_Sniffs_Functions_CallTimePassByReferenceSniff implements PHP_CodeS
                 $tokenCode = $tokens[$tokenBefore]['code'];
                 if ($tokenCode === T_VARIABLE
                     || $tokenCode === T_CLOSE_PARENTHESIS
+                    || $tokenCode === T_CLOSE_SQUARE_BRACKET
                     || $tokenCode === T_LNUMBER
                     || isset(PHP_CodeSniffer_Tokens::$assignmentTokens[$tokenCode]) === true
                 ) {
