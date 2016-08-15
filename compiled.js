@@ -84071,6 +84071,10 @@ var _RailgunCard = _dereq_('../containers/RailgunCard/RailgunCard');
 
 var _RailgunCard2 = _interopRequireDefault(_RailgunCard);
 
+var _DNSManagementPage = _dereq_('../containers/DNSManagementPage/DNSManagementPage');
+
+var _DNSManagementPage2 = _interopRequireDefault(_DNSManagementPage);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var cardMapper = {
@@ -84093,12 +84097,15 @@ var cardMapper = {
 	"SecurityLevelCard": _SecurityLevelCard2.default,
 	"WAFCard": _WAFCard2.default,
 	"PluginSpecificCacheCard": _PluginSpecificCacheCard2.default,
-	"RailgunCard": _RailgunCard2.default
+	"RailgunCard": _RailgunCard2.default,
+	"DNSManagementPage": _DNSManagementPage2.default
 };
 
+// Pages
+// Cards
 exports.cardMapper = cardMapper;
 
-},{"../containers/AdvanceDDoSCard/AdvanceDDoSCard":542,"../containers/AlwaysOnlineCard/AlwaysOnlineCard":543,"../containers/ApplyDefaultSettingsCard/ApplyDefaultSettingsCard":547,"../containers/BrowserCacheTTLCard/BrowserCacheTTLCard":548,"../containers/BrowserIntegrityCheckCard/BrowserIntegrityCheckCard":549,"../containers/CacheLevelCard/CacheLevelCard":550,"../containers/ChallengePassageCard/ChallengePassageCard":551,"../containers/DevelopmentModeCard/DevelopmentModeCard":555,"../containers/IPV6Card/IPV6Card":558,"../containers/ImageOptimizationCard/ImageOptimizationCard":559,"../containers/IpRewriteCard/IpRewriteCard":560,"../containers/MinifyCard/MinifyCard":563,"../containers/PluginSpecificCacheCard/PluginSpecificCacheCard":567,"../containers/ProtocolRewriteCard/ProtocolRewriteCard":568,"../containers/PurgeCacheCard/PurgeCacheCard":569,"../containers/RailgunCard/RailgunCard":570,"../containers/SSLCard/SSLCard":571,"../containers/ScanCard/ScanCard":572,"../containers/SecurityLevelCard/SecurityLevelCard":573,"../containers/WAFCard/WAFCard":577}],605:[function(_dereq_,module,exports){
+},{"../containers/AdvanceDDoSCard/AdvanceDDoSCard":542,"../containers/AlwaysOnlineCard/AlwaysOnlineCard":543,"../containers/ApplyDefaultSettingsCard/ApplyDefaultSettingsCard":547,"../containers/BrowserCacheTTLCard/BrowserCacheTTLCard":548,"../containers/BrowserIntegrityCheckCard/BrowserIntegrityCheckCard":549,"../containers/CacheLevelCard/CacheLevelCard":550,"../containers/ChallengePassageCard/ChallengePassageCard":551,"../containers/DNSManagementPage/DNSManagementPage":553,"../containers/DevelopmentModeCard/DevelopmentModeCard":555,"../containers/IPV6Card/IPV6Card":558,"../containers/ImageOptimizationCard/ImageOptimizationCard":559,"../containers/IpRewriteCard/IpRewriteCard":560,"../containers/MinifyCard/MinifyCard":563,"../containers/PluginSpecificCacheCard/PluginSpecificCacheCard":567,"../containers/ProtocolRewriteCard/ProtocolRewriteCard":568,"../containers/PurgeCacheCard/PurgeCacheCard":569,"../containers/RailgunCard/RailgunCard":570,"../containers/SSLCard/SSLCard":571,"../containers/ScanCard/ScanCard":572,"../containers/SecurityLevelCard/SecurityLevelCard":573,"../containers/WAFCard/WAFCard":577}],605:[function(_dereq_,module,exports){
 'use strict';
 
 exports.__esModule = true;
