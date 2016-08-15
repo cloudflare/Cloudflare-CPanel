@@ -3,7 +3,7 @@ namespace CF\Cpanel;
 
 use CF\DNSRecord;
 use CF\Integration\IntegrationAPIInterface;
-use CF\Integration\LoggerInterface;
+use CF\Integration\DefaultLogger;
 
 class CpanelAPI implements IntegrationAPIInterface
 {
@@ -16,9 +16,9 @@ class CpanelAPI implements IntegrationAPIInterface
 
     /**
      * @param $cpanel_api
-     * @param LoggerInterface $logger
+     * @param DefaultLogger $logger
      */
-    public function __construct($cpanel_api, LoggerInterface $logger)
+    public function __construct($cpanel_api, DefaultLogger $logger)
     {
         $this->cpanel_api = $cpanel_api;
         $this->logger = $logger;
@@ -31,15 +31,15 @@ class CpanelAPI implements IntegrationAPIInterface
      */
     private function api2($module, $function, $parameters)
     {
-        $this->logger->logAPICall(self::CPANEL_API2_NAME, array('type' => "request", 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
+        $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
 
         $cpanel_api2_response = $this->cpanel_api->api2($module, $function, $parameters);
 
-        $this->logger->logAPICall(self::CPANEL_API2_NAME, array('type' => "response", $cpanel_api2_response), $this->api2ResponseOk($cpanel_api2_response));
+        $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', $cpanel_api2_response), $this->api2ResponseOk($cpanel_api2_response));
 
         if (!$this->api2ResponseOk($cpanel_api2_response)) {
-            $this->logger->logAPICall(self::CPANEL_API2_NAME, array('type' => "request", 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
-            $this->logger->logAPICall(self::CPANEL_API2_NAME, array('type' => "response", 'body' => $cpanel_api2_response), false);
+            $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
+            $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', 'body' => $cpanel_api2_response), false);
         }
 
         return $cpanel_api2_response;
@@ -159,16 +159,17 @@ class CpanelAPI implements IntegrationAPIInterface
      */
     private function uapi($module, $function, $parameters, $value)
     {
-        $this->logger->logAPICall(self::CPANEL_UAPI_NAME, array('type' => "request", 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
+        $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
 
         $cpanel_uapi_response = $this->cpanel_api->uapi($module, $function, $parameters, $value);
 
-        $this->logger->logAPICall(self::CPANEL_UAPI_NAME, array('type' => "response", 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), $this->uapi_response_ok($cpanel_uapi_response));
+        $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), $this->uapi_response_ok($cpanel_uapi_response));
         if ($this->uapi_response_ok($cpanel_uapi_response)) {
             return $cpanel_uapi_response["cpanelresult"]["result"]["data"];
         } else {
-            $this->logger->logAPICall(self::CPANEL_UAPI_NAME, array('type' => "request", 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
-            $this->logger->logAPICall(self::CPANEL_UAPI_NAME, array('type' => "response", 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), false);
+            $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
+            $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), false);
+
             return $cpanel_uapi_response;
         }
     }
@@ -296,5 +297,15 @@ class CpanelAPI implements IntegrationAPIInterface
          * cPanel returns 1 = enabled, 0 = disabled
          */
         return ($this->cpanel_api->cpanelfeature("zoneedit") === 1);
+    public function logAPICall($api, $message, $is_debug)
+    {
+        $log_level = 'error';
+        if ($is_debug) {
+            $log_level = 'debug';
+        }
+        if (!is_string($message)) {
+            $message = print_r($message, true);
+        }
+        $this->logger->$log_level('['.$api.'] '.$message);
     }
 }
