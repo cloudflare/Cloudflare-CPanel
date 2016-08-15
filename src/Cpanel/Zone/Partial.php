@@ -4,7 +4,7 @@ namespace CF\Cpanel\Zone;
 use CF\Cpanel\CpanelAPI;
 use CF\Cpanel\CpanelDNSRecord;
 use CF\Cpanel\DataStore;
-use CF\Integration\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class Partial
 {
@@ -30,10 +30,10 @@ class Partial
         $this->logger = $logger;
     }
 
-
     /**
      * @param $sub_domain
      * @param $domain_name
+     *
      * @return bool
      */
     public function partialZoneSet($sub_domain, $domain_name)

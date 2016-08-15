@@ -6,7 +6,7 @@ use CF\Integration\ConfigInterface;
 use CF\Integration\DataStoreInterface;
 use CF\Integration\IntegrationAPIInterface;
 use CF\Integration\IntegrationInterface;
-use CF\Integration\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class CpanelIntegration implements IntegrationInterface
 {
@@ -16,10 +16,10 @@ class CpanelIntegration implements IntegrationInterface
     private $logger;
 
     /**
-     * @param ConfigInterface $config
-     * @param CpanelAPI $cpanelAPI
-     * @param DataStoreInterface $dataStore
-     * @param LoggerInterface $logger
+     * @param ConfigInterface         $config
+     * @param CpanelAPI               $cpanelAPI
+     * @param DataStoreInterface      $dataStore
+     * @param Psr\Log\LoggerInterface $logger
      */
     public function __construct(ConfigInterface $config, CpanelAPI $cpanelAPI, DataStoreInterface $dataStore, LoggerInterface $logger)
     {

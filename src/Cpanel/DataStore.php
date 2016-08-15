@@ -1,7 +1,7 @@
 <?php
 namespace CF\Cpanel;
 
-use CF\Integration\LoggerInterface;
+use CF\Integration\DefaultLogger;
 use Symfony\Component\Yaml\Yaml as Yaml;
 use CF\Integration\DataStoreInterface;
 
@@ -42,12 +42,15 @@ class DataStore implements DataStoreInterface
      * createUserDataStore().  Eventually we need to remove the function below and its use in index.live.php.
      */
     /**
-     * @return bool
+     * @return mixed
      */
-    public function getDeprecatedHostUserUniqueID() {
-        if(isset($this->yaml_data[self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY])) {
-            return $this->yaml_data[self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY][$this->username];
+    public function getDeprecatedHostUserUniqueID()
+    {
+        $deprectatedHostKey = $this->get(self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY);
+        if (isset($deprectatedHostKey)) {
+            return $deprectatedHostKey[$this->username];
         }
+
         return false;
     }
 
