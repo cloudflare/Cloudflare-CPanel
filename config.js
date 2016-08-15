@@ -14,6 +14,7 @@
     "featureManagerIsScanEnabled": false,
     "featureManagerIsSecurityLevelEnabled": true,
     "featureManagerIsSSLEnabled": false,
+    "useHostAPILogin": true,
     "homePageCards": ["DNSManagementPage"],
     "moreSettingsCards": {
         "container.moresettings.security": ["SecurityLevelCard", "ChallengePassageCard", "BrowserIntegrityCheckCard"],
