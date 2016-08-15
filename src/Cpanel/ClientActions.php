@@ -5,6 +5,7 @@ namespace CF\Cpanel;
 use CF\API\APIInterface;
 use CF\API\Request;
 use CF\Cpanel\Zone\Partial;
+use CF\Integration\DefaultIntegration;
 
 class ClientActions
 {
@@ -17,11 +18,11 @@ class ClientActions
     private $request;
 
     /**
-     * @param CpanelIntegration $cpanelIntegration
-     * @param APIInterface      $api
-     * @param Request           $request
+     * @param DefaultIntegration $cpanelIntegration
+     * @param APIInterface       $api
+     * @param Request            $request
      */
-    public function __construct(CpanelIntegration $cpanelIntegration, APIInterface $api, Request $request)
+    public function __construct(DefaultIntegration $cpanelIntegration, APIInterface $api, Request $request)
     {
         $this->api = $api;
         $this->config = $cpanelIntegration->getConfig();
