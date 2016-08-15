@@ -1,4 +1,5 @@
 <?php
+
 namespace CF\Cpanel;
 
 use CF\Integration\DefaultLogger;
@@ -12,17 +13,16 @@ class DataStore implements DataStoreInterface
     private $home_dir;
     private $yaml_data;
 
-    const PATH_TO_YAML_FILE = "/.cpanel/datastore";
-    const YAML_FILE_NAME = "cloudflare_data.yaml";
+    const PATH_TO_YAML_FILE = '/.cpanel/datastore';
+    const YAML_FILE_NAME = 'cloudflare_data.yaml';
 
-    const CLIENT_API_KEY = "client_api_key";
-    const EMAIL_KEY = "cloudflare_email";
-    const HOST_USER_UNIQUE_ID_KEY = "host_user_unique_id";
-    const HOST_USER_KEY = "host_user_key";
+    const CLIENT_API_KEY = 'client_api_key';
+    const EMAIL_KEY = 'cloudflare_email';
+    const HOST_USER_UNIQUE_ID_KEY = 'host_user_unique_id';
+    const HOST_USER_KEY = 'host_user_key';
 
     //deprectated yaml file keys
-    const DEPRECATED_HOST_USER_UNIQUE_ID_KEY = "cf_user_tokens";
-
+    const DEPRECATED_HOST_USER_UNIQUE_ID_KEY = 'cf_user_tokens';
 
     /**
      * @param CpanelAPI     $cpanel
@@ -59,12 +59,13 @@ class DataStore implements DataStoreInterface
      */
     private function loadYAMLFile()
     {
-        $get_file_content = $this->cpanel->load_file($this->home_dir . self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
+        $get_file_content = $this->cpanel->load_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
         if ($this->cpanel->uapi_response_ok($get_file_content)) {
-            return Yaml::parse($get_file_content["content"]);
+            return Yaml::parse($get_file_content['content']);
         } else {
-            $this->logger->error(self::PATH_TO_YAML_FILE . self::YAML_FILE_NAME . " does not exist.");
+            $this->logger->error(self::PATH_TO_YAML_FILE.self::YAML_FILE_NAME.' does not exist.');
         }
+
         return false;
     }
 
@@ -74,17 +75,16 @@ class DataStore implements DataStoreInterface
     private function saveYAMLFile()
     {
         $file_contents = Yaml::dump($this->yaml_data);
-        $result = $this->cpanel->save_file($this->home_dir . self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+        $result = $this->cpanel->save_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+
         return $this->cpanel->uapi_response_ok($result);
     }
-
 
     /**
      * @param $client_api_key
      * @param $email
      * @param $unique_id
      * @param $user_key
-     * @return bool
      */
     public function createUserDataStore($client_api_key, $email, $unique_id, $user_key)
     {
@@ -92,7 +92,7 @@ class DataStore implements DataStoreInterface
             self::CLIENT_API_KEY => $client_api_key,
             self::EMAIL_KEY => $email,
             self::HOST_USER_UNIQUE_ID_KEY => $unique_id,
-            self::HOST_USER_KEY => $user_key
+            self::HOST_USER_KEY => $user_key,
         );
 
         $this->saveYAMLFile();

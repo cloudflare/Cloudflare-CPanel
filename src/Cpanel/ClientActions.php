@@ -144,7 +144,7 @@ class ClientActions
      */
     public function deleteZone()
     {
-        if(!$this->cpanelAPI->isAdvancedZoneEditEnabled()) {
+        if (!$this->cpanelAPI->isAdvancedZoneEditEnabled()) {
             return $this->api->createAPIError(Partial::ADVANCED_ZONE_EDIT_DISABLED_ERROR);
         }
 
