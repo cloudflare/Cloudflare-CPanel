@@ -31,7 +31,14 @@ unset($parameters['proxyURL']);
 unset($body['proxyURL']);
 $request = new \CF\API\Request($method, $path, $parameters, $body);
 
-$response = $requestRouter->route($request);
+$isCSRFTokenValid = (($request->getMethod() === 'GET') ? true : \CF\SecurityUtil::csrfTokenValidate($cpanelAPI->getHostAPIKey(), $cpanelAPI->getUserId(), $request->getBody()['cfCSRFToken']));
+unset($body['cfCSRFToken']);
+
+if ($isCSRFTokenValid) {
+    $response = $requestRouter->route($request);
+} else {
+    $response = $apiRouter->getAPIClient()->createAPIError('CSRF Token not valid.');
+}
 
 echo json_encode($response);
 
