@@ -39,7 +39,7 @@ NEW_VERSION=`echo $INSTALLED_VERSION $CURRENT_VERSION | awk '{ print ($1 < $2) ?
 
 if [[ "$NEW_VERSION" == 0 || "$FORCE_INSTALL" == true ]]
     then
-        curl -s -k -L "https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh"
+        curl -s -L "https://raw.githubusercontent.com/cloudflare/CloudFlare-CPanel/master/cloudflare.install.sh"
 	    ./cloudflare.install.sh -k $HOST_KEY -n ' '
 fi
 
