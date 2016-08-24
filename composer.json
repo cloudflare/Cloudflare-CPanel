@@ -6,7 +6,10 @@
   "homepage": "https://github.com/cloudflare/CloudFlare-CPanel",
   "scripts": {
     "test": "vendor/bin/phpunit",
-    "format": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/"
+    "format": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/",
+    "post-install-cmd": [
+      "bash git-hooks/setup.sh"
+    ]
   },
   "require": {
     "symfony/yaml": "~2.6",
