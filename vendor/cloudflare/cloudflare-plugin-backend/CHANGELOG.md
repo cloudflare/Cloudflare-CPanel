@@ -2,6 +2,48 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0](#1.1.0) - 2016-08-11
+### Added
+- Added CF\Router\RequestRouter to consolidate duplicate request routing logic each plugin was implementing. [#8](https://github.com/cloudflare/cloudflare-plugin-backend/pull/8)
+### Changed
+- PluginRoutes, PluginActions moved to CF\API to consolidate the Internal Plugin API logic across all plugins. [#10](https://github.com/cloudflare/cloudflare-plugin-backend/pull/10)
+
+## [1.0.9](#1.0.9) - 2016-08-03
+### Changed
+- Removed static type checking to support earlier php versions [ad13c1e](https://github.com/cloudflare/cloudflare-plugin-backend/commit/ad13c1ec6edeceae5a85f8912208ce2c80f4a5f2)
+
+## [1.0.8](#1.0.8) - 2016-08-02
+### Changed
+- Fixed error message bug [61584ca](https://github.com/cloudflare/cloudflare-plugin-backend/commit/61584ca56f8ed6ba76cb321593955e0b57f3c88d)
+
+## [1.0.7](#1.0.7) - 2016-08-02
+### Changed
+- Updated CHANGELOG [5e72177](https://github.com/cloudflare/cloudflare-plugin-backend/commit/5e72177aadf1c34cf75904b52bf017e7b6c6c672)
+
+## [1.0.6](#1.0.6) - 2016-08-02
+### Changed
+- Changed error message from always "Bad Request" to original API message [235b020](https://github.com/cloudflare/cloudflare-plugin-backend/commit/235b020ad48cf9c0d2cdcb067b34d1424f0571f6)
+
+## [1.0.5](#1.0.5) - 2016-07-22
+### Added
+- PI-697 added PLUGIN_SPECIFIC_CACHE consts to CF\API\Plugin [10fb134](https://github.com/cloudflare/cloudflare-plugin-backend/commit/10fb1346d81e6b7fb71abfdfb93ce12c3d55fb91)
+
+## [1.0.4](#1.0.4) - 2016-07-15
+### Added
+- Added setting name consts to CF\API\Plugin [70372ab](https://github.com/cloudflare/cloudflare-plugin-backend/commit/70372ab0d1e294e0e6b57799e31c8a22ed4dedf6)
+
+
+## [1.0.3](#1.0.3) - 2016-06-27
+### Added
+- Added CF\API\Plugin.php built by @thellimist to handle plugin specific API calls. [#3](https://github.com/cloudflare/cloudflare-plugin-backend/pull/3)
+
+## [1.0.2](#1.0.2) - 2016-06-14
+### Changed
+- CF\Integration\LoggerInterface::logAPICall() moved to CF\API\AbstractAPIClient::logAPICall(). [#2](https://github.com/cloudflare/cloudflare-plugin-backend/pull/2)
+
+## Removed
+- Removed CF\Integration\LoggerInterface. [#2](https://github.com/cloudflare/cloudflare-plugin-backend/pull/2)
+
 ## [1.0.1](#1.0.1) - 2016-06-07
 ### Changed
-- CF\Integration\LoggerInterface now implements PSR-3 LoggerInterface [#1](https://github.com/cloudflare/cloudflare-plugin-backend/pull/1)
+- CF\Integration\LoggerInterface now implements PSR-3 LoggerInterface. [#1](https://github.com/cloudflare/cloudflare-plugin-backend/pull/1)

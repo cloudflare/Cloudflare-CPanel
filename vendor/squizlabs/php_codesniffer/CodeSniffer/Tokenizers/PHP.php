@@ -27,6 +27,13 @@ class PHP_CodeSniffer_Tokenizers_PHP
 {
 
     /**
+     * If TRUE, files that appear to be minified will not be processed.
+     *
+     * @var boolean
+     */
+    public $skipMinified = false;
+
+    /**
      * A list of tokens that are allowed to open a scope.
      *
      * This array also contains information about what kind of token the scope
@@ -324,6 +331,7 @@ class PHP_CodeSniffer_Tokenizers_PHP
         $lastNotEmptyToken = 0;
 
         $insideInlineIf = array();
+        $insideUseGroup = false;
 
         $commentTokenizer = new PHP_CodeSniffer_Tokenizers_Comment();
 
@@ -500,8 +508,6 @@ class PHP_CodeSniffer_Tokenizers_PHP
                     $nowdoc = true;
                 }
 
-                $newStackPtr++;
-
                 $tokenContent = '';
                 for ($i = ($stackPtr + 1); $i < $numTokens; $i++) {
                     $subTokenIsArray = is_array($tokens[$i]);
@@ -519,7 +525,24 @@ class PHP_CodeSniffer_Tokenizers_PHP
                     }
                 }
 
+                if ($i === $numTokens) {
+                    // We got to the end of the file and never
+                    // found the closing token, so this probably wasn't
+                    // a heredoc.
+                    if (PHP_CODESNIFFER_VERBOSITY > 1) {
+                        $type = $finalTokens[$newStackPtr]['type'];
+                        echo "\t\t* failed to find the end of the here/nowdoc".PHP_EOL;
+                        echo "\t\t* token $stackPtr changed from $type to T_STRING".PHP_EOL;
+                    }
+
+                    $finalTokens[$newStackPtr]['code'] = T_STRING;
+                    $finalTokens[$newStackPtr]['type'] = 'T_STRING';
+                    $newStackPtr++;
+                    continue;
+                }
+
                 $stackPtr = $i;
+                $newStackPtr++;
 
                 // Convert each line within the heredoc to a
                 // new token, so it conforms with other multiple line tokens.
@@ -611,6 +634,51 @@ class PHP_CodeSniffer_Tokenizers_PHP
             }
 
             /*
+                Before PHP 5.6, the **= operator was tokenized as
+                T_MULTIPLY followed by T_MUL_EQUAL. So look for and combine
+                these tokens in earlier versions.
+            */
+
+            if ($tokenIsArray === false
+                && $token[0] === '*'
+                && isset($tokens[($stackPtr + 1)]) === true
+                && is_array($tokens[($stackPtr + 1)]) === true
+                && $tokens[($stackPtr + 1)][1] === '*='
+            ) {
+                $newToken            = array();
+                $newToken['code']    = T_POW_EQUAL;
+                $newToken['type']    = 'T_POW_EQUAL';
+                $newToken['content'] = '**=';
+                $finalTokens[$newStackPtr] = $newToken;
+
+                $newStackPtr++;
+                $stackPtr++;
+                continue;
+            }
+
+            /*
+                Before PHP 7, the ?? operator was tokenized as
+                T_INLINE_THEN followed by T_INLINE_THEN.
+                So look for and combine these tokens in earlier versions.
+            */
+
+            if ($tokenIsArray === false
+                && $token[0] === '?'
+                && isset($tokens[($stackPtr + 1)]) === true
+                && $tokens[($stackPtr + 1)][0] === '?'
+            ) {
+                $newToken            = array();
+                $newToken['code']    = T_COALESCE;
+                $newToken['type']    = 'T_COALESCE';
+                $newToken['content'] = '??';
+                $finalTokens[$newStackPtr] = $newToken;
+
+                $newStackPtr++;
+                $stackPtr++;
+                continue;
+            }
+
+            /*
                 Before PHP 7, the <=> operator was tokenized as
                 T_IS_SMALLER_OR_EQUAL followed by T_GREATER_THAN.
                 So look for and combine these tokens in earlier versions.
@@ -665,6 +733,7 @@ class PHP_CodeSniffer_Tokenizers_PHP
 
             if ($tokenIsArray === true
                 && $token[0] === T_STRING
+                && isset($tokens[($stackPtr + 1)]) === true
                 && $tokens[($stackPtr + 1)] === ':'
                 && $tokens[($stackPtr - 1)][0] !== T_PAAMAYIM_NEKUDOTAYIM
             ) {
@@ -895,6 +964,23 @@ class PHP_CodeSniffer_Tokenizers_PHP
                     $newToken['type'] = 'T_STRING';
                 }
 
+                // This is a special case for use groups in PHP 7+ where leaving
+                // the curly braces as their normal tokens would confuse
+                // the scope map and sniffs.
+                if ($newToken['code'] === T_OPEN_CURLY_BRACKET
+                    && $finalTokens[$lastNotEmptyToken]['code'] === T_NS_SEPARATOR
+                ) {
+                    $newToken['code'] = T_OPEN_USE_GROUP;
+                    $newToken['type'] = 'T_OPEN_USE_GROUP';
+                    $insideUseGroup   = true;
+                }
+
+                if ($insideUseGroup === true && $newToken['code'] === T_CLOSE_CURLY_BRACKET) {
+                    $newToken['code'] = T_CLOSE_USE_GROUP;
+                    $newToken['type'] = 'T_CLOSE_USE_GROUP';
+                    $insideUseGroup   = false;
+                }
+
                 $finalTokens[$newStackPtr] = $newToken;
                 $newStackPtr++;
             }//end if
@@ -941,11 +1027,17 @@ class PHP_CodeSniffer_Tokenizers_PHP
 
             if ($tokens[$i]['code'] === T_FUNCTION) {
                 // Context sensitive keywords support.
-                for ($x = ($i + 1); $i < $numTokens; $x++) {
+                for ($x = ($i + 1); $x < $numTokens; $x++) {
                     if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
                         // Non-whitespace content.
                         break;
                     }
+                }
+
+                if ($x === $numTokens) {
+                    // We got to the end without finding any more
+                    // non-whitespace content.
+                    continue;
                 }
 
                 if (in_array($tokens[$x]['code'], array(T_STRING, T_OPEN_PARENTHESIS, T_BITWISE_AND), true) === false) {
@@ -996,11 +1088,17 @@ class PHP_CodeSniffer_Tokenizers_PHP
 
                     $tokenAfterReturnTypeHint = $tokens[$i]['scope_opener'];
                 } else if (isset($tokens[$i]['parenthesis_closer']) === true) {
-                    for ($x = ($tokens[$i]['parenthesis_closer'] + 1); $i < $numTokens; $x++) {
+                    $tokenAfterReturnTypeHint = null;
+                    for ($x = ($tokens[$i]['parenthesis_closer'] + 1); $x < $numTokens; $x++) {
                         if ($tokens[$x]['code'] === T_SEMICOLON) {
                             $tokenAfterReturnTypeHint = $x;
                             break;
                         }
+                    }
+
+                    if ($tokenAfterReturnTypeHint === null) {
+                        // Probably a syntax error.
+                        continue;
                     }
                 } else {
                     // Probably a syntax error.
@@ -1014,7 +1112,7 @@ class PHP_CodeSniffer_Tokenizers_PHP
 
                 for ($x = ($tokenAfterReturnTypeHint - 1); $x > $i; $x--) {
                     if (isset(PHP_CodeSniffer_Tokens::$emptyTokens[$tokens[$x]['code']]) === false) {
-                        if ($tokens[$x]['code'] === T_STRING || $tokens[$x]['code'] === T_ARRAY) {
+                        if (in_array($tokens[$x]['code'], array(T_STRING, T_ARRAY, T_CALLABLE, T_SELF, T_PARENT), true) === true) {
                             if (PHP_CODESNIFFER_VERBOSITY > 1) {
                                 $line = $tokens[$x]['line'];
                                 $type = $tokens[$x]['type'];
@@ -1043,6 +1141,8 @@ class PHP_CodeSniffer_Tokenizers_PHP
 
                 if ($tokens[$x]['code'] === T_OPEN_PARENTHESIS
                     || $tokens[$x]['code'] === T_OPEN_CURLY_BRACKET
+                    || $tokens[$x]['code'] === T_EXTENDS
+                    || $tokens[$x]['code'] === T_IMPLEMENTS
                 ) {
                     $tokens[$i]['code'] = T_ANON_CLASS;
                     $tokens[$i]['type'] = 'T_ANON_CLASS';
@@ -1215,11 +1315,11 @@ class PHP_CodeSniffer_Tokenizers_PHP
                 }
             }
 
-            if ($tokens[$x]['code'] === T_CASE) {
+            if ($tokens[$x]['code'] === T_CASE || $tokens[$x]['code'] === T_DEFAULT) {
                 // Special case for multiple CASE statements that share the same
                 // closer. Because we are going backwards through the file, this next
-                // CASE statement is already fixed, so just use its closer and don't
-                // worry about fixing anything.
+                // CASE/DEFAULT statement is already fixed, so just use its closer
+                // and don't worry about fixing anything.
                 $newCloser = $tokens[$x]['scope_closer'];
                 $tokens[$i]['scope_closer'] = $newCloser;
                 if (PHP_CODESNIFFER_VERBOSITY > 1) {
@@ -1235,7 +1335,7 @@ class PHP_CodeSniffer_Tokenizers_PHP
             if ($tokens[$x]['code'] !== T_OPEN_CURLY_BRACKET
                 || isset($tokens[$x]['scope_condition']) === true
             ) {
-                // Not a CASE with a curly brace opener.
+                // Not a CASE/DEFAULT with a curly brace opener.
                 continue;
             }
 

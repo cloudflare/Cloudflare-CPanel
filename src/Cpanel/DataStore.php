@@ -1,7 +1,8 @@
 <?php
+
 namespace CF\Cpanel;
 
-use CF\Integration\LoggerInterface;
+use CF\Integration\DefaultLogger;
 use Symfony\Component\Yaml\Yaml as Yaml;
 use CF\Integration\DataStoreInterface;
 
@@ -12,23 +13,22 @@ class DataStore implements DataStoreInterface
     private $home_dir;
     private $yaml_data;
 
-    const PATH_TO_YAML_FILE = "/.cpanel/datastore";
-    const YAML_FILE_NAME = "cloudflare_data.yaml";
+    const PATH_TO_YAML_FILE = '/.cpanel/datastore';
+    const YAML_FILE_NAME = 'cloudflare_data.yaml';
 
-    const CLIENT_API_KEY = "client_api_key";
-    const EMAIL_KEY = "cloudflare_email";
-    const HOST_USER_UNIQUE_ID_KEY = "host_user_unique_id";
-    const HOST_USER_KEY = "host_user_key";
+    const CLIENT_API_KEY = 'client_api_key';
+    const EMAIL_KEY = 'cloudflare_email';
+    const HOST_USER_UNIQUE_ID_KEY = 'host_user_unique_id';
+    const HOST_USER_KEY = 'host_user_key';
 
     //deprectated yaml file keys
-    const DEPRECATED_HOST_USER_UNIQUE_ID_KEY = "cf_user_tokens";
-
+    const DEPRECATED_HOST_USER_UNIQUE_ID_KEY = 'cf_user_tokens';
 
     /**
-     * @param CpanelAPI $cpanel
-     * @param LoggerInterface $logger
+     * @param CpanelAPI     $cpanel
+     * @param DefaultLogger $logger
      */
-    public function __construct(CpanelAPI $cpanel, LoggerInterface $logger)
+    public function __construct(CpanelAPI $cpanel, DefaultLogger $logger)
     {
         $this->cpanel = $cpanel;
         $this->logger = $logger;
@@ -42,12 +42,15 @@ class DataStore implements DataStoreInterface
      * createUserDataStore().  Eventually we need to remove the function below and its use in index.live.php.
      */
     /**
-     * @return bool
+     * @return mixed
      */
-    public function getDeprecatedHostUserUniqueID() {
-        if(isset($this->yaml_data[self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY])) {
-            return $this->yaml_data[self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY][$this->username];
+    public function getDeprecatedHostUserUniqueID()
+    {
+        $deprectatedHostKey = $this->get(self::DEPRECATED_HOST_USER_UNIQUE_ID_KEY);
+        if (isset($deprectatedHostKey)) {
+            return $deprectatedHostKey[$this->username];
         }
+
         return false;
     }
 
@@ -56,12 +59,13 @@ class DataStore implements DataStoreInterface
      */
     private function loadYAMLFile()
     {
-        $get_file_content = $this->cpanel->load_file($this->home_dir . self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
+        $get_file_content = $this->cpanel->load_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
         if ($this->cpanel->uapi_response_ok($get_file_content)) {
-            return Yaml::parse($get_file_content["content"]);
+            return Yaml::parse($get_file_content['content']);
         } else {
-            $this->logger->error(self::PATH_TO_YAML_FILE . self::YAML_FILE_NAME . " does not exist.");
+            $this->logger->error(self::PATH_TO_YAML_FILE.self::YAML_FILE_NAME.' does not exist.');
         }
+
         return false;
     }
 
@@ -71,17 +75,16 @@ class DataStore implements DataStoreInterface
     private function saveYAMLFile()
     {
         $file_contents = Yaml::dump($this->yaml_data);
-        $result = $this->cpanel->save_file($this->home_dir . self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+        $result = $this->cpanel->save_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+
         return $this->cpanel->uapi_response_ok($result);
     }
-
 
     /**
      * @param $client_api_key
      * @param $email
      * @param $unique_id
      * @param $user_key
-     * @return bool
      */
     public function createUserDataStore($client_api_key, $email, $unique_id, $user_key)
     {
@@ -89,9 +92,10 @@ class DataStore implements DataStoreInterface
             self::CLIENT_API_KEY => $client_api_key,
             self::EMAIL_KEY => $email,
             self::HOST_USER_UNIQUE_ID_KEY => $unique_id,
-            self::HOST_USER_KEY => $user_key
+            self::HOST_USER_KEY => $user_key,
         );
-        return $this->saveYAMLFile();
+
+        $this->saveYAMLFile();
     }
 
     /**
@@ -99,7 +103,7 @@ class DataStore implements DataStoreInterface
      */
     public function getHostAPIUserUniqueId()
     {
-        return $this->yaml_data[self::HOST_USER_UNIQUE_ID_KEY];
+        return $this->get(self::HOST_USER_UNIQUE_ID_KEY);
     }
 
     /**
@@ -107,7 +111,7 @@ class DataStore implements DataStoreInterface
      */
     public function getClientV4APIKey()
     {
-        return $this->yaml_data[self::CLIENT_API_KEY];
+        return $this->get(self::CLIENT_API_KEY);
     }
 
     /**
@@ -115,7 +119,7 @@ class DataStore implements DataStoreInterface
      */
     public function getHostAPIUserKey()
     {
-        return $this->yaml_data[self::HOST_USER_KEY];
+        return $this->get(self::HOST_USER_KEY);
     }
 
     /**
@@ -123,6 +127,33 @@ class DataStore implements DataStoreInterface
      */
     public function getCloudFlareEmail()
     {
-        return $this->yaml_data[self::EMAIL_KEY];
+        return $this->get(self::EMAIL_KEY);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return mixed
+     */
+    public function get($key)
+    {
+        return $this->yaml_data[$key];
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     *
+     * @return mixed
+     */
+    public function set($key, $value)
+    {
+        if (isEmpty($this->yaml_data)) {
+            $this->yaml_data = array();
+        }
+
+        $this->yaml_data[$key] = $value;
+
+        return $this->saveYAMLFile();
     }
 }

@@ -97,9 +97,14 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commentin
                     }
                 }
 
+                // Support both a return type and a description. The return type
+                // is anything up to the first space.
+                $returnParts = explode(' ', $content, 2);
+                $returnType  = $returnParts[0];
+
                 // If the return type is void, make sure there is
                 // no return statement in the function.
-                if ($content === 'void') {
+                if ($returnType === 'void') {
                     if (isset($tokens[$stackPtr]['scope_closer']) === true) {
                         $endToken = $tokens[$stackPtr]['scope_closer'];
                         for ($returnToken = $stackPtr; $returnToken < $endToken; $returnToken++) {
@@ -125,7 +130,7 @@ class Squiz_Sniffs_Commenting_FunctionCommentSniff extends PEAR_Sniffs_Commentin
                             }
                         }
                     }//end if
-                } else if ($content !== 'mixed') {
+                } else if ($returnType !== 'mixed') {
                     // If return type is not void, there needs to be a return statement
                     // somewhere in the function that returns something.
                     if (isset($tokens[$stackPtr]['scope_closer']) === true) {

@@ -1,10 +1,11 @@
 <?php
+
 namespace CF\Cpanel\Zone;
 
 use CF\Cpanel\CpanelAPI;
 use CF\Cpanel\CpanelDNSRecord;
 use CF\Cpanel\DataStore;
-use CF\Integration\LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class Partial
 {
@@ -14,14 +15,14 @@ class Partial
     private $dns_record_list;
     private $domain_name;
 
-    const FORWARD_TO_SUFFIX = "cdn.cloudflare.net";
-    const RESOLVE_TO_PREFIX = "cloudflare-resolve-to.";
-    const ADVANCED_ZONE_EDIT_DISABLED_ERROR = "CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable \"Advanced DNS Zone Editor\"";
+    const FORWARD_TO_SUFFIX = 'cdn.cloudflare.net';
+    const RESOLVE_TO_PREFIX = 'cloudflare-resolve-to.';
+    const ADVANCED_ZONE_EDIT_DISABLED_ERROR = 'CloudFlare cPanel Plugin configuration issue! Please contact your hosting provider to enable "Advanced DNS Zone Editor"';
 
     /**
-     * @param CpanelAPI $cpanel_api
-     * @param DataStore $data_store
-     * @param LoggerInterface $logger
+     * @param CpanelAPI               $cpanel_api
+     * @param DataStore               $data_store
+     * @param Psr\Log\LoggerInterface $logger
      */
     public function __construct(CpanelAPI $cpanel_api, DataStore $data_store, LoggerInterface $logger)
     {
@@ -30,10 +31,10 @@ class Partial
         $this->logger = $logger;
     }
 
-
     /**
      * @param $sub_domain
      * @param $domain_name
+     *
      * @return bool
      */
     public function partialZoneSet($sub_domain, $domain_name)
@@ -49,16 +50,18 @@ class Partial
             return false;
         }
 
-        if (strtoupper($sub_domain_dns_record->getType()) === "CNAME") {
+        if (strtoupper($sub_domain_dns_record->getType()) === 'CNAME') {
             return $this->provisionSubDomainCNAMERecord($sub_domain_dns_record);
-        } else if (strtoupper($sub_domain_dns_record->getType()) === "A") {
+        } elseif (strtoupper($sub_domain_dns_record->getType()) === 'A') {
             return $this->provisionSubDomainARecord($sub_domain_dns_record);
         }
+
         return false;
     }
 
     /**
      * @param $domainName
+     *
      * @return bool
      */
     public function removePartialZoneSet($domainName)
@@ -81,7 +84,7 @@ class Partial
         }
 
         foreach ($this->dns_record_list as $dnsRecord) {
-            if ($dnsRecord->getType() === "CNAME") {
+            if ($dnsRecord->getType() === 'CNAME') {
                 //if this domain is pointing at cloudflare revert it.
                 if ($dnsRecord->getContent() === $this->getForwardToValue($dnsRecord->getName())) {
                     $dnsRecord->setContent($this->domain_name);
@@ -91,6 +94,7 @@ class Partial
                 }
             }
         }
+
         return true;
     }
 
@@ -108,14 +112,13 @@ class Partial
             }
         }
 
-        $this->logger->error("Could not find '". $sub_domain ."' in the '" . $this->domain_name . "'. dns records.");
-        return null;
-    }
+        $this->logger->error("Could not find '".$sub_domain."' in the '".$this->domain_name."'. dns records.");
 
+        return;
+    }
 
     /**
      * @param $dnsRecordList
-     * @return null
      */
     public function getResolveToDNSRecord($dnsRecordList)
     {
@@ -126,13 +129,14 @@ class Partial
                 }
             }
         }
-        $this->logger->error("Could not find the '" . self::RESOLVE_TO_PREFIX . "' record for '" . $this->domain_name . "'.");
-        return null;
-    }
+        $this->logger->error("Could not find the '".self::RESOLVE_TO_PREFIX."' record for '".$this->domain_name."'.");
 
+        return;
+    }
 
     /**
      * @param $subDomainCNAMEDNSRecord
+     *
      * @return bool
      */
     private function provisionSubDomainCNAMERecord($subDomainCNAMEDNSRecord)
@@ -145,29 +149,33 @@ class Partial
                 //create CNAME cloudflare-resolve-to.[DOMAIN]. => [DOMAIN] if it doesn't exist.
                 return $this->createCNAMERecord($this->getResolveToValue($this->domain_name), $this->domain_name);
             }
+
             return true;
         }
+
         return false;
     }
 
     /**
      * @param $name
      * @param $cnameValue
+     *
      * @return bool
      */
     private function createCNAMERecord($name, $cnameValue)
     {
         $dnsRecord = new CpanelDNSRecord();
-        $dnsRecord->setType("CNAME");
+        $dnsRecord->setType('CNAME');
         $dnsRecord->setContent($cnameValue);
         $dnsRecord->setName($name);
         $dnsRecord->setTtl(1400);
+
         return $this->cpanel_api->addDNSRecord($this->domain_name, $dnsRecord);
     }
 
-
     /**
      * @param $subDomainDNSRecord
+     *
      * @return bool
      */
     private function provisionSubDomainARecord($subDomainDNSRecord)
@@ -181,6 +189,7 @@ class Partial
                 if ($this->getResolveToDNSRecord($this->dns_record_list) === null) {
                     return $this->createARecord($this->getResolveToValue($this->domain_name), $subDomainARecordIP);
                 }
+
                 return true;
             }
         }
@@ -191,20 +200,23 @@ class Partial
     /**
      * @param $name
      * @param $address
+     *
      * @return bool
      */
     private function createARecord($name, $address)
     {
         $dnsRecord = new CpanelDNSRecord();
-        $dnsRecord->setType("A");
+        $dnsRecord->setType('A');
         $dnsRecord->setContent($address);
         $dnsRecord->setName($name);
         $dnsRecord->setTtl(1400);
+
         return $this->cpanel_api->addDNSRecord($this->domain_name, $dnsRecord);
     }
 
     /**
      * @param $line
+     *
      * @return bool
      */
     private function removeDNSRecord($line)
@@ -215,26 +227,30 @@ class Partial
         if ($this->cpanel_api->removeDNSRecord($this->domain_name, $dnsRecord)) {
             //after we remove a dns record refresh the list since the line numbers have changed.
             $this->dns_record_list = $this->cpanel_api->getDNSRecords($this->domain_name);
+
             return true;
         }
+
         return false;
     }
 
     /**
      * @param $subDomain
+     *
      * @return string
      */
     public function getForwardToValue($subDomain)
     {
-        return $subDomain . self::FORWARD_TO_SUFFIX;
+        return $subDomain.self::FORWARD_TO_SUFFIX;
     }
 
     /**
      * @param $domainName
+     *
      * @return string
      */
     public function getResolveToValue($domainName)
     {
-        return self::RESOLVE_TO_PREFIX . $domainName . ".";
+        return self::RESOLVE_TO_PREFIX.$domainName.'.';
     }
 }
