@@ -2,20 +2,21 @@
 
 namespace CF\Cpanel\Test;
 
-use CF\API\Request;
 use CF\Cpanel\ClientActions;
-use CF\Cpanel\CpanelDNSRecord;
-use CF\Cpanel\CpanelIntegration;
+use CF\Integration\DefaultIntegration;
 
 class ClientActionsTest extends \PHPUnit_Framework_TestCase
 {
+    private $clientActions;
     private $mockClientAPI;
     private $mockConfig;
     private $mockCpanelAPI;
+    private $mockCpanalDNSRecord;
     private $mockDataStore;
     private $mockLogger;
     private $mockPartialZoneSet;
     private $mockCpanelIntegration;
+    private $mockRequest;
 
     public function setup()
     {
@@ -28,6 +29,9 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
             ->disableOriginalConstructor()
             ->getMock();
+        $this->mockCpanalDNSRecord = $this->getMockBuilder('CF\Cpanel\CpanelDNSRecord')
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->mockDataStore = $this->getMockBuilder('CF\Cpanel\DataStore')
             ->disableOriginalConstructor()
             ->getMock();
@@ -37,7 +41,12 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockPartialZoneSet = $this->getMockBuilder('CF\Cpanel\Zone\Partial')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelIntegration = new CpanelIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
+        $this->mockRequest = $this->getMockBuilder('CF\API\Request')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
+        $this->clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $this->mockRequest);
+        $this->clientActions->setPartialZoneSet($this->mockPartialZoneSet);
     }
 
     public function testMergeCpanelAndCFDomainsMergesCpanelMainDomains()
@@ -47,9 +56,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $addonDomain = array('testaddon.com');
         $parkedDomain = array('testparked.com');
         $subDomain = array('testsub.com');
-        $request = new Request(null, null, null, null);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
                 'main_domain' => $mainDomain,
@@ -60,7 +67,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
-        $response = $clientActions->mergeCpanelAndCFDomains();
+        $response = $this->clientActions->mergeCpanelAndCFDomains();
 
         $this->assertEquals($status, $response['result'][0]['status']);
         $this->assertEquals($mainDomain, $response['result'][0]['name']);
@@ -78,9 +85,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $addonDomain = array();
         $parkedDomain = array();
         $subDomain = array();
-        $request = new Request(null, null, null, null);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
                 'main_domain' => $mainDomain,
@@ -91,7 +96,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
-        $response = $clientActions->mergeCpanelAndCFDomains();
+        $response = $this->clientActions->mergeCpanelAndCFDomains();
 
         $this->assertEquals($mainDomain, $response['result'][0]['name']);
         $this->assertEquals($status, $response['result'][0]['status']);
@@ -102,9 +107,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
     {
         $mainDomain = 'testmain.com';
         $status = 'active';
-        $request = new Request(null, null, null, null);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
                 'main_domain' => $mainDomain,
@@ -122,7 +125,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
                 ),
             )
         );
-        $response = $clientActions->mergeCpanelAndCFDomains();
+        $response = $this->clientActions->mergeCpanelAndCFDomains();
 
         $this->assertEquals($mainDomain, $response['result'][0]['name']);
         $this->assertEquals($status, $response['result'][0]['status']);
@@ -132,26 +135,20 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
     public function testCreateDNSRecordReturnsErrorIfPartialZoneSetFails()
     {
         $error = 'error';
-        $request = new Request(null, null, null, null);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
-        $clientActions->setPartialZoneSet($this->mockPartialZoneSet);
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockPartialZoneSet->method('getResolveToDNSRecord')->willReturn(true);
         $this->mockPartialZoneSet->method('partialZoneSet')->willReturn(false);
         $this->mockClientAPI->method('createAPIError')->willReturn($error);
 
-        $response = $clientActions->createDNSRecord();
+        $response = $this->clientActions->createDNSRecord();
         $this->assertEquals($error, $response);
     }
 
     public function testDeleteZoneReturnsErrorIfRemovePartialZoneSetFails()
     {
         $error = 'error';
-        $request = new Request(null, 'zones/:id', null, null);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
-        $clientActions->setPartialZoneSet($this->mockPartialZoneSet);
         $this->mockClientAPI->method('zoneGetDetails')->willReturn(
             array(
                 'result' => array(
@@ -164,7 +161,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockPartialZoneSet->method('removePartialZoneSet')->willReturn(false);
         $this->mockClientAPI->method('createAPIError')->willReturn($error);
 
-        $response = $clientActions->deleteZone();
+        $response = $this->clientActions->deleteZone();
         $this->assertEquals($error, $response);
     }
 
@@ -172,19 +169,18 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
     {
         $cname = 'cname';
         $name = 'test.com';
-        $cpanelDNSRecord = new CpanelDNSRecord();
-        $cpanelDNSRecord->setType($cname);
-        $cpanelDNSRecord->setName($name);
 
-        $request = new Request(null, 'zones/:id', null, null);
+        $this->mockCpanalDNSRecord->method('getType')->willReturn($cname);
+        $this->mockCpanalDNSRecord->method('getName')->willReturn($name);
 
-        $clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $request);
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
-        $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($cpanelDNSRecord));
+        $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
 
-        $response = $clientActions->mergeDNSRecords();
+        $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');
+
+        $response = $this->clientActions->mergeDNSRecords();
 
         $this->assertEquals($cname, $response['result'][0]['type']);
     }

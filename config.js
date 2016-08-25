@@ -15,10 +15,11 @@
     "featureManagerIsSecurityLevelEnabled": true,
     "featureManagerIsSSLEnabled": false,
     "useHostAPILogin": true,
-    "homePageCards": ["DNSManagementPage"],
+    "isDNSPageEnabled": true,
+    "homePageCards": ["AlwaysOnlineCard", "IPV6Card", "CacheLevelCard","RailgunCard","PurgeCacheCard"],
     "moreSettingsCards": {
         "container.moresettings.security": ["SecurityLevelCard", "ChallengePassageCard", "BrowserIntegrityCheckCard"],
-        "container.moresettings.speed": ["AlwaysOnlineCard", "IPV6Card", "CacheLevelCard", "MinifyCard", "RailgunCard", "DevelopmentModeCard", "BrowserCacheTTLCard", "PurgeCacheCard"]
+        "container.moresettings.speed": ["MinifyCard", "DevelopmentModeCard", "BrowserCacheTTLCard"]
     },
     "locale": "en",
     "integrationName": "cpanel",
