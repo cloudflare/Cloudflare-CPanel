@@ -3,8 +3,8 @@
 namespace CF\Cpanel\Test;
 
 use CF\API\Request;
-use CF\Cpanel\CpanelIntegration;
 use CF\Cpanel\HostActions;
+use CF\Integration\DefaultIntegration;
 
 class HostActionsTest extends \PHPUnit_Framework_TestCase
 {
@@ -36,7 +36,7 @@ class HostActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockPartialZoneSet = $this->getMockBuilder('CF\Cpanel\Zone\Partial')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelIntegration = new CpanelIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
+        $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
     }
 
     public function testPartialZoneSetReturnsErrorIfItFails() {
