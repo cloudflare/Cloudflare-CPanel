@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.6](#6.0.6) - 2016-08-25
+
+## Fixed
+- [@Kurounin](https://github.com/Kurounin) and [@uncleVALERA](https://github.com/uncleVALERA) fixed cloudflare_update.sh which broke in cPanel 58 due to a permissions issue. [#109](https://github.com/cloudflare/CloudFlare-CPanel/pull/109)
+- Fixed bug in signup which caused the user not to be redirected to the plugin on successful account create. [#103](https://github.com/cloudflare/CloudFlare-CPanel/pull/103)
+- Fixed bug which caused curl requests on install/update to not validate the certificate. [#106](https://github.com/cloudflare/CloudFlare-CPanel/pull/106)
+
 ## [6.0.5](#6.0.5) - 2016-07-29
 ## Changed
 - Changed Provisioning to check if Advance Zone Editor is enabled. [#100](https://github.com/cloudflare/CloudFlare-CPanel/pull/100)
