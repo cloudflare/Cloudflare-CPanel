@@ -115,10 +115,10 @@ if [ "$LOCAL_FILE_PATH" = "" ]; then
     DOWNLOAD_URL="https://github.com/cloudflare/CloudFlare-CPanel/archive/v$LATEST_VERSION.tar.gz"
 
     if [ "$VERBOSE" = true ]; then
-        echo "curl -skL $DOWNLOAD_URL | tar xfz -"
+        echo "curl -sL $DOWNLOAD_URL | tar xfz -"
     fi
 
-    curl -skL $DOWNLOAD_URL | tar xzf -
+    curl -sL $DOWNLOAD_URL | tar xzf -
 
     # We could check for extract errors here, but the directory check outside
     # the if statement will take care of this
