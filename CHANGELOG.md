@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.7](#6.0.7) - 2016-09-07
+
+## Removed
+- [cloudflare/cloudflare-frontend](https://github.com/cloudflare/CloudFlare-Frontend) upgraded to 2.4.0 to remove zone scan card. [#110](https://github.com/cloudflare/CloudFlare-CPanel/pull/110)
+
 ## [6.0.6](#6.0.6) - 2016-08-25
 
 ## Fixed
