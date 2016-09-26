@@ -2,7 +2,7 @@
   "name": "cloudflare/cloudflare-cpanel",
   "description": "A CloudFlare plugin for CPanel",
   "license": "BSD-3-Clause",
-  "version": "6.0.7",
+  "version": "6.0.8",
   "homepage": "https://github.com/cloudflare/CloudFlare-CPanel",
   "scripts": {
     "test": "vendor/bin/phpunit",
