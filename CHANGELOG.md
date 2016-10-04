@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.0.9](#6.0.9) - 2016-10-04
+
+## Fixed
+- Updated stylesheets/components.css to a fix bug which caused the options for the active zone selector to be hidden. [#112](https://github.com/cloudflare/CloudFlare-CPanel/pull/112)
+
 ## [6.0.8](#6.0.8) - 2016-09-26
 
 ## Fixed
