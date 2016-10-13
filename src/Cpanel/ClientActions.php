@@ -158,7 +158,7 @@ class ClientActions
                 $domain_name = $zone_get_details_response['result']['name'];
                 if ($domain_name !== null) {
                     if ($this->partialZoneSet->removePartialZoneSet($domain_name) === false) {
-                        return $this->api->createAPIError("CPanel was unable to update the DNS records for '".$domain_name."' to no longer point at CloudFlare.  Please contact your host.");
+                        return $this->api->createAPIError("CPanel was unable to update the DNS records for '".$domain_name."' to no longer point at Cloudflare.  Please contact your host.");
                     }
                 }
             }
@@ -208,7 +208,7 @@ class ClientActions
         }
 
         foreach ($cpanel_dns_record_list as $cpanel_dns_record) {
-            //if the record a type CloudFlare can proxy
+            //if the record a type Cloudflare can proxy
             if (!in_array(strtoupper($cpanel_dns_record->getType()), CpanelDNSRecord::$DNS_RECORDS_CF_CANNOT_PROXY)) {
                 //if the cpanel record isn't in the array, add it.
                 if (!in_array($cpanel_dns_record->getName(), $cf_dns_record_name_list)) {
