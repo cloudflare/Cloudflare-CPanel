@@ -195,9 +195,13 @@ class ClientActions
             return $this->api->createAPIError("Error getting the DNS records for '".$domain_name."' from Cpanel.");
         }
 
+        $cf_dns_record_name_list = array($this->partialZoneSet->getResolveToValue($domain_name));
+
         //The user cant provision the root domain or the resolve to record so we add them to the name list to prevent them
         //from being added when we loop through the cpanel DNS records
-        $cf_dns_record_name_list = array($domain_name.'.', $this->partialZoneSet->getResolveToValue($domain_name));
+        if ($this->partialZoneSet->getResolveToDNSRecord($cpanel_dns_record_list) !== null) {
+            array_push($cf_dns_record_name_list, $domain_name.'.');
+        }
 
         foreach ($cf_dns_record_list['result'] as $key => $cf_dns_record) {
             //add trailing dot to cf dns record names
