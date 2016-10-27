@@ -184,4 +184,66 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($cname, $response['result'][0]['type']);
     }
+
+    public function testMergeDNSRecordsReturnsRootDomainWhenFullProvisioned()
+    {
+        $type = 'A';
+        $rootdomain = 'rootdomain.com';
+
+        $this->mockPartialZoneSet->method('getResolveToDNSRecord')->willReturn(null);
+        $this->mockPartialZoneSet->method('getResolveToValue')->willReturn('resolve.to.'.$rootdomain);
+
+        $this->mockClientAPI->method('zoneGetDetails')->willReturn(
+            array(
+                'result' => array(
+                    'name' => $rootdomain,
+                ),
+            )
+        );
+
+        $this->mockCpanalDNSRecord->method('getType')->willReturn($type);
+        $this->mockCpanalDNSRecord->method('getName')->willReturn($rootdomain.'.');
+
+        $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
+        $this->mockClientAPI->method('responseOk')->willReturn(true);
+        $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
+        $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
+
+        $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');
+
+        $response = $this->clientActions->mergeDNSRecords();
+
+        $this->assertEquals($rootdomain.'.', $response['result'][0]['name']);
+    }
+
+    public function testMergeDNSRecordsReturnsRootDomainWhenNotFullProvisioned()
+    {
+        $type = 'A';
+        $rootdomain = 'rootdomain.com';
+
+        $this->mockPartialZoneSet->method('getResolveToDNSRecord')->willReturn('notnull');
+        $this->mockPartialZoneSet->method('getResolveToValue')->willReturn('resolve.to.'.$rootdomain);
+
+        $this->mockClientAPI->method('zoneGetDetails')->willReturn(
+            array(
+                'result' => array(
+                    'name' => $rootdomain,
+                ),
+            )
+        );
+
+        $this->mockCpanalDNSRecord->method('getType')->willReturn($type);
+        $this->mockCpanalDNSRecord->method('getName')->willReturn($rootdomain.'.');
+
+        $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
+        $this->mockClientAPI->method('responseOk')->willReturn(true);
+        $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
+        $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
+
+        $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');
+
+        $response = $this->clientActions->mergeDNSRecords();
+
+        $this->assertEquals(array(), $response['result']);
+    }
 }
