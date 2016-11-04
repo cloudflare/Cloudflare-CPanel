@@ -9,29 +9,6 @@
     margin-top: 0px; 
 }
 
-/* fix app navigation bar */
-.cloudflare-partners .app-navigation-tabs-wrapper {
-    padding: 2rem 0 1rem 0;
-    background-color: #FFF;
-}
-
-/* fix active zone selector */
-.cloudflare-partners .active-zone-selector__multiplezone {
-    margin: 0.4rem auto 0;
-}
-
-/* fix active zone selector */
-.cloudflare-partners .active-zone-selector__singlezone {
-    margin: 1.3rem auto 0;
-}
-
-/* fix under attack button component */
-.cloudflare-partners .under-attack-button {
-    font-size: 75%;
-    padding: 1.3rem 2rem 0.5rem 0.5rem;
-    text-align: right;   
-}
-
 /* fix Cpanel Plugin title */
 span#pageHeading {
     display: block;
