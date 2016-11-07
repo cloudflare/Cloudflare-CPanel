@@ -4,6 +4,11 @@
  * everything here.
  */
 
+/* fix CF Card title */
+.cloudflare-partners .cf-card__title {
+    margin-top: 0px; 
+}
+
 /* fix Cpanel Plugin title */
 span#pageHeading {
     display: block;
