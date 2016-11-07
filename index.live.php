@@ -38,7 +38,7 @@ $stylesheetsAndMetaTags = '
     <link rel="stylesheet" href="./stylesheets/hacks.css" media="screen,projection" charset="utf-8"/>';
 
 //add our custom styles before the </head> ¯\_(ツ)_/¯
-$cpanelHeader = str_replace('</head>', $stylesheetsAndMetaTags.'</head>', $cpanel->header('CloudFlare'));
+$cpanelHeader = str_replace('</head>', $stylesheetsAndMetaTags.'</head>', $cpanel->header('Cloudflare'));
 echo $cpanelHeader;
 ?>
 <script>
