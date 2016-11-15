@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.0](#6.1.0) - 2016-11-08
+
+## Changed
+- Updated Logo [#113](https://github.com/cloudflare/Cloudflare-CPanel/pull/113)
+- Changed CPanel UI to look more like cloudflare.com UI. [#116](https://github.com/cloudflare/Cloudflare-CPanel/pull/116)
+
+## Fixed
+- Fixed a bug where root domain was not shown in DNS Management tab. [#115](https://github.com/cloudflare/Cloudflare-CPanel/pull/115)
+
 ## [6.0.9](#6.0.9) - 2016-10-04
 
 ## Fixed
