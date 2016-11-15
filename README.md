@@ -22,7 +22,7 @@ The English localization will always be up to date and is located at `config/en.
 plan to support more languages by default but if you would like to localize the plugin in your language
 in the mean time follow these steps:
 
-1. Copy `config/en.js` as `config/[LANGUAGE CODE].js` and translate it.
+1. Copy `lang/en.js` as `lang/[LANGUAGE CODE].js` and translate it.
 2. Edit `config.js` and set `"locale": "[LANGUAGE CODE]"` using the same language code from step 1.
 
 ## Full Zone Provisioning
