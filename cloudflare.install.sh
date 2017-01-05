@@ -134,10 +134,10 @@ else
         exit 1
     fi
 
-    # We expect the file to be named like so: 'CloudFlare-CPanel-$LATEST_VERSION.tar.gz'
-    # for example CloudFlare-CPanel-1.2.3.tar.gz
+    # We expect the file to be named like so: 'Cloudflare-CPanel-$LATEST_VERSION.tar.gz'
+    # for example Cloudflare-CPanel-1.2.3.tar.gz
     FNAME=$(basename "$LOCAL_FILE_PATH");
-    LATEST_VERSION=$(echo -n "$FNAME" | sed 's/^CloudFlare-CPanel-//' | sed 's/.tar.gz//')
+    LATEST_VERSION=$(echo -n "$FNAME" | sed 's/^Cloudflare-CPanel-//' | sed 's/.tar.gz//')
 
     if [ "$VERBOSE" = true ]; then
         echo "LATEST_VERSION - '$LATEST_VERSION'"
@@ -152,14 +152,14 @@ else
 fi
 
 # Make sure that the tar directory got created correctly. We expect a directory
-# name something like this: CloudFlare-CPanel-$LATEST_VERSION/cloudflare
+# name something like this: Cloudflare-CPanel-$LATEST_VERSION/cloudflare
 
-if [ ! -d "CloudFlare-CPanel-$LATEST_VERSION" ]; then
-    echo "ERROR - Unpack failed, directory not found: 'CloudFlare-CPanel-$LATEST_VERSION'"
+if [ ! -d "Cloudflare-CPanel-$LATEST_VERSION" ]; then
+    echo "ERROR - Unpack failed, directory not found: 'Cloudflare-CPanel-$LATEST_VERSION'"
     exit 1
 fi
 
-SOURCE_DIR="CloudFlare-CPanel-$LATEST_VERSION"
+SOURCE_DIR="Cloudflare-CPanel-$LATEST_VERSION"
 INSTALL_DIR="/usr/local/cpanel"
 
 if [ "$VERBOSE" = true ]; then
