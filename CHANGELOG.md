@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.1](#6.1.1) - 2017-01-06
+
+## Fixed
+- [Wundark](https://github.com/Wundark) fixed install script to check for Cloudflare-Cpanel-x.x.x.tar.gz (lowercase f) which broke after the Cloudflare rebranding. [#120](https://github.com/cloudflare/Cloudflare-CPanel/pull/120)
+
 ## [6.1.0](#6.1.0) - 2016-11-08
 
 ## Changed

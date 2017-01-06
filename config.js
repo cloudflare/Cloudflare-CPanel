@@ -6,7 +6,7 @@
     "featureManagerIsCacheLevelEnabled": true,
     "featureManagerIsChallengePassageEnabled": true,
     "featureManagerIsDevelopmentModeEnabled": true,
-    "featureManagerIsFullZoneProvisioningEnabled": false,
+    "featureManagerIsFullZoneProvisioningEnabled": true,
     "featureManagerIsIpv6Enabled": true,
     "featureManagerIsMinifyEnabled": true,
     "featureManagerIsPurgeCacheEnabled": true,
@@ -23,5 +23,5 @@
     },
     "locale": "en",
     "integrationName": "cpanel",
-    "version": "6.1.0"
+    "version": "6.1.1"
 }
