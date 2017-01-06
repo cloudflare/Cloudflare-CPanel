@@ -30,4 +30,4 @@ if [ "$cfonupgrade" != "" ]; then
 	sed -i '/cloudflare_update.sh/d' /scripts/postupcp
 fi
 
-echo "CloudFlare cPanel plugin has been uninstalled."
+echo "Cloudflare cPanel plugin has been uninstalled."
