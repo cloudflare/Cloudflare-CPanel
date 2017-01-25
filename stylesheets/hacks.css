@@ -58,6 +58,7 @@ body, .cloudflare-partners .wrapper {
 /* center cf-component-toggle in cards */
 label.cf-toggle {
     margin: 0 auto;
+    font-size: 10px;
 }
 
 /* align checkbox/radios */
@@ -97,6 +98,37 @@ label.cf-toggle {
 label.proxy input {
     display: none;
 }
+
+/* Start login page */
+#cf-login-page {
+    max-width: 400px;
+    margin: 0 auto;
+}
+#cf-login-page form {
+    margin-bottom: 20px;
+}
+
+#cf-login-page h3 {
+    text-align: center;
+}
+
+#cf-login-page .cf-form__fieldset_content {
+    background-color: #FFF;
+    border-color: #FFF;
+}
+
+#cf-login-page legend {
+    display: none;
+}
+
+#cf-login-page .cf-layout__row {
+    margin-top:15px;
+}
+
+#cf-login-page .cf-layout__column {
+    text-align: center;
+}
+/* End login page */
 
 /* cf-component-select */
 /**
