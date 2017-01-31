@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.2](#6.1.2) - 2017-01-31
+
+## Changed
+- cPanel defaults to the domain page now
+
+## Fixed
+- Fixed bug which caused errors not to be propogated back to the frontend. [cd649a0854b9dc099898db6d67ab3cc3e524b4a5](https://github.com/cloudflare/Cloudflare-CPanel/commit/cd649a0854b9dc099898db6d67ab3cc3e524b4a5)
+
 ## [6.1.1](#6.1.1) - 2017-01-06
 
 ## Fixed
