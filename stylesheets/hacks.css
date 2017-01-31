@@ -76,6 +76,11 @@ label.cf-toggle {
     margin-left: 0;
 }
 
+/* Fix black fill in Analytics */
+.c3-chart {
+    fill: transparent;
+}
+
 /* More space between radio/checkbox and text */
 
 .cloudflare-partners input[type="radio"], .cloudflare-partners input[type="checkbox"] {
