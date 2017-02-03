@@ -13,7 +13,7 @@
   },
   "require": {
     "symfony/yaml": "~2.6",
-    "guzzlehttp/guzzle": "~5.0",
+    "guzzle/guzzle": "~3.9",
     "cloudflare/cloudflare-plugin-backend": "^1.0"
   },
   "require-dev": {
