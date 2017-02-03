@@ -4,12 +4,8 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
+class ComposerStaticInitf73f2770c6690e097e83734dd063cce6
 {
-    public static $files = array (
-        'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
-    );
-
     public static $prefixLengthsPsr4 = array (
         'p' => 
         array (
@@ -22,16 +18,11 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         'S' => 
         array (
             'Symfony\\Component\\Yaml\\' => 23,
+            'Symfony\\Component\\EventDispatcher\\' => 34,
         ),
-        'R' => 
+        'P' => 
         array (
-            'React\\Promise\\' => 14,
-        ),
-        'G' => 
-        array (
-            'GuzzleHttp\\Stream\\' => 18,
-            'GuzzleHttp\\Ring\\' => 16,
-            'GuzzleHttp\\' => 11,
+            'Psr\\Log\\' => 8,
         ),
         'D' => 
         array (
@@ -58,21 +49,13 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-        'React\\Promise\\' => 
+        'Symfony\\Component\\EventDispatcher\\' => 
         array (
-            0 => __DIR__ . '/..' . '/react/promise/src',
+            0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
         ),
-        'GuzzleHttp\\Stream\\' => 
+        'Psr\\Log\\' => 
         array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/streams/src',
-        ),
-        'GuzzleHttp\\Ring\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/ringphp/src',
-        ),
-        'GuzzleHttp\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+            0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
         ),
         'Doctrine\\Instantiator\\' => 
         array (
@@ -88,13 +71,20 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
     public static $prefixesPsr0 = array (
         'P' => 
         array (
-            'Psr\\Log\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/psr/log',
-            ),
             'Prophecy\\' => 
             array (
                 0 => __DIR__ . '/..' . '/phpspec/prophecy/src',
+            ),
+        ),
+        'G' => 
+        array (
+            'Guzzle\\Tests' => 
+            array (
+                0 => __DIR__ . '/..' . '/guzzle/guzzle/tests',
+            ),
+            'Guzzle' => 
+            array (
+                0 => __DIR__ . '/..' . '/guzzle/guzzle/src',
             ),
         ),
     );
@@ -106,6 +96,7 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         'Generic_Sniffs_Arrays_DisallowLongArraySyntaxSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/Arrays/DisallowLongArraySyntaxSniff.php',
         'Generic_Sniffs_Arrays_DisallowShortArraySyntaxSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/Arrays/DisallowShortArraySyntaxSniff.php',
         'Generic_Sniffs_Classes_DuplicateClassNameSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/Classes/DuplicateClassNameSniff.php',
+        'Generic_Sniffs_Classes_OpeningBraceSameLineSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/Classes/OpeningBraceSameLineSniff.php',
         'Generic_Sniffs_CodeAnalysis_EmptyStatementSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/CodeAnalysis/EmptyStatementSniff.php',
         'Generic_Sniffs_CodeAnalysis_ForLoopShouldBeWhileLoopSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/CodeAnalysis/ForLoopShouldBeWhileLoopSniff.php',
         'Generic_Sniffs_CodeAnalysis_ForLoopWithTestFunctionCallSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/CodeAnalysis/ForLoopWithTestFunctionCallSniff.php',
@@ -145,9 +136,11 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         'Generic_Sniffs_NamingConventions_CamelCapsFunctionNameSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/NamingConventions/CamelCapsFunctionNameSniff.php',
         'Generic_Sniffs_NamingConventions_ConstructorNameSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/NamingConventions/ConstructorNameSniff.php',
         'Generic_Sniffs_NamingConventions_UpperCaseConstantNameSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/NamingConventions/UpperCaseConstantNameSniff.php',
+        'Generic_Sniffs_PHP_BacktickOperatorSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/BacktickOperatorSniff.php',
         'Generic_Sniffs_PHP_CharacterBeforePHPOpeningTagSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/CharacterBeforePHPOpeningTagSniff.php',
         'Generic_Sniffs_PHP_ClosingPHPTagSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/ClosingPHPTagSniff.php',
         'Generic_Sniffs_PHP_DeprecatedFunctionsSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/DeprecatedFunctionsSniff.php',
+        'Generic_Sniffs_PHP_DisallowAlternativePHPTagsSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/DisallowAlternativePHPTagsSniff.php',
         'Generic_Sniffs_PHP_DisallowShortOpenTagSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/DisallowShortOpenTagSniff.php',
         'Generic_Sniffs_PHP_ForbiddenFunctionsSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/ForbiddenFunctionsSniff.php',
         'Generic_Sniffs_PHP_LowerCaseConstantSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/Generic/Sniffs/PHP/LowerCaseConstantSniff.php',
@@ -597,6 +590,7 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         'PHP_Token_STRING' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_STRING_CAST' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_STRING_VARNAME' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'PHP_Token_SUPER' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_SWITCH' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_Stream' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token/Stream.php',
         'PHP_Token_Stream_CachingFactory' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token/Stream/CachingFactory.php',
@@ -611,6 +605,7 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
         'PHP_Token_UNSET' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_UNSET_CAST' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_USE' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'PHP_Token_USE_FUNCTION' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_VAR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_VARIABLE' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_WHERE' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
@@ -788,10 +783,10 @@ class ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitb3afba8d614ff1f43cdd7aeb18613292::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$classMap;
 
         }, null, ClassLoader::class);
     }

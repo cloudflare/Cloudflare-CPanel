@@ -3,8 +3,8 @@
 namespace CF\API;
 
 use CF\Integration\IntegrationInterface;
-use GuzzleHttp;
-use GuzzleHttp\Exception\RequestException;
+use Guzzle\Http\Client;
+use Guzzle\Http\Exception\BadResponseException;
 
 abstract class AbstractAPIClient implements APIInterface
 {
@@ -35,36 +35,61 @@ abstract class AbstractAPIClient implements APIInterface
     public function callAPI(Request $request)
     {
         try {
-            $client = new GuzzleHttp\Client(['base_url' => $this->getEndpoint()]);
+            $client = new Client($this->getEndpoint());
 
             $request = $this->beforeSend($request);
 
-            $bodyType = (($request->getHeaders()[self::CONTENT_TYPE_KEY] === self::APPLICATION_JSON_KEY) ? 'json' : 'body');
+            $method = $request->getMethod();
+            $params = $request->getParameters();
 
-            $requestOptions = array(
-                'headers' => $request->getHeaders(),
-                'query' => $request->getParameters(),
-                $bodyType => $request->getBody(),
-            );
+            $mergedResponse = null;
 
-            if ($this->config->getValue('debug')) {
-                $requestOptions['debug'] = fopen('php://stderr', 'w');
+            $currentPage = 1;
+            $totalPages = 1;
+
+            while ($totalPages >= $currentPage) {
+                $apiRequest = $client->createRequest($method, $request->getUrl(), $request->getHeaders(), $request->getBody(), array());
+
+                // Enable pagination
+                if ($method === 'GET') {
+                    $params['page'] = $currentPage;
+                }
+
+                // Assign parameters
+                $query = $apiRequest->getQuery();
+                foreach ($params as $key => $value) {
+                    $query->set($key, $value);
+                }
+
+                // Since Guzzle automatically overwrites a new header when the request
+                // is POST / PATCH / DELETE / PUT, we need to overwrite the Content-Type header
+                // with setBody() function.
+                if ($method !== 'GET') {
+                    $apiRequest->setBody(json_encode($request->getBody()), 'application/json');
+                }
+
+                $response = $client->send($apiRequest)->json();
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new BadResponseException('Error decoding client API JSON', $response);
+                }
+
+                if (!$this->responseOk($response)) {
+                    $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'body' => $response), true);
+                }
+
+                if (isset($response['result_info'])) {
+                    $totalPages = $response['result_info']['total_pages'];
+                    $mergedResponse = $this->mergeResponses($mergedResponse, $response);
+                } else {
+                    $mergedResponse = $response;
+                }
+
+                $currentPage += 1;
             }
 
-            $apiRequest = $client->createRequest($request->getMethod(), $request->getUrl(), $requestOptions);
-
-            $response = $client->send($apiRequest)->json();
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new RequestException('Error decoding client API JSON', $response);
-            }
-
-            if (!$this->responseOk($response)) {
-                $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'body' => $response), true);
-            }
-
-            return $response;
-        } catch (RequestException $e) {
+            return $mergedResponse;
+        } catch (BadResponseException $e) {
             $errorMessage = $this->getErrorMessage($e);
 
             $this->logAPICall($this->getAPIClientName(), array(
@@ -74,18 +99,34 @@ abstract class AbstractAPIClient implements APIInterface
                 'headers' => $request->getHeaders(),
                 'params' => $request->getParameters(),
                 'body' => $request->getBody(), ), true);
-            $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'code' => $e->getCode(), 'body' => $errorMessage, 'stacktrace' => $e->getTraceAsString()), true);
+            $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'reason' => $e->getResponse()->getReasonPhrase(), 'code' => $e->getResponse()->getStatusCode(), 'body' => $errorMessage, 'stacktrace' => $e->getTraceAsString()), true);
 
             return $this->createAPIError($errorMessage);
         }
     }
 
+    public function mergeResponses($mergedResponse, $response)
+    {
+        if (!isset($mergedResponse)) {
+            $mergedResponse = $response;
+        } else {
+            $mergedResponse['result'] = array_merge($mergedResponse['result'], $response['result']);
+
+            // Notify the frontend that pagination is taken care.
+            $mergedResponse['result_info']['notify'] = 'Backend has taken care of pagination. Ouput is merged in results.';
+            $mergedResponse['result_info']['page'] = -1;
+            $mergedResponse['result_info']['count'] = -1;
+        }
+
+        return $mergedResponse;
+    }
+
     /**
-     * @param RequestException $object
+     * @param BadResponseException $object
      *
      * @return string
      */
-    public function getErrorMessage(RequestException $error)
+    public function getErrorMessage(BadResponseException $error)
     {
         return $error->getMessage();
     }
@@ -111,6 +152,7 @@ abstract class AbstractAPIClient implements APIInterface
 
     /**
      * @param Request $request
+     *
      * @return string
      */
     public function getPath(Request $request)
@@ -119,8 +161,9 @@ abstract class AbstractAPIClient implements APIInterface
         return substr($request->getUrl(), strpos($request->getUrl(), $this->getEndpoint()) + strlen($this->getEndpoint()));
     }
 
-    function shouldRouteRequest(Request $request) {
-        return (strpos($request->getUrl(), $this->getEndpoint()) !== false);
+    public function shouldRouteRequest(Request $request)
+    {
+        return strpos($request->getUrl(), $this->getEndpoint()) !== false;
     }
 
     /**

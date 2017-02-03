@@ -12,13 +12,21 @@ class Plugin extends Client
     const SETTING_IP_REWRITE = 'ip_rewrite';
     const SETTING_PROTOCOL_REWRITE = 'protocol_rewrite';
     const SETTING_PLUGIN_SPECIFIC_CACHE = 'plugin_specific_cache';
+    const SETTING_PLUGIN_SPECIFIC_CACHE_TAG = 'plugin_specific_cache_tag';
 
-    public static function getPluginSettingsKeys() {
+    const SETTING_ID_KEY = 'id';
+    const SETTING_VALUE_KEY = 'value';
+    const SETTING_EDITABLE_KEY = 'editable';
+    const SETTING_MODIFIED_DATE_KEY = 'modified_on';
+
+    public static function getPluginSettingsKeys()
+    {
         return array(
             self::SETTING_DEFAULT_SETTINGS,
             self::SETTING_IP_REWRITE,
             self::SETTING_PROTOCOL_REWRITE,
-            self::SETTING_PLUGIN_SPECIFIC_CACHE
+            self::SETTING_PLUGIN_SPECIFIC_CACHE,
+            self::SETTING_PLUGIN_SPECIFIC_CACHE_TAG,
         );
     }
 
@@ -45,8 +53,6 @@ class Plugin extends Client
      */
     public function callAPI(Request $request)
     {
-        $this->logger->error('CF\\Wordpress\\API\\Plugin\\callAPI should never be called');
-
         return $this->createAPIError('The url: '.$request->getUrl().' is not a valid path.');
     }
 
@@ -55,18 +61,32 @@ class Plugin extends Client
         return array(
             'success' => true,
             'result' => $result,
-            'messages' => [],
-            'errors' => [],
+            'messages' => array(),
+            'errors' => array(),
         );
     }
 
-    public function createPluginResult($id, $value, $editable, $modified_on)
+    /**
+     * @param $pluginSettingKey
+     * @param $value
+     * @param $editable
+     * @param $modified_on
+     *
+     * @return array
+     */
+    public function createPluginSettingObject($pluginSettingKey, $value, $editable, $modified_on)
     {
+        //allow null for settings that have never been set
+        if ($modified_on !== null) {
+            // Format ISO 8601
+            $modified_on = date('c');
+        }
+
         return array(
-            'id' => $id,
-            'value' => $value,
-            'editable' => $editable,
-            'modified_on' => $modified_on,
+            self::SETTING_ID_KEY => $pluginSettingKey,
+            self::SETTING_VALUE_KEY => $value,
+            self::SETTING_EDITABLE_KEY => $editable,
+            self::SETTING_MODIFIED_DATE_KEY => $modified_on,
         );
     }
 }

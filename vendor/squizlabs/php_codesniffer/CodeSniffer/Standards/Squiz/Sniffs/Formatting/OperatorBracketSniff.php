@@ -109,6 +109,43 @@ class Squiz_Sniffs_Formatting_OperatorBracketSniff implements PHP_CodeSniffer_Sn
             }
         }//end if
 
+        $previousToken = $phpcsFile->findPrevious(T_WHITESPACE, ($stackPtr - 1), null, true, null, true);
+        if ($previousToken !== false) {
+            // A list of tokens that indicate that the token is not
+            // part of an arithmetic operation.
+            $invalidTokens = array(
+                              T_COMMA,
+                              T_COLON,
+                              T_OPEN_PARENTHESIS,
+                              T_OPEN_SQUARE_BRACKET,
+                              T_OPEN_SHORT_ARRAY,
+                              T_CASE,
+                             );
+
+            if (in_array($tokens[$previousToken]['code'], $invalidTokens) === true) {
+                return;
+            }
+        }
+
+        // Tokens that are allowed inside a bracketed operation.
+        $allowed = array(
+                    T_VARIABLE,
+                    T_LNUMBER,
+                    T_DNUMBER,
+                    T_STRING,
+                    T_WHITESPACE,
+                    T_THIS,
+                    T_SELF,
+                    T_OBJECT_OPERATOR,
+                    T_DOUBLE_COLON,
+                    T_OPEN_SQUARE_BRACKET,
+                    T_CLOSE_SQUARE_BRACKET,
+                    T_MODULUS,
+                    T_NONE,
+                   );
+
+        $allowed += PHP_CodeSniffer_Tokens::$operators;
+
         $lastBracket = false;
         if (isset($tokens[$stackPtr]['nested_parenthesis']) === true) {
             $parenthesis = array_reverse($tokens[$stackPtr]['nested_parenthesis'], true);
@@ -123,23 +160,8 @@ class Squiz_Sniffs_Formatting_OperatorBracketSniff implements PHP_CodeSniffer_Sn
                 }
 
                 if ($prevCode === T_STRING || $prevCode === T_SWITCH) {
-                    // We allow very simple operations to not be bracketed.
+                    // We allow simple operations to not be bracketed.
                     // For example, ceil($one / $two).
-                    $allowed = array(
-                                T_VARIABLE,
-                                T_LNUMBER,
-                                T_DNUMBER,
-                                T_STRING,
-                                T_WHITESPACE,
-                                T_THIS,
-                                T_SELF,
-                                T_OBJECT_OPERATOR,
-                                T_DOUBLE_COLON,
-                                T_OPEN_SQUARE_BRACKET,
-                                T_CLOSE_SQUARE_BRACKET,
-                                T_MODULUS,
-                               );
-
                     for ($prev = ($stackPtr - 1); $prev > $bracket; $prev--) {
                         if (in_array($tokens[$prev]['code'], $allowed) === true) {
                             continue;
@@ -197,25 +219,8 @@ class Squiz_Sniffs_Formatting_OperatorBracketSniff implements PHP_CodeSniffer_Sn
 
         if ($lastBracket === false) {
             // It is not in a bracketed statement at all.
-            $previousToken = $phpcsFile->findPrevious(T_WHITESPACE, ($stackPtr - 1), null, true, null, true);
-            if ($previousToken !== false) {
-                // A list of tokens that indicate that the token is not
-                // part of an arithmetic operation.
-                $invalidTokens = array(
-                                  T_COMMA,
-                                  T_COLON,
-                                  T_OPEN_PARENTHESIS,
-                                  T_OPEN_SQUARE_BRACKET,
-                                  T_OPEN_SHORT_ARRAY,
-                                  T_CASE,
-                                 );
-
-                if (in_array($tokens[$previousToken]['code'], $invalidTokens) === false) {
-                    $this->addMissingBracketsError($phpcsFile, $stackPtr);
-                }
-
-                return;
-            }
+            $this->addMissingBracketsError($phpcsFile, $stackPtr);
+            return;
         } else if ($tokens[$lastBracket]['parenthesis_closer'] < $stackPtr) {
             // There are a set of brackets in front of it that don't include it.
             $this->addMissingBracketsError($phpcsFile, $stackPtr);
@@ -262,7 +267,7 @@ class Squiz_Sniffs_Formatting_OperatorBracketSniff implements PHP_CodeSniffer_Sn
         $error = 'Arithmetic operation must be bracketed';
         $fix   = $phpcsFile->addFixableError($error, $stackPtr, 'MissingBrackets');
 
-        if ($fix === false || $phpcsFile->fixer->enabled === false) {
+        if ($fix === false) {
             return;
         }
 
@@ -281,6 +286,7 @@ class Squiz_Sniffs_Formatting_OperatorBracketSniff implements PHP_CodeSniffer_Sn
                     T_MODULUS         => true,
                     T_ISSET           => true,
                     T_ARRAY           => true,
+                    T_NONE            => true,
                    );
 
         // Find the first token in the expression.
