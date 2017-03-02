@@ -7,7 +7,7 @@
   "scripts": {
     "test": "vendor/bin/phpunit src/test",
     "lint": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/",
-    "format": "vendor/bin/phpbcf --standard=PSR2 --extensions=php,live.php src/"
+    "format": "vendor/bin/phpcbf --standard=PSR2 --extensions=php,live.php src/"
   },
   "require": {
     "symfony/yaml": "~2.6",
