@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/cloudflare/Cloudflare-CPanel.svg?branch=master)](https://travis-ci.org/cloudflare/Cloudflare-CPanel)
 ## Cloudflare cPanel Quick Installation Instructions
 
 Using an SSH client such as Terminal or Putty:
