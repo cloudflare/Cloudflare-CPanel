@@ -5,7 +5,7 @@
   "version": "6.1.2",
   "homepage": "https://github.com/cloudflare/CloudFlare-CPanel",
   "scripts": {
-    "test": "vendor/bin/phpunit src/test",
+    "test": "vendor/bin/phpunit src/Test",
     "lint": "vendor/bin/phpcs -n --standard=PSR2 --extensions=php,live.php src/",
     "format": "vendor/bin/phpcbf --standard=PSR2 --extensions=php,live.php src/"
   },
