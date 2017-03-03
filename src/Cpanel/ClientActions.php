@@ -101,7 +101,8 @@ class ClientActions
      * tl;dr We need to add SSL Verification DNS records manually if the zone is provisioned
      * with CName
      */
-    private function addSSLVerficiationDNSRecordForCName($zoneList) {
+    private function addSSLVerficiationDNSRecordForCName($zoneList)
+    {
         foreach ($zoneList as $zone) {
             $zoneId = isset($zone['id']) ? $zone['id'] : null;
             $zoneName = isset($zone['name']) ? $zone['name'] : null;
@@ -114,13 +115,13 @@ class ClientActions
                     $dnsRecords = $this->cpanelAPI->getDNSRecords($zoneName);
                     if (!isset($dnsRecords)) {
                         $this->logger->info('Getting DNS Records failed');
-                        continue; 
+                        continue;
                     }
 
                     foreach ($sslCerts['result'] as $cert) {
                         // Checkinng if the record already exists is not necessary cause CPanel
                         // doesn't allow the same record being added multiple times.
-                        // 
+                        //
                         // Assumption:
                         // 1) $cert['certificate_status'] being active or inactive doesn't matter
                         // We'll add the record regardless. The worst case is extra DNS Records.
@@ -131,7 +132,7 @@ class ClientActions
 
                         // CPanel api expects the record name to be the subdomain
                         // In our case the record name is in format subdomain.domain.com
-                        // We need to remove the ".domain.com' part before sending it 
+                        // We need to remove the ".domain.com' part before sending it
                         // to CPanel API
                         $recordName = str_replace('.'.$zoneName, '', $recordName);
 
@@ -147,9 +148,9 @@ class ClientActions
                 } else {
                     $this->logger->info('SSL request failed');
                     $this->logger->info($sslCerts);
-                }   
+                }
             }
-        }            
+        }
     }
 
     /**
