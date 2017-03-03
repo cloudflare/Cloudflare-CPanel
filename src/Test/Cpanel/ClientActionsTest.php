@@ -21,29 +21,29 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
     public function setup()
     {
         $this->mockClientAPI = $this->getMockBuilder('CF\API\Client')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockConfig = $this->getMockBuilder('CF\Integration\DefaultConfig')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockCpanalDNSRecord = $this->getMockBuilder('CF\Cpanel\CpanelDNSRecord')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockDataStore = $this->getMockBuilder('CF\Cpanel\DataStore')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockLogger = $this->getMockBuilder('CF\Integration\DefaultLogger')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockPartialZoneSet = $this->getMockBuilder('CF\Cpanel\Zone\Partial')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockRequest = $this->getMockBuilder('CF\API\Request')
-            ->disableOriginalConstructor()
-            ->getMock();
+        ->disableOriginalConstructor()
+        ->getMock();
         $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
         $this->clientActions = new ClientActions($this->mockCpanelIntegration, $this->mockClientAPI, $this->mockRequest);
         $this->clientActions->setPartialZoneSet($this->mockPartialZoneSet);
@@ -59,10 +59,10 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
-                'main_domain' => $mainDomain,
-                'addon_domains' => $addonDomain,
-                'parked_domains' => $parkedDomain,
-                'sub_domains' => $subDomain,
+            'main_domain' => $mainDomain,
+            'addon_domains' => $addonDomain,
+            'parked_domains' => $parkedDomain,
+            'sub_domains' => $subDomain,
             )
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
@@ -88,10 +88,10 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
-                'main_domain' => $mainDomain,
-                'addon_domains' => $addonDomain,
-                'parked_domains' => $parkedDomain,
-                'sub_domains' => $subDomain,
+            'main_domain' => $mainDomain,
+            'addon_domains' => $addonDomain,
+            'parked_domains' => $parkedDomain,
+            'sub_domains' => $subDomain,
             )
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
@@ -110,19 +110,19 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockCpanelAPI->method('getDomainList')->willReturn(
             array(
-                'main_domain' => $mainDomain,
+            'main_domain' => $mainDomain,
             )
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockClientAPI->method('callAPI')->willReturn(
             array(
-                'success' => true,
-                'result' => array(
-                    array(
-                        'name' => $mainDomain,
-                        'status' => $status,
-                    ),
-                ),
+            'success' => true,
+            'result' => array(
+            array(
+                'name' => $mainDomain,
+                'status' => $status,
+            ),
+            ),
             )
         );
         $response = $this->clientActions->mergeCpanelAndCFDomains();
@@ -151,9 +151,9 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('zoneGetDetails')->willReturn(
             array(
-                'result' => array(
-                    'name' => 'test.com',
-                ),
+            'result' => array(
+            'name' => 'test.com',
+            ),
             )
         );
         $this->mockClientAPI->method('responseOk')->willReturn(true);
@@ -195,9 +195,9 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('zoneGetDetails')->willReturn(
             array(
-                'result' => array(
-                    'name' => $rootdomain,
-                ),
+            'result' => array(
+            'name' => $rootdomain,
+            ),
             )
         );
 
@@ -226,9 +226,9 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('zoneGetDetails')->willReturn(
             array(
-                'result' => array(
-                    'name' => $rootdomain,
-                ),
+            'result' => array(
+            'name' => $rootdomain,
+            ),
             )
         );
 
@@ -245,5 +245,36 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $response = $this->clientActions->mergeDNSRecords();
 
         $this->assertEquals(array(), $response['result']);
+    }
+
+    public function testAddSSLVerficiationDNSRecordForCNameAddsRecord()
+    {
+        $domain = 'domain.com';
+        $zoneList = [
+          [
+          'id' => 'id',
+          'name' => $domain,
+          'type' => 'CNAME'
+          ]
+        ];
+
+        $mockResponse = [
+          'result' => [
+            [
+              'certificate_status' => 'active',
+              'verification_type' => 'cname',
+              'verification_info' => [
+                'record_name' => 'b3b90cfedd89a3e487d3e383c56c4267.' . $domain,
+                'record_target' => '6979be7e4cfc9e5c603e31df7efac9cc60fee82d.comodoca.com'
+              ]
+            ]
+          ]
+        ];
+
+        $this->mockClientAPI->method('callAPI')->willReturn($mockResponse);
+        $this->mockClientAPI->method('responseOk')->willReturn(true);
+        $this->mockCpanelAPI->method('getDNSRecords')->willReturn([]);
+        $this->mockCpanelAPI->method('addDNSRecord')->willReturn(true);
+        $this->assertTrue($this->clientActions->addSSLVerficiationDNSRecordForCName($zoneList));
     }
 }
