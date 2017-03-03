@@ -90,7 +90,66 @@ class ClientActions
         $cf_zones_list['result'] = $merged_domain_list;
         $cf_zones_list['success'] = true;
 
+        $this->addSSLVerficiationDNSRecordForCName($merged_domain_list);
+
         return $cf_zones_list;
+    }
+
+    /**
+     * PI-954
+     * This function is added from CA's decision on validating subdomain to issue wildcard cert.
+     * tl;dr We need to add SSL Verification DNS records manually if the zone is provisioned
+     * with CName
+     */
+    private function addSSLVerficiationDNSRecordForCName($zoneList) {
+        foreach ($zoneList as $zone) {
+            $zoneId = $zone['id'];
+            $zoneName = $zone['name'];
+
+            // Check if the zone is cname
+            if (strtolower($zone['type']) === 'cname') {
+                $request = new Request('GET', 'zones/'.$zoneId.'/ssl/verification', array(), array());
+                $sslCerts = $this->api->callAPI($request);
+                if ($this->api->responseOk($sslCerts)) {
+                    $dnsRecords = $this->cpanelAPI->getDNSRecords($zoneName);
+                    if (!isset($dnsRecords)) {
+                        $this->logger->info('Getting DNS Records failed');
+                        continue; 
+                    }
+
+                    foreach ($sslCerts['result'] as $cert) {
+                        // Checkinng if the record already exists is not necessary cause CPanel
+                        // doesn't allow the same record being added multiple times.
+                        // 
+                        // Assumption:
+                        // 1) $cert['certificate_status'] being active or inactive doesn't matter
+                        // We'll add the record regardless. The worst case is extra DNS Records.
+                        // 2) $cert['verification_type'] is always cname for our current CA partners
+                        // we don't check whether it's cname because it's not needed
+                        $recordName = strtolower($cert['verification_info']['record_name']);
+                        $recordTarget = strtolower($cert['verification_info']['record_target']);
+
+                        // CPanel api expects the record name to be the subdomain
+                        // In our case the record name is in format subdomain.domain.com
+                        // We need to remove the ".domain.com' part before sending it 
+                        // to CPanel API
+                        $recordName = str_replace('.'.$zoneName, '', $recordName);
+
+                        // Create a new DNS Record
+                        $dnsRecord = new CpanelDNSRecord();
+                        $dnsRecord->setType('CNAME');
+                        $dnsRecord->setName($recordName);
+                        $dnsRecord->setContent($recordTarget);
+                        $dnsRecord->setTtl(14400);
+
+                        $this->cpanelAPI->addDNSRecord($zoneName, $dnsRecord);
+                    }
+                } else {
+                    $this->logger->info('SSL request failed');
+                    $this->logger->info($sslCerts);
+                }   
+            }
+        }            
     }
 
     /**
