@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf73f2770c6690e097e83734dd063cce6
+class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
 {
     public static $prefixLengthsPsr4 = array (
         'p' => 
@@ -188,6 +188,10 @@ class ComposerStaticInitf73f2770c6690e097e83734dd063cce6
         'PEAR_Sniffs_WhiteSpace_ObjectOperatorIndentSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/PEAR/Sniffs/WhiteSpace/ObjectOperatorIndentSniff.php',
         'PEAR_Sniffs_WhiteSpace_ScopeClosingBraceSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/PEAR/Sniffs/WhiteSpace/ScopeClosingBraceSniff.php',
         'PEAR_Sniffs_WhiteSpace_ScopeIndentSniff' => __DIR__ . '/..' . '/squizlabs/php_codesniffer/CodeSniffer/Standards/PEAR/Sniffs/WhiteSpace/ScopeIndentSniff.php',
+        'PHPUnit\\Framework\\Assert' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/Assert.php',
+        'PHPUnit\\Framework\\BaseTestListener' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/BaseTestListener.php',
+        'PHPUnit\\Framework\\TestCase' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/TestCase.php',
+        'PHPUnit\\Framework\\TestListener' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/TestListener.php',
         'PHPUnit_Exception' => __DIR__ . '/..' . '/phpunit/phpunit/src/Exception.php',
         'PHPUnit_Extensions_GroupTestSuite' => __DIR__ . '/..' . '/phpunit/phpunit/src/Extensions/GroupTestSuite.php',
         'PHPUnit_Extensions_PhptTestCase' => __DIR__ . '/..' . '/phpunit/phpunit/src/Extensions/PhptTestCase.php',
@@ -553,6 +557,7 @@ class ComposerStaticInitf73f2770c6690e097e83734dd063cce6
         'PHP_Token_NEW' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NS_C' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NS_SEPARATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
+        'PHP_Token_NULLSAFE_OBJECT_OPERATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_NUM_STRING' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_OBJECT_CAST' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
         'PHP_Token_OBJECT_OPERATOR' => __DIR__ . '/..' . '/phpunit/php-token-stream/src/Token.php',
@@ -783,10 +788,10 @@ class ComposerStaticInitf73f2770c6690e097e83734dd063cce6
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf73f2770c6690e097e83734dd063cce6::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$classMap;
 
         }, null, ClassLoader::class);
     }

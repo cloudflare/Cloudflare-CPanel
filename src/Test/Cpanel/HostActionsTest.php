@@ -39,7 +39,8 @@ class HostActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
     }
 
-    public function testPartialZoneSetReturnsErrorIfItFails() {
+    public function testPartialZoneSetReturnsErrorIfItFails()
+    {
         $error = "error";
         $request = new Request(null, null, null, array("zone_name" => "test.com"));
         $hostActions = new HostActions($this->mockCpanelIntegration, $this->mockHostAPI, $request);
@@ -52,7 +53,8 @@ class HostActionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($error, $response);
     }
 
-    public function testUserCreateCallsDataStoreCreateUserDataStore() {
+    public function testUserCreateCallsDataStoreCreateUserDataStore()
+    {
         $request = new Request(null, null, null, null);
         $hostActions = new HostActions($this->mockCpanelIntegration, $this->mockHostAPI, $request);
         $this->mockHostAPI->method('responseOk')->willReturn(true);
@@ -63,7 +65,8 @@ class HostActionsTest extends \PHPUnit_Framework_TestCase
         $hostActions->userCreate();
     }
 
-    public function testUserAuthCallsDataStoreCreateUserDataStore() {
+    public function testUserAuthCallsDataStoreCreateUserDataStore()
+    {
         $request = new Request(null, null, null, null);
         $hostActions = new HostActions($this->mockCpanelIntegration, $this->mockHostAPI, $request);
         $this->mockHostAPI->method('responseOk')->willReturn(true);
