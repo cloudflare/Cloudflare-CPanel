@@ -103,11 +103,11 @@ class ClientActions
      */
     private function addSSLVerficiationDNSRecordForCName($zoneList) {
         foreach ($zoneList as $zone) {
-            $zoneId = $zone['id'];
-            $zoneName = $zone['name'];
+            $zoneId = isset($zone['id']) ? $zone['id'] : null;
+            $zoneName = isset($zone['name']) ? $zone['name'] : null;
 
             // Check if the zone is cname
-            if (strtolower($zone['type']) === 'cname') {
+            if (isset($zoneId) && strtolower($zone['type']) === 'cname') {
                 $request = new Request('GET', 'zones/'.$zoneId.'/ssl/verification', array(), array());
                 $sslCerts = $this->api->callAPI($request);
                 if ($this->api->responseOk($sslCerts)) {
