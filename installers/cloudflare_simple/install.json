@@ -1,7 +1,7 @@
 [
     {
-        "icon" : "cloud.png",
-        "name" : "CloudFlare",
+        "icon" : "logo-cloudflare.svg",
+        "name" : "Cloudflare",
         "group_id" : "software",
         "order" : 1,
         "type" : "link",
