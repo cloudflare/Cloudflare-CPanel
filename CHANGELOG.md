@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.3](#6.1.3) - 2017-03-6
+
+## Added
+- Partial zones will add SSL related DNS records automatically to CPanel when plugin is opened.
+
+## Changed
+- Update branding for CPanel
+
 ## [6.1.2](#6.1.2) - 2017-01-31
 
 ## Changed
