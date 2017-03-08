@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.4](#6.1.4) - 2017-03-8
+
+## Fixed
+- Fixed bug where the Host API login wasn't working. [#135](https://github.com/cloudflare/Cloudflare-CPanel/pull/135)
+- Fixed Cloudflare logo size on cPanel homepage. [#136](https://github.com/cloudflare/Cloudflare-CPanel/pull/136)
+
 ## [6.1.3](#6.1.3) - 2017-03-6
 
 ## Added
