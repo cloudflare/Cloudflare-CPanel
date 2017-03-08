@@ -11,8 +11,8 @@
   },
   "require": {
     "symfony/yaml": "~2.6",
-    "guzzle/guzzle": "~3.9",
-    "cloudflare/cloudflare-plugin-backend": "^1.0"
+    "guzzlehttp/guzzle": "~5.0",
+    "cloudflare/cloudflare-plugin-backend": "2.0.0"
   },
   "require-dev": {
     "phpunit/phpunit": "4.8.*",

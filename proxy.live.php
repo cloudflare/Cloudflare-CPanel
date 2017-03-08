@@ -1,4 +1,5 @@
 <?php
+use CF\API\Client;
 
 require_once 'cloudflare/vendor/autoload.php';
 require_once '/usr/local/cpanel/php/cpanel.php';
@@ -18,9 +19,12 @@ $dataStore = new CF\Cpanel\DataStore($cpanelAPI, $logger);
 $cpanelIntegration = new CF\Integration\DefaultIntegration($config, $cpanelAPI, $dataStore, $logger);
 $partialZoneSet = new \CF\Cpanel\Zone\Partial($cpanelAPI, $dataStore, $logger);
 $requestRouter = new \CF\Router\RequestRouter($cpanelIntegration);
-$requestRouter->addRouter('\CF\API\Client', \CF\Cpanel\ClientV4APIRoutes::$routes);
-$requestRouter->addRouter('\CF\API\Plugin', \CF\Cpanel\PluginRoutes::getRoutes(\CF\API\PluginRoutes::$routes));
-$requestRouter->addRouter('\CF\API\Host', \CF\Cpanel\HostRoutes::$routes);
+$clientAPI = new \CF\API\Client($cpanelIntegration);
+$requestRouter->addRouter($clientAPI, \CF\Cpanel\ClientV4APIRoutes::$routes);
+$pluginAPI = new \CF\API\Plugin($cpanelIntegration);
+$requestRouter->addRouter($pluginAPI, \CF\Cpanel\PluginRoutes::getRoutes(\CF\API\PluginRoutes::$routes));
+$hostAPI = new \CF\API\Host($cpanelIntegration);
+$requestRouter->addRouter($hostAPI, \CF\Cpanel\HostRoutes::$routes);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $parameters = $_GET;
