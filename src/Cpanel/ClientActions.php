@@ -143,7 +143,7 @@ class ClientActions
                         $dnsRecord->setContent($recordTarget);
                         $dnsRecord->setTtl(14400);
 
-                        return $this->cpanelAPI->addDNSRecord($zoneName, $dnsRecord);
+                        $this->cpanelAPI->addDNSRecord($zoneName, $dnsRecord);
                     }
                 } else {
                     $this->logger->info('SSL request failed');
