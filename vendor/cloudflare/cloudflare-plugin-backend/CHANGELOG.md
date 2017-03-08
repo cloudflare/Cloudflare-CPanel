@@ -2,8 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0](#2.0.0) - 2017-03-08
+### Changed
+- Reverted `CF\API\AbstractAPIClient` to Guzzle 5 [#35](https://github.com/cloudflare/cloudflare-plugin-backend/pull/35)
+
+### Fixed
+- API Clients must be instantiated outside `RequestRouter` now to fix DI issue in Magento [#36](https://github.com/cloudflare/cloudflare-plugin-backend/pull/36)
+
 ## [1.1.13](#1.1.13) - 2017-02-28
-### Added 
+### Added
 - Travis CI [#34](https://github.com/cloudflare/cloudflare-plugin-backend/pull/34)
 
 ### Fixed
