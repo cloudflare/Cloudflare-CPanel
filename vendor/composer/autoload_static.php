@@ -4,8 +4,12 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
+class ComposerStaticInit3d39e9b308eedc432af862a2dd3838a5
 {
+    public static $files = array (
+        'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
         'p' => 
         array (
@@ -18,11 +22,20 @@ class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
         'S' => 
         array (
             'Symfony\\Component\\Yaml\\' => 23,
-            'Symfony\\Component\\EventDispatcher\\' => 34,
+        ),
+        'R' => 
+        array (
+            'React\\Promise\\' => 14,
         ),
         'P' => 
         array (
             'Psr\\Log\\' => 8,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Stream\\' => 18,
+            'GuzzleHttp\\Ring\\' => 16,
+            'GuzzleHttp\\' => 11,
         ),
         'D' => 
         array (
@@ -49,13 +62,25 @@ class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-        'Symfony\\Component\\EventDispatcher\\' => 
+        'React\\Promise\\' => 
         array (
-            0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
+            0 => __DIR__ . '/..' . '/react/promise/src',
         ),
         'Psr\\Log\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/log/Psr/Log',
+        ),
+        'GuzzleHttp\\Stream\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/streams/src',
+        ),
+        'GuzzleHttp\\Ring\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/ringphp/src',
+        ),
+        'GuzzleHttp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
         'Doctrine\\Instantiator\\' => 
         array (
@@ -74,17 +99,6 @@ class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
             'Prophecy\\' => 
             array (
                 0 => __DIR__ . '/..' . '/phpspec/prophecy/src',
-            ),
-        ),
-        'G' => 
-        array (
-            'Guzzle\\Tests' => 
-            array (
-                0 => __DIR__ . '/..' . '/guzzle/guzzle/tests',
-            ),
-            'Guzzle' => 
-            array (
-                0 => __DIR__ . '/..' . '/guzzle/guzzle/src',
             ),
         ),
     );
@@ -788,10 +802,10 @@ class ComposerStaticInit351ea891ccabaab01d88c0a188c847e9
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit351ea891ccabaab01d88c0a188c847e9::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit3d39e9b308eedc432af862a2dd3838a5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit3d39e9b308eedc432af862a2dd3838a5::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit3d39e9b308eedc432af862a2dd3838a5::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit3d39e9b308eedc432af862a2dd3838a5::$classMap;
 
         }, null, ClassLoader::class);
     }
