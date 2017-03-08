@@ -274,7 +274,8 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockClientAPI->method('callAPI')->willReturn($mockResponse);
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockCpanelAPI->method('getDNSRecords')->willReturn([]);
-        $this->mockCpanelAPI->method('addDNSRecord')->willReturn(true);
-        $this->assertTrue($this->clientActions->addSSLVerficiationDNSRecordForCName($zoneList));
+        $this->mockCpanelAPI->expects($this->once())->method('addDNSRecord');
+        
+        $this->clientActions->addSSLVerficiationDNSRecordForCName($zoneList);
     }
 }
