@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.1.5](#6.1.5) - 2017-03-15
+## Fixed
+- Fixed logo orientation. [#138](https://github.com/cloudflare/Cloudflare-CPanel/pull/138)
+- Fix wrong values which are sent to the API [#137](https://github.com/cloudflare/Cloudflare-CPanel/pull/137)
+
 ## [6.1.4](#6.1.4) - 2017-03-8
 
 ## Fixed
