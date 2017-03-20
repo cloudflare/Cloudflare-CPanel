@@ -208,7 +208,7 @@ chmod 0700 $INSTALL_DIR/bin/admin/CloudFlare/APIKey
 echo "mode=simple" > $INSTALL_DIR/bin/admin/CloudFlare/APIKey.conf
 
 # Get PHP Version
-CPANELSUPPORTEDPHPPATH=`ls -al $INSTALL_DIR/3rdparty/bin/php`
+CPANELSUPPORTEDPHPPATH=`ls -l $INSTALL_DIR/3rdparty/bin/php`
 PHPVERSION=`echo $CPANELSUPPORTEDPHPPATH | rev | cut -d '/' -f 3 | rev`
 
 # Install PHP code
