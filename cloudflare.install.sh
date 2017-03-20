@@ -8,7 +8,7 @@ INSTALLER="$(basename "$(test -L "$0" && readlink "$0" || echo "$0")")"
 
 usage() {
     echo "Usage: ./$INSTALLER -k HOST_KEY -n 'ORG_NAME' [-f /path/to/local/cpanel.tar.gz ]"
-    echo 
+    echo
     echo "     -k HOST_KEY   - Your host key. If you do not have one contact"
     echo "                     CloudFlare to obtain one before proceeding."
     echo "     -n ORG_NAME   - The name of your organization."
@@ -208,7 +208,7 @@ chmod 0700 $INSTALL_DIR/bin/admin/CloudFlare/APIKey
 echo "mode=simple" > $INSTALL_DIR/bin/admin/CloudFlare/APIKey.conf
 
 # Get PHP Version
-CPANELSUPPORTEDPHPPATH=`ls -al $INSTALL_DIR/3rdparty/bin/php | awk '{print $11}'`
+CPANELSUPPORTEDPHPPATH=`ls -l $INSTALL_DIR/3rdparty/bin/php`
 PHPVERSION=`echo $CPANELSUPPORTEDPHPPATH | rev | cut -d '/' -f 3 | rev`
 
 # Install PHP code
