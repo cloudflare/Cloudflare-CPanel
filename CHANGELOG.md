@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [6.2.0](#6.2.0) - 2017-04-25
+## Fixed
+- Fixed install bug in CloudLinux [#140](https://github.com/cloudflare/Cloudflare-CPanel/pull/140)
+- [Frontend] Fixed UTM codes for signup and account links [#112](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/112)
+- [Frontend] Fixed a bug where analytic tab selection not working properly [#113](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/113)
+- [Frontend] Fixed a bug where active zone selector was not clickable [#114](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/114)
+- [Frontend] Fixed bug where Minify was not updating [#116](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/116)
+
+### Changed
+- [Frontend] Clarified the text when domain is not on Cloudflare  [#115](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/115)
+
+### Added
+- [Frontend] Added help text for all cards [#118](https://github.com/cloudflare/CloudFlare-FrontEnd/pull/118)
+
 ## [6.1.5](#6.1.5) - 2017-03-15
 ## Fixed
 - Fixed logo orientation. [#138](https://github.com/cloudflare/Cloudflare-CPanel/pull/138)

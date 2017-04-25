@@ -24,5 +24,5 @@
     },
     "locale": "en",
     "integrationName": "cpanel",
-    "version": "6.1.5"
+    "version": "6.2.0"
 }
