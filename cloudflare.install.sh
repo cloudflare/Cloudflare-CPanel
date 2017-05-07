@@ -213,9 +213,9 @@ PHPVERSION=`echo $CPANELSUPPORTEDPHPPATH | rev | cut -d '/' -f 3 | rev`
 
 # Install PHP code
 install -d $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/vendor
-cp -r $SOURCE_DIR/vendor/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/vendor
+/bin/cp -rf $SOURCE_DIR/vendor/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/vendor
 install -d $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/src
-cp -r $SOURCE_DIR/src/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/src
+/bin/cp -rf $SOURCE_DIR/src/* $INSTALL_DIR/3rdparty/php/$PHPVERSION/lib/php/cloudflare/src
 
 # Register the plugin buttons with Cpanel
 /usr/local/cpanel/scripts/install_plugin $SOURCE_DIR/installers/cloudflare_simple.tar.bz2
