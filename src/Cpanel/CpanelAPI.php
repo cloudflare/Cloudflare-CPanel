@@ -8,19 +8,19 @@ use CF\Integration\DefaultLogger;
 
 class CpanelAPI implements IntegrationAPIInterface
 {
-    private $cpanel_api;
+    private $cpanelApi;
     private $logger;
 
     const CPANEL_UAPI_NAME = 'CPANEL UAPI';
     const CPANEL_API2_NAME = 'CPANEL API2';
 
     /**
-     * @param $cpanel_api
+     * @param $cpanelApi
      * @param DefaultLogger $logger
      */
-    public function __construct($cpanel_api, DefaultLogger $logger)
+    public function __construct($cpanelApi, DefaultLogger $logger)
     {
-        $this->cpanel_api = $cpanel_api;
+        $this->cpanelApi = $cpanelApi;
         $this->logger = $logger;
     }
 
@@ -33,16 +33,16 @@ class CpanelAPI implements IntegrationAPIInterface
     {
         $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
 
-        $cpanel_api2_response = $this->cpanel_api->api2($module, $function, $parameters);
+        $cpanelApi2Response = $this->cpanelApi->api2($module, $function, $parameters);
 
-        $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', $cpanel_api2_response), $this->api2ResponseOk($cpanel_api2_response));
+        $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', $cpanelApi2Response), $this->api2ResponseOk($cpanelApi2Response));
 
         if (!$this->api2ResponseOk($cpanel_api2_response)) {
             $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
-            $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', 'body' => $cpanel_api2_response), false);
+            $this->logAPICall(self::CPANEL_API2_NAME, array('type' => 'response', 'body' => $cpanelApi2Response), false);
         }
 
-        return $cpanel_api2_response;
+        return $cpanelApi2Response;
     }
 
     /**
@@ -62,11 +62,11 @@ class CpanelAPI implements IntegrationAPIInterface
      */
     public function getDNSRecords($domain_name)
     {
-        $fetch_zone_records_result = $this->api2('ZoneEdit', 'fetchzone_records', array('domain' => $domain_name));
+        $fetchZoneRecordsResult = $this->api2('ZoneEdit', 'fetchzone_records', array('domain' => $domain_name));
 
-        if ($this->api2ResponseOk($fetch_zone_records_result)) {
+        if ($this->api2ResponseOk($fetchZoneRecordsResult)) {
             $dnsRecordList = array();
-            foreach ($fetch_zone_records_result['cpanelresult']['data'] as $cpanelDNSRecord) {
+            foreach ($fetchZoneRecordsResult['cpanelresult']['data'] as $cpanelDNSRecord) {
                 //if this is a record CloudFlare can proxy
                 if (!in_array($cpanelDNSRecord['type'], CpanelDNSRecord::$DNS_RECORDS_CF_CANNOT_PROXY)) {
                     $cfDNSRecord = new CpanelDNSRecord();
@@ -108,9 +108,9 @@ class CpanelAPI implements IntegrationAPIInterface
             $args['address'] = $dnsRecord->getContent();
         }
 
-        $add_zone_record_response = $this->api2('ZoneEdit', 'add_zone_record', $args);
+        $addZoneRecordResponse = $this->api2('ZoneEdit', 'add_zone_record', $args);
 
-        return $this->api2ResponseOk($add_zone_record_response);
+        return $this->api2ResponseOk($addZoneRecordResponse);
     }
 
     /**
@@ -137,9 +137,9 @@ class CpanelAPI implements IntegrationAPIInterface
             $args['address'] = $dnsRecord->getContent();
         }
 
-        $edit_zone_record_response = $this->api2('ZoneEdit', 'edit_zone_record', $args);
+        $editZoneRecordResponse = $this->api2('ZoneEdit', 'edit_zone_record', $args);
 
-        return $this->api2ResponseOk($edit_zone_record_response);
+        return $this->api2ResponseOk($editZoneRecordResponse);
     }
 
     public function removeDNSRecord($domain_name, DNSRecord $DNSRecord)
@@ -149,9 +149,9 @@ class CpanelAPI implements IntegrationAPIInterface
             'line' => $DNSRecord->getLine(),
         );
 
-        $remove_zone_record_response = $this->api2('ZoneEdit', 'remove_zone_record', $args);
+        $removeZoneRecordResponse = $this->api2('ZoneEdit', 'remove_zone_record', $args);
 
-        return $this->api2ResponseOk($remove_zone_record_response);
+        return $this->api2ResponseOk($removeZoneRecordResponse);
     }
 
     /**
@@ -168,52 +168,52 @@ class CpanelAPI implements IntegrationAPIInterface
     {
         $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), true);
 
-        $cpanel_uapi_response = $this->cpanel_api->uapi($module, $function, $parameters, $value);
+        $cpanelUApiResponse = $this->cpanelApi->uapi($module, $function, $parameters, $value);
 
-        $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), $this->uapi_response_ok($cpanel_uapi_response));
-        if ($this->uapi_response_ok($cpanel_uapi_response)) {
-            return $cpanel_uapi_response['cpanelresult']['result']['data'];
+        $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitizeUApiResponseForLog($cpanelUApiResponse)), $this->uapiResponseOk($cpanelUApiResponse));
+        if ($this->uapiResponseOk($cpanelUApiResponse)) {
+            return $cpanelUApiResponse['cpanelresult']['result']['data'];
         } else {
             $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'request', 'module' => $module, 'function' => $function, 'parameters' => $parameters), false);
-            $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitize_uapi_response_for_log($cpanel_uapi_response)), false);
+            $this->logAPICall(self::CPANEL_UAPI_NAME, array('type' => 'response', 'body' => $this->sanitizeUApiResponseForLog($cpanelUApiResponse)), false);
 
-            return $cpanel_uapi_response;
+            return $cpanelUApiResponse;
         }
     }
 
     /**
-     * @param $cpanel_uapi_response
+     * @param $cpanelUApiResponse
      *
      * @return bool
      */
-    public function uapi_response_ok($cpanel_uapi_response) // @codingStandardsIgnoreLine
+    public function uapiResponseOk($cpanelUApiResponse) // @codingStandardsIgnoreLine
     {
-        return $cpanel_uapi_response['cpanelresult']['result']['errors'] === null;
+        return $cpanelUApiResponse['cpanelresult']['result']['errors'] === null;
     }
 
     /**
-     * @param $cpanel_uapi_response
+     * @param $cpanelUApiResponse
      *
      * @return mixed
      */
-    private function sanitize_uapi_response_for_log($cpanel_uapi_response) // @codingStandardsIgnoreLine
+    private function sanitizeUApiResponseForLog($cpanelUApiResponse) // @codingStandardsIgnoreLine
     {
-        if ($this->uapi_response_ok($cpanel_uapi_response)) {
-            if ($cpanel_uapi_response['cpanelresult']['func'] === 'get_host_api_key') {
-                $cpanel_uapi_response['cpanelresult']['result']['data'] = '[HIDDEN]';
+        if ($this->uapiResponseOk($cpanelUApiResponse)) {
+            if ($cpanelUApiResponse['cpanelresult']['func'] === 'get_host_api_key') {
+                $cpanelUApiResponse['cpanelresult']['result']['data'] = '[HIDDEN]';
             }
         }
 
-        return $cpanel_uapi_response;
+        return $cpanelUApiResponse;
     }
 
     /**
      * @return home directory for current cpanel user
      */
-    public function get_home_dir() // @codingStandardsIgnoreLine
+    public function getHomeDir() // @codingStandardsIgnoreLine
     {
         //cpanelprint won't error, if it can't find the value it prints the input
-        return $this->cpanel_api->cpanelprint('$homedir');
+        return $this->cpanelApi->cpanelprint('$homedir');
     }
 
     /**
@@ -232,7 +232,7 @@ class CpanelAPI implements IntegrationAPIInterface
     public function getUserId()
     {
         //cpanelprint won't error, if it can't find the value it returns the input
-        return $this->cpanel_api->cpanelprint('$user');
+        return $this->cpanelApi->cpanelprint('$user');
     }
 
     /**
@@ -258,7 +258,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @throws \Exception
      */
-    public function load_file($folder, $filename) // @codingStandardsIgnoreLine
+    public function loadFile($folder, $filename) // @codingStandardsIgnoreLine
     {
         return $this->uapi(
             'Fileman',
@@ -280,7 +280,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @throws \Exception
      */
-    public function save_file($folder, $filename, $file_contents) // @codingStandardsIgnoreLine
+    public function saveFile($folder, $filename, $file_contents) // @codingStandardsIgnoreLine
     {
         $this->uapi(
             'Fileman',
@@ -296,7 +296,7 @@ class CpanelAPI implements IntegrationAPIInterface
         );
     }
 
-    public function get_cpanel_dns_record_name($cloudflare_dns_record_name) // @codingStandardsIgnoreLine
+    public function getCpanelDnsRecordName($cloudflare_dns_record_name) // @codingStandardsIgnoreLine
     {
         //cpanel uses the trailing dot for all record names
         return $cloudflare_dns_record_name.'.';
@@ -311,7 +311,7 @@ class CpanelAPI implements IntegrationAPIInterface
          * https://documentation.cpanel.net/display/SDK/Guide+to+the+LiveAPI+System+-+The+cpanelfeature%28%29+Method
          * cPanel returns 1 = enabled, 0 = disabled
          */
-        return $this->cpanel_api->cpanelfeature('zoneedit') === 1;
+        return $this->cpanelApi->cpanelfeature('zoneedit') === 1;
     }
 
     public function logAPICall($api, $message, $is_debug)

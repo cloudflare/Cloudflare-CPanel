@@ -80,7 +80,7 @@ class HostActions
         //if generate16BytesOfSecureRandomData fails fall back to md5
         if ($unique_id === false) {
             $this->logger->warn('SecurityUtil::generate16bytesOfSecureRandomData failed.');
-            $unique_id = md5($this->request->getBody()['cloudflare_email'].time().$this->cpanelAPI->getUserId().$this->cpanelAPI->get_home_dir().$this->cpanelAPI->getHostAPIKey());
+            $unique_id = md5($this->request->getBody()['cloudflare_email'].time().$this->cpanelAPI->getUserId().$this->cpanelAPI->getHomeDir().$this->cpanelAPI->getHostAPIKey());
         }
         $parameters['body']['unique_id'] = $unique_id;
 

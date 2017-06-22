@@ -33,7 +33,7 @@ class DataStore implements DataStoreInterface
         $this->cpanel = $cpanel;
         $this->logger = $logger;
         $this->username = $this->cpanel->getUserId();
-        $this->home_dir = $this->cpanel->get_home_dir();
+        $this->home_dir = $this->cpanel->getHomeDir();
         $this->yaml_data = $this->loadYAMLFile();
     }
 
@@ -59,8 +59,8 @@ class DataStore implements DataStoreInterface
      */
     private function loadYAMLFile()
     {
-        $get_file_content = $this->cpanel->load_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
-        if ($this->cpanel->uapi_response_ok($get_file_content)) {
+        $get_file_content = $this->cpanel->loadFile($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
+        if ($this->cpanel->uapiResponseOk($get_file_content)) {
             return Yaml::parse($get_file_content['content']);
         } else {
             $this->logger->error(self::PATH_TO_YAML_FILE.self::YAML_FILE_NAME.' does not exist.');
@@ -75,9 +75,9 @@ class DataStore implements DataStoreInterface
     private function saveYAMLFile()
     {
         $file_contents = Yaml::dump($this->yaml_data);
-        $result = $this->cpanel->save_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+        $result = $this->cpanel->saveFile($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
 
-        return $this->cpanel->uapi_response_ok($result);
+        return $this->cpanel->uapiResponseOk($result);
     }
 
     /**

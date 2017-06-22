@@ -168,7 +168,7 @@ class ClientActions
             */
             if ($this->partialZoneSet->getResolveToDNSRecord($this->cpanelAPI->getDNSRecords($domain_name)) !== null) {
                 //cpanel record names have trailing dot
-                $create_dns_record_result['result']['name'] = $this->cpanelAPI->get_cpanel_dns_record_name($create_dns_record_result['result']['name']);
+                $create_dns_record_result['result']['name'] = $this->cpanelAPI->getCpanelDnsRecordName($create_dns_record_result['result']['name']);
                 $sub_domain = $create_dns_record_result['result']['name'];
 
                 if ($this->partialZoneSet->partialZoneSet($sub_domain, $domain_name)) {
@@ -191,7 +191,7 @@ class ClientActions
     {
         $patch_dns_record_result = $this->api->callAPI($this->request);
         if ($this->api->responseOk($patch_dns_record_result)) {
-            $patch_dns_record_result['result']['name'] = $this->cpanelAPI->get_cpanel_dns_record_name($patch_dns_record_result['result']['name']);
+            $patch_dns_record_result['result']['name'] = $this->cpanelAPI->getCpanelDnsRecordName($patch_dns_record_result['result']['name']);
         }
 
         return $patch_dns_record_result;
@@ -251,7 +251,7 @@ class ClientActions
 
         $cpanel_dns_record_list = $this->cpanelAPI->getDNSRecords($domain_name);
 
-        if (!$this->cpanelAPI->uapi_response_ok($cf_dns_record_list)) {
+        if (!$this->cpanelAPI->uapiResponseOk($cf_dns_record_list)) {
             return $this->api->createAPIError("Error getting the DNS records for '".$domain_name."' from Cpanel.");
         }
 
@@ -268,7 +268,7 @@ class ClientActions
 
         foreach ($cf_dns_record_list['result'] as $key => $cf_dns_record) {
             //add trailing dot to cf dns record names
-            $cf_dns_record_list['result'][$key]['name'] = $this->cpanelAPI->get_cpanel_dns_record_name($cf_dns_record_list['result'][$key]['name']);
+            $cf_dns_record_list['result'][$key]['name'] = $this->cpanelAPI->getCpanelDnsRecordName($cf_dns_record_list['result'][$key]['name']);
 
             //build list of dns record names
             array_push($cf_dns_record_name_list, $cf_dns_record_list['result'][$key]['name']);

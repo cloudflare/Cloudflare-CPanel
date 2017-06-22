@@ -15,8 +15,8 @@ class DataStoreTest extends \PHPUnit_Framework_TestCase
         $this->mockCpanelAPI = $this->getMockBuilder('CF\Cpanel\CpanelAPI')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockCpanelAPI->method('load_file')->willReturn(array());
-        $this->mockCpanelAPI->method('save_file')->willReturn(true);
+        $this->mockCpanelAPI->method('loadFile')->willReturn(array());
+        $this->mockCpanelAPI->method('saveFile')->willReturn(true);
 
         $this->mockLogger = $this->getMockBuilder('CF\Integration\DefaultLogger')
             ->disableOriginalConstructor()
