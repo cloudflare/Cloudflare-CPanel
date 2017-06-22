@@ -12,7 +12,7 @@ use CF\Cpanel\CpanelAPI;
 /*
  * PSR2 wants interfaces in their own file - we use this interface to mock a cPanel class without a namespace.
  */
-class CpanelAPITest extends \PHPUnit_Framework_TestCase
+class CpanelAPITest extends \PHPUnit_Framework_TestCase // @codingStandardsIgnoreLine
 {
     private $mockCpanelLiveAPI;
     private $mockLogger;
