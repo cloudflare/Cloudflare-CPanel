@@ -199,7 +199,7 @@ class CpanelAPI implements IntegrationAPIInterface
     private function sanitizeUApiResponseForLog($cpanelUApiResponse)
     {
         if ($this->uapiResponseOk($cpanelUApiResponse)) {
-            if ($cpanelUApiResponse['cpanelresult']['func'] === 'get_host_api_key') {
+            if ($cpanelUApiResponse['cpanelresult']['func'] === 'getHostApiKey') {
                 $cpanelUApiResponse['cpanelresult']['result']['data'] = '[HIDDEN]';
             }
         }
@@ -223,7 +223,7 @@ class CpanelAPI implements IntegrationAPIInterface
      */
     public function getHostAPIKey()
     {
-        return $this->uapi('CloudFlare', 'get_host_api_key', array(), null);
+        return $this->uapi('CloudFlare', 'getHostApiKey', array(), null);
     }
 
     /**

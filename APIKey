@@ -14,11 +14,11 @@ my ( $uid, $function, $data ) = split( / /, $stdin, 3 );
 
 my $logger = Cpanel::Logger->new();
 
-if ( $function eq 'get_host_api_key' ) {
-    my $host_api_key = Cpanel::LoadFile::loadfile($HOST_API_KEY_FILE) or do {
+if ( $function eq 'getHostApiKey' ) {
+    my $hostApiKey = Cpanel::LoadFile::loadfile($HOST_API_KEY_FILE) or do {
         $logger->info("Failed to load Host API key: $!");
     };
-    print $host_api_key;
+    print $hostApiKey;
     exit(0);
 }
 else {
