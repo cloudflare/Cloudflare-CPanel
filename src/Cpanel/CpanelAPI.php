@@ -186,7 +186,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @return bool
      */
-    public function uapiResponseOk($cpanelUApiResponse) // @codingStandardsIgnoreLine
+    public function uapiResponseOk($cpanelUApiResponse)
     {
         return $cpanelUApiResponse['cpanelresult']['result']['errors'] === null;
     }
@@ -196,7 +196,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @return mixed
      */
-    private function sanitizeUApiResponseForLog($cpanelUApiResponse) // @codingStandardsIgnoreLine
+    private function sanitizeUApiResponseForLog($cpanelUApiResponse)
     {
         if ($this->uapiResponseOk($cpanelUApiResponse)) {
             if ($cpanelUApiResponse['cpanelresult']['func'] === 'get_host_api_key') {
@@ -210,7 +210,7 @@ class CpanelAPI implements IntegrationAPIInterface
     /**
      * @return home directory for current cpanel user
      */
-    public function getHomeDir() // @codingStandardsIgnoreLine
+    public function getHomeDir()
     {
         //cpanelprint won't error, if it can't find the value it prints the input
         return $this->cpanelApi->cpanelprint('$homedir');
@@ -258,7 +258,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @throws \Exception
      */
-    public function loadFile($folder, $filename) // @codingStandardsIgnoreLine
+    public function loadFile($folder, $filename)
     {
         return $this->uapi(
             'Fileman',
@@ -280,7 +280,7 @@ class CpanelAPI implements IntegrationAPIInterface
      *
      * @throws \Exception
      */
-    public function saveFile($folder, $filename, $file_contents) // @codingStandardsIgnoreLine
+    public function saveFile($folder, $filename, $file_contents)
     {
         $this->uapi(
             'Fileman',
@@ -296,7 +296,7 @@ class CpanelAPI implements IntegrationAPIInterface
         );
     }
 
-    public function getCpanelDnsRecordName($cloudflare_dns_record_name) // @codingStandardsIgnoreLine
+    public function getCpanelDnsRecordName($cloudflare_dns_record_name)
     {
         //cpanel uses the trailing dot for all record names
         return $cloudflare_dns_record_name.'.';
