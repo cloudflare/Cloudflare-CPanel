@@ -76,26 +76,26 @@ class HostActions
      */
     public function userCreate()
     {
-        $unique_id = SecurityUtil::generate16bytesOfSecureRandomData();
+        $uniqueId = SecurityUtil::generate16bytesOfSecureRandomData();
         //if generate16BytesOfSecureRandomData fails fall back to md5
-        if ($unique_id === false) {
+        if ($uniqueId === false) {
             $this->logger->warn('SecurityUtil::generate16bytesOfSecureRandomData failed.');
-            $unique_id = md5($this->request->getBody()['cloudflare_email'].time().$this->cpanelAPI->getUserId().$this->cpanelAPI->getHomeDir().$this->cpanelAPI->getHostAPIKey());
+            $uniqueId = md5($this->request->getBody()['cloudflare_email'].time().$this->cpanelAPI->getUserId().$this->cpanelAPI->getHomeDir().$this->cpanelAPI->getHostAPIKey());
         }
-        $parameters['body']['unique_id'] = $unique_id;
+        $parameters['body']['unique_id'] = $uniqueId;
 
-        $user_create_response = $this->api->callAPI($this->request);
+        $userCreateResponse = $this->api->callAPI($this->request);
 
-        if ($this->api->responseOk($user_create_response)) {
-            $user_api_key = $user_create_response['response']['user_api_key'];
-            $cloudflare_email = $user_create_response['response']['cloudflare_email'];
-            $unique_id = $user_create_response['response']['unique_id'];
-            $user_key = $user_create_response['response']['user_key'];
+        if ($this->api->responseOk($userCreateResponse)) {
+            $userApiKey = $userCreateResponse['response']['user_api_key'];
+            $cloudflareEmail = $userCreateResponse['response']['cloudflare_email'];
+            $uniqueId = $userCreateResponse['response']['unique_id'];
+            $userKey = $userCreateResponse['response']['user_key'];
 
-            $this->dataStore->createUserDataStore($user_api_key, $cloudflare_email, $unique_id, $user_key);
+            $this->dataStore->createUserDataStore($userApiKey, $cloudflareEmail, $uniqueId, $userKey);
         }
 
-        return $user_create_response;
+        return $userCreateResponse;
     }
 
     /**
@@ -105,17 +105,17 @@ class HostActions
      */
     public function userAuth()
     {
-        $user_auth_response = $this->api->callAPI($this->request);
+        $userAuthResponse = $this->api->callAPI($this->request);
 
-        if ($this->api->responseOk($user_auth_response)) {
-            $user_api_key = $user_auth_response['response']['user_api_key'];
-            $cloudflare_email = $user_auth_response['response']['cloudflare_email'];
-            $unique_id = $user_auth_response['response']['unique_id'];
-            $user_key = $user_auth_response['response']['user_key'];
+        if ($this->api->responseOk($userAuthResponse)) {
+            $userApiKey = $userAuthResponse['response']['user_api_key'];
+            $cloudflareEmail = $userAuthResponse['response']['cloudflare_email'];
+            $uniqueId = $userAuthResponse['response']['unique_id'];
+            $userKey = $userAuthResponse['response']['user_key'];
 
-            $this->dataStore->createUserDataStore($user_api_key, $cloudflare_email, $unique_id, $user_key);
+            $this->dataStore->createUserDataStore($userApiKey, $cloudflareEmail, $uniqueId, $userKey);
         }
 
-        return $user_auth_response;
+        return $userAuthResponse;
     }
 }
