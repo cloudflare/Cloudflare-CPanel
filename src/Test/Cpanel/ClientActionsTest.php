@@ -175,7 +175,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
         $this->mockClientAPI->method('responseOk')->willReturn(true);
-        $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
+        $this->mockCpanelAPI->method('uapiResponseOk')->willReturn(true);
         $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
 
         $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');
@@ -206,7 +206,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
         $this->mockClientAPI->method('responseOk')->willReturn(true);
-        $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
+        $this->mockCpanelAPI->method('uapiResponseOk')->willReturn(true);
         $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
 
         $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');
@@ -237,7 +237,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClientAPI->method('callAPI')->willReturn(array('result' => array()));
         $this->mockClientAPI->method('responseOk')->willReturn(true);
-        $this->mockCpanelAPI->method('uapi_response_ok')->willReturn(true);
+        $this->mockCpanelAPI->method('uapiResponseOk')->willReturn(true);
         $this->mockCpanelAPI->method('getDNSRecords')->willReturn(array($this->mockCpanalDNSRecord));
 
         $this->mockRequest->method('getUrl')->willReturn('/zones/:id/dns_records');

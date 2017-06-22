@@ -10,8 +10,8 @@ class DataStore implements DataStoreInterface
 {
     private $cpanel;
     private $username;
-    private $home_dir;
-    private $yaml_data;
+    private $homeDir;
+    private $yamlData;
 
     const PATH_TO_YAML_FILE = '/.cpanel/datastore';
     const YAML_FILE_NAME = 'cloudflare_data.yaml';
@@ -33,8 +33,8 @@ class DataStore implements DataStoreInterface
         $this->cpanel = $cpanel;
         $this->logger = $logger;
         $this->username = $this->cpanel->getUserId();
-        $this->home_dir = $this->cpanel->get_home_dir();
-        $this->yaml_data = $this->loadYAMLFile();
+        $this->homeDir = $this->cpanel->getHomeDir();
+        $this->yamlData = $this->loadYAMLFile();
     }
 
     /*
@@ -59,9 +59,9 @@ class DataStore implements DataStoreInterface
      */
     private function loadYAMLFile()
     {
-        $get_file_content = $this->cpanel->load_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
-        if ($this->cpanel->uapi_response_ok($get_file_content)) {
-            return Yaml::parse($get_file_content['content']);
+        $getFileContent = $this->cpanel->loadFile($this->homeDir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME);
+        if ($this->cpanel->uapiResponseOk($getFileContent)) {
+            return Yaml::parse($getFileContent['content']);
         } else {
             $this->logger->error(self::PATH_TO_YAML_FILE.self::YAML_FILE_NAME.' does not exist.');
         }
@@ -74,25 +74,25 @@ class DataStore implements DataStoreInterface
      */
     private function saveYAMLFile()
     {
-        $file_contents = Yaml::dump($this->yaml_data);
-        $result = $this->cpanel->save_file($this->home_dir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $file_contents);
+        $fileContents = Yaml::dump($this->yamlData);
+        $result = $this->cpanel->saveFile($this->homeDir.self::PATH_TO_YAML_FILE, self::YAML_FILE_NAME, $fileContents);
 
-        return $this->cpanel->uapi_response_ok($result);
+        return $this->cpanel->uapiResponseOk($result);
     }
 
     /**
-     * @param $client_api_key
+     * @param $clientApiKey
      * @param $email
-     * @param $unique_id
-     * @param $user_key
+     * @param $uniqueId
+     * @param $userKey
      */
-    public function createUserDataStore($client_api_key, $email, $unique_id, $user_key)
+    public function createUserDataStore($clientApiKey, $email, $uniqueId, $userKey)
     {
-        $this->yaml_data = array(
-            self::CLIENT_API_KEY => $client_api_key,
+        $this->yamlData = array(
+            self::CLIENT_API_KEY => $clientApiKey,
             self::EMAIL_KEY => $email,
-            self::HOST_USER_UNIQUE_ID_KEY => $unique_id,
-            self::HOST_USER_KEY => $user_key,
+            self::HOST_USER_UNIQUE_ID_KEY => $uniqueId,
+            self::HOST_USER_KEY => $userKey,
         );
 
         $this->saveYAMLFile();
@@ -137,7 +137,7 @@ class DataStore implements DataStoreInterface
      */
     public function get($key)
     {
-        return $this->yaml_data[$key];
+        return $this->yamlData[$key];
     }
 
     /**
@@ -148,11 +148,11 @@ class DataStore implements DataStoreInterface
      */
     public function set($key, $value)
     {
-        if (isEmpty($this->yaml_data)) {
-            $this->yaml_data = array();
+        if (isEmpty($this->yamlData)) {
+            $this->yamlData = array();
         }
 
-        $this->yaml_data[$key] = $value;
+        $this->yamlData[$key] = $value;
 
         return $this->saveYAMLFile();
     }

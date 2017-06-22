@@ -28,7 +28,7 @@ my $logger = Cpanel::Logger->new();
 
 #-------------------------------------------------------------------------------------------------
 # Name:
-#   get_host_api_key - Gets the host API key as root
+#   getHostApiKey - Gets the host API key as root
 # Desc:
 #   Gets the host API key as root
 # Arguments:
@@ -36,7 +36,7 @@ my $logger = Cpanel::Logger->new();
 # Returns:
 #   $result1 - string - The host API key
 #-------------------------------------------------------------------------------------------------
-sub get_host_api_key {
+sub getHostApiKey {
 
     my ( $args, $result ) = @_;
 
@@ -47,7 +47,7 @@ sub get_host_api_key {
     my $admin_bin_call = Cpanel::Wrap::send_cpwrapd_request(
            'namespace' => 'CloudFlare',
            'module'    => 'APIKey',
-           'function'  => 'get_host_api_key',
+           'function'  => 'getHostApiKey',
     );
 
     my $host_api_key = $admin_bin_call->{'data'};

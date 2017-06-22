@@ -9,51 +9,51 @@ use Psr\Log\LoggerInterface;
 
 class Partial
 {
-    private $cpanel_api;
-    private $data_store;
+    private $cpanelApi;
+    private $dataStore;
     private $logger;
-    private $dns_record_list;
-    private $domain_name;
+    private $dnsRecordList;
+    private $domainName;
 
     const FORWARD_TO_SUFFIX = 'cdn.cloudflare.net';
     const RESOLVE_TO_PREFIX = 'cloudflare-resolve-to.';
     const ADVANCED_ZONE_EDIT_DISABLED_ERROR = 'Cloudflare cPanel Plugin configuration issue! Please contact your hosting provider to enable "Advanced DNS Zone Editor"';
 
     /**
-     * @param CpanelAPI               $cpanel_api
-     * @param DataStore               $data_store
+     * @param CpanelAPI               $cpanelApi
+     * @param DataStore               $dataStore
      * @param Psr\Log\LoggerInterface $logger
      */
-    public function __construct(CpanelAPI $cpanel_api, DataStore $data_store, LoggerInterface $logger)
+    public function __construct(CpanelAPI $cpanelApi, DataStore $dataStore, LoggerInterface $logger)
     {
-        $this->cpanel_api = $cpanel_api;
-        $this->data_store = $data_store;
+        $this->cpanelApi = $cpanelApi;
+        $this->dataStore = $dataStore;
         $this->logger = $logger;
     }
 
     /**
      * @param $sub_domain
-     * @param $domain_name
+     * @param $domainName
      *
      * @return bool
      */
-    public function partialZoneSet($sub_domain, $domain_name)
+    public function partialZoneSet($sub_domain, $domainName)
     {
-        $this->domain_name = $domain_name;
-        $this->dns_record_list = $this->cpanel_api->getDNSRecords($domain_name);
-        if ($this->dns_record_list === null) {
+        $this->domainName = $domainName;
+        $this->dnsRecordList = $this->cpanelApi->getDNSRecords($domainName);
+        if ($this->dnsRecordList === null) {
             return false;
         }
 
-        $sub_domain_dns_record = $this->getSubDomainDNSRecord($sub_domain);
-        if ($sub_domain_dns_record === null) {
+        $subDomainDnsRecord = $this->getSubDomainDNSRecord($sub_domain);
+        if ($subDomainDnsRecord === null) {
             return false;
         }
 
-        if (strtoupper($sub_domain_dns_record->getType()) === 'CNAME') {
-            return $this->provisionSubDomainCNAMERecord($sub_domain_dns_record);
-        } elseif (strtoupper($sub_domain_dns_record->getType()) === 'A') {
-            return $this->provisionSubDomainARecord($sub_domain_dns_record);
+        if (strtoupper($subDomainDnsRecord->getType()) === 'CNAME') {
+            return $this->provisionSubDomainCNAMERecord($subDomainDnsRecord);
+        } elseif (strtoupper($subDomainDnsRecord->getType()) === 'A') {
+            return $this->provisionSubDomainARecord($subDomainDnsRecord);
         }
 
         return false;
@@ -66,13 +66,13 @@ class Partial
      */
     public function removePartialZoneSet($domainName)
     {
-        $this->domain_name = $domainName;
-        $this->dns_record_list = $this->cpanel_api->getDNSRecords($domainName);
-        if ($this->dns_record_list === null) {
+        $this->domainName = $domainName;
+        $this->dnsRecordList = $this->cpanelApi->getDNSRecords($domainName);
+        if ($this->dnsRecordList === null) {
             return false;
         }
 
-        $resolveToDNSRecord = $this->getResolveToDNSRecord($this->dns_record_list);
+        $resolveToDNSRecord = $this->getResolveToDNSRecord($this->dnsRecordList);
         if ($resolveToDNSRecord === null) {
             //if there is no resolve to record it was provisioned with full zone and we don't need to do anything.
             return true;
@@ -83,12 +83,12 @@ class Partial
             return false;
         }
 
-        foreach ($this->dns_record_list as $dnsRecord) {
+        foreach ($this->dnsRecordList as $dnsRecord) {
             if ($dnsRecord->getType() === 'CNAME') {
                 //if this domain is pointing at cloudflare revert it.
                 if ($dnsRecord->getContent() === $this->getForwardToValue($dnsRecord->getName())) {
-                    $dnsRecord->setContent($this->domain_name);
-                    if (!$this->cpanel_api->editDNSRecord($this->domain_name, $dnsRecord)) {
+                    $dnsRecord->setContent($this->domainName);
+                    if (!$this->cpanelApi->editDNSRecord($this->domainName, $dnsRecord)) {
                         return false;
                     }
                 }
@@ -101,18 +101,18 @@ class Partial
     /**
      * @return mixed
      */
-    private function getSubDomainDNSRecord($sub_domain)
+    private function getSubDomainDNSRecord($subDomain)
     {
         //point www.DOMAIN. to www.DOMAIN.cdn.cloudflare.net regardless of whether its an A or CNAME record.
-        if ($this->dns_record_list !== null) {
-            foreach ($this->dns_record_list as $dns_record) {
-                if ($dns_record->getName() === $sub_domain) {
-                    return $dns_record;
+        if ($this->dnsRecordList !== null) {
+            foreach ($this->dnsRecordList as $dnsRecord) {
+                if ($dnsRecord->getName() === $subDomain) {
+                    return $dnsRecord;
                 }
             }
         }
 
-        $this->logger->error("Could not find '".$sub_domain."' in the '".$this->domain_name."'. dns records.");
+        $this->logger->error("Could not find '".$subDomain."' in the '".$this->domainName."'. dns records.");
 
         return;
     }
@@ -129,7 +129,7 @@ class Partial
                 }
             }
         }
-        $this->logger->error("Could not find the '".self::RESOLVE_TO_PREFIX."' record for '".$this->domain_name."'.");
+        $this->logger->error("Could not find the '".self::RESOLVE_TO_PREFIX."' record for '".$this->domainName."'.");
 
         return;
     }
@@ -144,10 +144,10 @@ class Partial
         //point [SUB DOMAIN].[DOMAIN] to [SUB DOMAIN].[DOMAIN].cdn.cloudflare.net
         $subDomainCNAMERecordValue = $this->getForwardToValue($subDomainCNAMEDNSRecord->getName());
         $subDomainCNAMEDNSRecord->setContent($subDomainCNAMERecordValue);
-        if ($this->cpanel_api->editDNSRecord($this->domain_name, $subDomainCNAMEDNSRecord)) {
-            if ($this->getResolveToDNSRecord($this->dns_record_list) === null) {
+        if ($this->cpanelApi->editDNSRecord($this->domainName, $subDomainCNAMEDNSRecord)) {
+            if ($this->getResolveToDNSRecord($this->dnsRecordList) === null) {
                 //create CNAME cloudflare-resolve-to.[DOMAIN]. => [DOMAIN] if it doesn't exist.
-                return $this->createCNAMERecord($this->getResolveToValue($this->domain_name), $this->domain_name);
+                return $this->createCNAMERecord($this->getResolveToValue($this->domainName), $this->domainName);
             }
 
             return true;
@@ -170,7 +170,7 @@ class Partial
         $dnsRecord->setName($name);
         $dnsRecord->setTtl(1400);
 
-        return $this->cpanel_api->addDNSRecord($this->domain_name, $dnsRecord);
+        return $this->cpanelApi->addDNSRecord($this->domainName, $dnsRecord);
     }
 
     /**
@@ -186,8 +186,8 @@ class Partial
         if ($this->removeDNSRecord($subDomainDNSRecord->getLine())) {
             $subDomaiCNAMERecordValue = $this->getForwardToValue($subDomainDNSRecord->getName());
             if ($this->createCNAMERecord($subDomainDNSRecord->getName(), $subDomaiCNAMERecordValue)) {
-                if ($this->getResolveToDNSRecord($this->dns_record_list) === null) {
-                    return $this->createARecord($this->getResolveToValue($this->domain_name), $subDomainARecordIP);
+                if ($this->getResolveToDNSRecord($this->dnsRecordList) === null) {
+                    return $this->createARecord($this->getResolveToValue($this->domainName), $subDomainARecordIP);
                 }
 
                 return true;
@@ -211,7 +211,7 @@ class Partial
         $dnsRecord->setName($name);
         $dnsRecord->setTtl(1400);
 
-        return $this->cpanel_api->addDNSRecord($this->domain_name, $dnsRecord);
+        return $this->cpanelApi->addDNSRecord($this->domainName, $dnsRecord);
     }
 
     /**
@@ -224,9 +224,9 @@ class Partial
         $dnsRecord = new CpanelDNSRecord();
         $dnsRecord->setLine($line);
 
-        if ($this->cpanel_api->removeDNSRecord($this->domain_name, $dnsRecord)) {
+        if ($this->cpanelApi->removeDNSRecord($this->domainName, $dnsRecord)) {
             //after we remove a dns record refresh the list since the line numbers have changed.
-            $this->dns_record_list = $this->cpanel_api->getDNSRecords($this->domain_name);
+            $this->dnsRecordList = $this->cpanelApi->getDNSRecords($this->domainName);
 
             return true;
         }
