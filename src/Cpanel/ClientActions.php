@@ -67,13 +67,13 @@ class ClientActions
         foreach ($cpanelDomainList as $cpanelDomain) {
             $found = false;
 
-            $cpanelDomain = $Punycode->encode($cpanelDomain);            
+            $cpanelDomain = $Punycode->encode($cpanelDomain);
 
             $request = new Request('GET', 'zones/', array('name' => $cpanelDomain), array());
             $cpanelZone = $this->api->callAPI($request);
 
             if ($this->api->responseOk($cpanelZone)) {
-                foreach ($cpanelZone['result'] as $cfZone) {                
+                foreach ($cpanelZone['result'] as $cfZone) {
                     $cpanelDomain = $Punycode->decode($cpanelDomain);
 
                     if ($cfZone['name'] === $cpanelDomain) {
@@ -106,7 +106,7 @@ class ClientActions
      * PI-954
      * This function is added from CA's decision on validating subdomain to issue wildcard cert.
      * tl;dr We need to add SSL Verification DNS records manually if the zone is provisioned
-     * with CName
+     * with CName.
      */
     public function addSSLVerficiationDNSRecordForCName($zoneList)
     {
