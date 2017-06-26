@@ -33,18 +33,18 @@ class ClientActions
         $this->logger = $cpanelIntegration->getLogger();
         $this->partialZoneSet = new Partial($this->cpanelAPI, $this->dataStore, $this->logger);
         $this->request = $request;
-
-        $this->setPunycoder();
     }
 
-    public function setPunycoder($p = null) {
+    public function setPunycoder($p = null)
+    {
         $this->punyCode = $p;
-        if (is_null($p)) {
+    }
+
+    public function getPunycoder()
+    {
+        if (is_null($this->punyCoder)) {
             $this->punyCoder = new Punycode();
         }
-    }
-
-    public function getPunycoder() {
         return $this->punyCoder;
     }
 
