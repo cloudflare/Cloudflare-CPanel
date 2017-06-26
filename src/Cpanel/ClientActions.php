@@ -17,6 +17,7 @@ class ClientActions
     private $logger;
     private $partialZoneSet;
     private $request;
+    private $punyCoder;
 
     /**
      * @param DefaultIntegration $cpanelIntegration
@@ -32,6 +33,19 @@ class ClientActions
         $this->logger = $cpanelIntegration->getLogger();
         $this->partialZoneSet = new Partial($this->cpanelAPI, $this->dataStore, $this->logger);
         $this->request = $request;
+
+        $this->setPunycoder();
+    }
+
+    public function setPunycoder($p = null) {
+        $this->punyCode = $p;
+        if (is_null($p)) {
+            $this->punyCoder = new Punycode();
+        }
+    }
+
+    public function getPunycoder() {
+        return $this->punyCoder;
     }
 
     /**
@@ -61,20 +75,18 @@ class ClientActions
             $cpanelDomainList = array_merge($cpanelDomainList, $getCpanelDomains['parked_domains']);
         }
 
-        $Punycode = new Punycode();
-
         $mergedDomainList = array();
         foreach ($cpanelDomainList as $cpanelDomain) {
             $found = false;
 
-            $cpanelDomain = $Punycode->encode($cpanelDomain);
+            $cpanelDomain = $this->getPunycoder()->encode($cpanelDomain);
 
             $request = new Request('GET', 'zones/', array('name' => $cpanelDomain), array());
             $cpanelZone = $this->api->callAPI($request);
 
             if ($this->api->responseOk($cpanelZone)) {
                 foreach ($cpanelZone['result'] as $cfZone) {
-                    $cpanelDomain = $Punycode->decode($cpanelDomain);
+                    $cpanelDomain = $this->getPunycoder()->decode($cpanelDomain);
 
                     if ($cfZone['name'] === $cpanelDomain) {
                         $found = true;
