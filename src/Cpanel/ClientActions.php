@@ -6,6 +6,7 @@ use CF\API\APIInterface;
 use CF\API\Request;
 use CF\Cpanel\Zone\Partial;
 use CF\Integration\DefaultIntegration;
+use TrueBV\Punycode;
 
 class ClientActions
 {
@@ -60,15 +61,21 @@ class ClientActions
             $cpanelDomainList = array_merge($cpanelDomainList, $getCpanelDomains['parked_domains']);
         }
 
+        $Punycode = new Punycode();
+
         $mergedDomainList = array();
         foreach ($cpanelDomainList as $cpanelDomain) {
             $found = false;
+
+            $cpanelDomain = $Punycode->encode($cpanelDomain);            
 
             $request = new Request('GET', 'zones/', array('name' => $cpanelDomain), array());
             $cpanelZone = $this->api->callAPI($request);
 
             if ($this->api->responseOk($cpanelZone)) {
-                foreach ($cpanelZone['result'] as $cfZone) {
+                foreach ($cpanelZone['result'] as $cfZone) {                
+                    $cpanelDomain = $Punycode->decode($cpanelDomain);
+
                     if ($cfZone['name'] === $cpanelDomain) {
                         $found = true;
                         array_push($mergedDomainList, $cfZone);
