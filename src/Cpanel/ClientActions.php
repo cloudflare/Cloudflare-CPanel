@@ -6,6 +6,7 @@ use CF\API\APIInterface;
 use CF\API\Request;
 use CF\Cpanel\Zone\Partial;
 use CF\Integration\DefaultIntegration;
+use TrueBV\Punycode;
 
 class ClientActions
 {
@@ -16,6 +17,7 @@ class ClientActions
     private $logger;
     private $partialZoneSet;
     private $request;
+    private $punyCoder;
 
     /**
      * @param DefaultIntegration $cpanelIntegration
@@ -31,6 +33,19 @@ class ClientActions
         $this->logger = $cpanelIntegration->getLogger();
         $this->partialZoneSet = new Partial($this->cpanelAPI, $this->dataStore, $this->logger);
         $this->request = $request;
+    }
+
+    public function setPunycoder($p = null)
+    {
+        $this->punyCode = $p;
+    }
+
+    public function getPunycoder()
+    {
+        if (is_null($this->punyCoder)) {
+            $this->punyCoder = new Punycode();
+        }
+        return $this->punyCoder;
     }
 
     /**
@@ -64,11 +79,15 @@ class ClientActions
         foreach ($cpanelDomainList as $cpanelDomain) {
             $found = false;
 
+            $cpanelDomain = $this->getPunycoder()->encode($cpanelDomain);
+
             $request = new Request('GET', 'zones/', array('name' => $cpanelDomain), array());
             $cpanelZone = $this->api->callAPI($request);
 
             if ($this->api->responseOk($cpanelZone)) {
                 foreach ($cpanelZone['result'] as $cfZone) {
+                    $cpanelDomain = $this->getPunycoder()->decode($cpanelDomain);
+
                     if ($cfZone['name'] === $cpanelDomain) {
                         $found = true;
                         array_push($mergedDomainList, $cfZone);
@@ -99,7 +118,7 @@ class ClientActions
      * PI-954
      * This function is added from CA's decision on validating subdomain to issue wildcard cert.
      * tl;dr We need to add SSL Verification DNS records manually if the zone is provisioned
-     * with CName
+     * with CName.
      */
     public function addSSLVerficiationDNSRecordForCName($zoneList)
     {

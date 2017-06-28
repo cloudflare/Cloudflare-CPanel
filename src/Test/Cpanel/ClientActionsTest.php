@@ -51,7 +51,8 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
 
     public function testMergeCpanelAndCFDomainsMergesCpanelMainDomains()
     {
-        $mainDomain = 'testmain.com';
+        $mainDomain = 'مثال.إختبار';
+        $punyMainDomain = 'xn--mgbh0fb.xn--kgbechtv';
         $status = 'inactive';
         $addonDomain = array('testaddon.com');
         $parkedDomain = array('testparked.com');
@@ -70,7 +71,7 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
         $response = $this->clientActions->mergeCpanelAndCFDomains();
 
         $this->assertEquals($status, $response['result'][0]['status']);
-        $this->assertEquals($mainDomain, $response['result'][0]['name']);
+        $this->assertEquals($punyMainDomain, $response['result'][0]['name']);
         $this->assertEquals($status, $response['result'][1]['status']);
         $this->assertEquals($addonDomain[0], $response['result'][1]['name']);
         $this->assertEquals($status, $response['result'][2]['status']);
