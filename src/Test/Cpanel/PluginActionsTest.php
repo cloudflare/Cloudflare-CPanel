@@ -71,7 +71,9 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
             'debug' => true,
         ];
         $this->pluginActions->setUserConfig($userConfig);
-        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {return $config;}));
+        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {
+            return $config;
+        }));
 
         $response = $this->pluginActions->getConfig();
         $this->assertTrue($response['debug']);
@@ -84,10 +86,11 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
             'something' => true,
         ];
         $this->pluginActions->setUserConfig($userConfig);
-        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {return $config;}));
+        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {
+            return $config;
+        }));
 
         $response = $this->pluginActions->getConfig();
         $this->assertArrayNotHasKey('something', $response);
-
     }
 }
