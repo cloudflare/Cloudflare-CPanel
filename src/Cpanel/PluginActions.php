@@ -13,6 +13,36 @@ class PluginActions extends AbstractPluginActions
     protected $dataStore;
     protected $logger;
     protected $request;
+    protected $userConfig;
+    protected $composer;
+
+    public static $CONFIG = array(
+        'debug' => false,
+        'featureManagerIsFullZoneProvisioningEnabled' => true,
+        'isDNSPageEnabled' => true,
+        'useHostAPILogin' => true,
+        'homePageCards' => array(
+            0 => 'AlwaysOnlineCard',
+            1 => 'IPV6Card',
+            2 => 'CacheLevelCard',
+            3 => 'RailgunCard',
+            4 => 'PurgeCacheCard',
+        ),
+        'moreSettingsCards' => array(
+            'container.moresettings.security' => array(
+                0 => 'SecurityLevelCard',
+                1 => 'ChallengePassageCard',
+                2 => 'BrowserIntegrityCheckCard',
+            ),
+            'container.moresettings.speed' => array(
+                0 => 'MinifyCard',
+                1 => 'DevelopmentModeCard',
+                2 => 'BrowserCacheTTLCard',
+            ),
+        ),
+        'locale' => 'en',
+        'integrationName' => 'cpanel',
+    );
 
     /*
      * PATCH /plugin/:id/settings/default_settings
@@ -20,5 +50,52 @@ class PluginActions extends AbstractPluginActions
     public function applyDefaultSettings()
     {
         // Do nothing
+    }
+
+    public function getConfig()
+    {
+        $this->getUserConfig();
+        $this->getComposerJson();
+
+        //Clone the config to manipulate
+        $config = array_merge(array(), self::$CONFIG);
+
+        $config['version'] = $this->composer['version'];
+
+        // Merge and intersect arrays and return responses
+        $response = array_intersect_key($this->userConfig + $config, $config);
+        return $response;
+    }
+
+    public function getUserConfig()
+    {
+        if ($this->userConfig === null) {
+            //Need to suppress the File not found error with @
+            $userConfigContent = @file_get_contents('./config.json');
+
+            //Need to set an empty array for merge into config
+            if ($userConfigContent === false) {
+                $this->userConfig = [];
+            } else {
+                $this->userConfig = json_decode($userConfigContent, true);
+            }
+        }
+    }
+
+    public function setUserConfig($userConfig)
+    {
+        $this->userConfig = $userConfig;
+    }
+
+    public function getComposerJson()
+    {
+        if ($this->composer === null) {
+            $this->composer = json_decode(file_get_contents('./composer.json'), true);
+        }
+    }
+
+    public function setComposerJson($composer)
+    {
+        $this->composer = $composer;
     }
 }
