@@ -24,7 +24,8 @@ plan to support more languages by default but if you would like to localize the 
 in the mean time follow these steps:
 
 1. Copy `lang/en.js` as `lang/[LANGUAGE CODE].js` and translate it.
-2. Edit `config.js` and set `"locale": "[LANGUAGE CODE]"` using the same language code from step 1.
+2. Rename `config.json.sample` to `config.json`.
+3. Edit `config.json` and set `"locale": "[LANGUAGE CODE]"` using the same language code from step 1.
 
 ## Full Zone Provisioning
 
