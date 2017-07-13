@@ -1,3 +1,24 @@
 {
-    "featureManagerIsFullZoneProvisioningEnabled": false
+  "debug": false,
+  "featureManagerIsFullZoneProvisioningEnabled": true,
+  "homePageCards": [
+    "AlwaysOnlineCard",
+    "IPV6Card",
+    "CacheLevelCard",
+    "RailgunCard",
+    "PurgeCacheCard"
+  ],
+  "locale": "en",
+  "moreSettingsCards": {
+    "container.moresettings.security": [
+      "SecurityLevelCard",
+      "ChallengePassageCard",
+      "BrowserIntegrityCheckCard"
+    ],
+    "container.moresettings.speed": [
+      "MinifyCard",
+      "DevelopmentModeCard",
+      "BrowserCacheTTLCard"
+    ]
+  }
 }

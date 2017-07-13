@@ -2,7 +2,7 @@
 
 namespace CF\Cpanel\Test;
 
-use CF\API\Client;
+use CF\API\Plugin;
 use CF\API\Request;
 use CF\Cpanel\CpanelAPI;
 use CF\Cpanel\DataStore;
@@ -16,10 +16,9 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
     private $mockConfig;
     private $mockLogger;
     private $mockRequest;
-    private $mockClientAPI;
     private $mockCpanelAPI;
+    private $mockPluginAPI;
     private $mockDataStore;
-    private $mockPluginActions;
     private $mockCpanelIntegration;
 
     public function setup()
@@ -27,7 +26,7 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
         $this->mockConfig = $this->getMockBuilder(DefaultConfig::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $this->mockClientAPI = $this->getMockBuilder(Client::class)
+        $this->mockPluginAPI = $this->getMockBuilder(Plugin::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->mockCpanelAPI = $this->getMockBuilder(CpanelAPI::class)
@@ -44,7 +43,7 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
             ->getMock();
 
         $this->mockCpanelIntegration = new DefaultIntegration($this->mockConfig, $this->mockCpanelAPI, $this->mockDataStore, $this->mockLogger);
-        $this->pluginActions = new pluginActions($this->mockCpanelIntegration, $this->mockClientAPI, $this->mockRequest);
+        $this->pluginActions = new pluginActions($this->mockCpanelIntegration, $this->mockPluginAPI, $this->mockRequest);
     }
 
     public function testGetConfigReturnsDefaultConfig()
@@ -53,11 +52,16 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
         $composer = ['version' => $version];
 
         $this->pluginActions->setComposerJson($composer);
-        $response = $this->pluginActions->getConfig();
-
-        $config = array_merge(array(), pluginActions::$CONFIG);
+        $config = array(
+            'success' => true,
+            'result' => pluginActions::$CONFIG,
+            'messages' => array(),
+            'errors' => array(),
+        );
         $config['version'] = $version;
 
+        $this->mockPluginAPI->method('createAPISuccessResponse')->willReturn($config);
+        $response = $this->pluginActions->getConfig();
         $this->assertEquals($config, $response);
     }
 
@@ -67,17 +71,23 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
             'debug' => true,
         ];
         $this->pluginActions->setUserConfig($userConfig);
+        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {return $config;}));
+
         $response = $this->pluginActions->getConfig();
-        $this->assertEquals(true, $response['debug']);
+        $this->assertTrue($response['debug']);
     }
 
     public function testGetConfigIgnoresInvalidKeys()
     {
+
         $userConfig = [
             'something' => true,
         ];
         $this->pluginActions->setUserConfig($userConfig);
+        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {return $config;}));
+
         $response = $this->pluginActions->getConfig();
         $this->assertArrayNotHasKey('something', $response);
+
     }
 }

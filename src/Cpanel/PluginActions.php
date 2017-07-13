@@ -64,7 +64,8 @@ class PluginActions extends AbstractPluginActions
 
         // Merge and intersect arrays and return responses
         $response = array_intersect_key($this->userConfig + $config, $config);
-        return $response;
+
+        return $this->api->createAPISuccessResponse($response);
     }
 
     public function getUserConfig()
@@ -74,9 +75,9 @@ class PluginActions extends AbstractPluginActions
             $userConfigContent = @file_get_contents('./config.json');
 
             //Need to set an empty array for merge into config
-            if ($userConfigContent === false) {
-                $this->userConfig = [];
-            } else {
+            $this->userConfig = [];
+            //If we did find a config decode it
+            if ($userConfigContent) {
                 $this->userConfig = json_decode($userConfigContent, true);
             }
         }
