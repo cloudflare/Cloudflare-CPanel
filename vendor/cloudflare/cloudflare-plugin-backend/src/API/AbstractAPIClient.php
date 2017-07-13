@@ -3,17 +3,17 @@
 namespace CF\API;
 
 use CF\Integration\IntegrationInterface;
-use GuzzleHttp;
-use GuzzleHttp\Exception\RequestException;
+use CF\API\DefaultHttpClient;
+use CF\API\HttpClientInterface;
 
 abstract class AbstractAPIClient implements APIInterface
 {
     const CONTENT_TYPE_KEY = 'Content-Type';
     const APPLICATION_JSON_KEY = 'application/json';
 
-    protected $client;
     protected $config;
     protected $data_store;
+    protected $httpClient;
     protected $logger;
     protected $integrationAPI;
 
@@ -26,8 +26,25 @@ abstract class AbstractAPIClient implements APIInterface
         $this->data_store = $integration->getDataStore();
         $this->logger = $integration->getLogger();
         $this->integrationAPI = $integration->getIntegrationAPI();
+    }
 
-        $this->client = new GuzzleHttp\Client(['base_url' => $this->getEndpoint()]);
+    /**
+     * @return HttpClientInterface $httpClient
+     */
+    public function getHttpClient()
+    {
+        if ($this->httpClient === null) {
+            $this->httpClient = new DefaultHttpClient($this->getEndpoint());
+        }
+
+        return $this->httpClient;
+    }
+    /**
+     * @param HttpClientInterface $httpClient
+     */
+    public function setHttpClient(HttpClientInterface $httpClient)
+    {
+        $this->httpClient = $httpClient;
     }
 
     /**
@@ -40,7 +57,7 @@ abstract class AbstractAPIClient implements APIInterface
         try {
             $request = $this->beforeSend($request);
 
-            $response = $this->sendRequest($request);
+            $response = $this->sendAndLog($request);
 
             $response = $this->getPaginatedResults($request, $response);
 
@@ -63,48 +80,6 @@ abstract class AbstractAPIClient implements APIInterface
 
     /**
      * @param  Request $request
-     * @return [Array] $response
-     */
-    public function sendRequest(Request $request)
-    {
-        $apiRequest = $this->getGuzzleRequest($request);
-
-        $response = $this->client->send($apiRequest)->json();
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RequestException('Error decoding client API JSON', $response);
-        }
-
-        if (!$this->responseOk($response)) {
-            $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'body' => $response), true);
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param  Request $request
-     * @return GuzzleHttp\Message\RequestInterface $request
-     */
-    public function getGuzzleRequest(Request $request)
-    {
-        $bodyType = (($request->getHeaders()[self::CONTENT_TYPE_KEY] === self::APPLICATION_JSON_KEY) ? 'json' : 'body');
-
-        $requestOptions = array(
-            'headers' => $request->getHeaders(),
-            'query' => $request->getParameters(),
-            $bodyType => $request->getBody(),
-        );
-
-        if ($this->config->getValue('debug')) {
-            $requestOptions['debug'] = fopen('php://stderr', 'w');
-        }
-
-        return $this->client->createRequest($request->getMethod(), $request->getUrl(), $requestOptions);
-    }
-
-    /**
-     * @param  Request $request
      * @param  [Array] $response
      * @return [Array] $paginatedResponse
      */
@@ -123,7 +98,7 @@ abstract class AbstractAPIClient implements APIInterface
             $parameters['page'] = $currentPage;
             $request->setParameters($parameters);
 
-            $pagedResponse = $this->sendRequest($request);
+            $pagedResponse = $this->sendAndLog($request);
 
             $mergedResponse['result'] = array_merge($mergedResponse['result'], $pagedResponse['result']);
             // Notify the frontend that pagination is taken care.
@@ -134,6 +109,21 @@ abstract class AbstractAPIClient implements APIInterface
             $currentPage++;
         }
         return $mergedResponse;
+    }
+
+    /**
+     * @param  Request $request
+     * @return Array $response
+     */
+    public function sendAndLog(Request $request)
+    {
+        $response = $this->getHttpClient()->send($request);
+
+        if (!$this->responseOk($response)) {
+            $this->logAPICall($this->getAPIClientName(), array('type' => 'response', 'body' => $response), true);
+        }
+
+        return $response;
     }
 
     /**
@@ -157,11 +147,9 @@ abstract class AbstractAPIClient implements APIInterface
         if ($isError === false) {
             $logLevel = 'debug';
         }
-
         if (!is_string($message)) {
             $message = print_r($message, true);
         }
-
         $this->logger->$logLevel('['.$apiName.'] '.$message);
     }
 
@@ -179,14 +167,6 @@ abstract class AbstractAPIClient implements APIInterface
     public function shouldRouteRequest(Request $request)
     {
         return strpos($request->getUrl(), $this->getEndpoint()) !== false;
-    }
-
-    /**
-     * @param GuzzleHttpClient $client
-     */
-    public function setClient(GuzzleHttp\Client $client)
-    {
-        $this->client = $client;
     }
 
     /**

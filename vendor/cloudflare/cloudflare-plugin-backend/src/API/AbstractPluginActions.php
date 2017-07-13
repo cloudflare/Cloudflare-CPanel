@@ -166,6 +166,20 @@ abstract class AbstractPluginActions
     }
 
     /**
+     * For GET /userconfig
+     * @return mixed
+     */
+    public function getConfig()
+    {
+        $response = $this->api->createAPISuccessResponse(
+            []
+        );
+
+        return $response;
+    }
+
+
+    /**
      * Children should implement this method to apply the plugin specific default settings.
      *
      * @return mixed
