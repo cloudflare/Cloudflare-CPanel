@@ -14,7 +14,8 @@
         "container.moresettings.security": [
             "SecurityLevelCard", 
             "ChallengePassageCard", 
-            "BrowserIntegrityCheckCard"
+            "BrowserIntegrityCheckCard",
+            "SSLCard"
         ],
         "container.moresettings.speed": [
             "MinifyCard", 
