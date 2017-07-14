@@ -16,33 +16,39 @@ class PluginActions extends AbstractPluginActions
     protected $userConfig;
     protected $composer;
 
-    public static $CONFIG = array(
+    const CONFIG = [
         'debug' => false,
         'featureManagerIsFullZoneProvisioningEnabled' => true,
         'isDNSPageEnabled' => true,
         'useHostAPILogin' => true,
-        'homePageCards' => array(
+        'homePageCards' => [
             'AlwaysOnlineCard',
             'IPV6Card',
             'CacheLevelCard',
             'RailgunCard',
             'PurgeCacheCard',
-        ),
-        'moreSettingsCards' => array(
-            'container.moresettings.security' => array(
+        ],
+        'moreSettingsCards' => [
+            'container.moresettings.security' => [
                 'SecurityLevelCard',
                 'ChallengePassageCard',
                 'BrowserIntegrityCheckCard',
-            ),
-            'container.moresettings.speed' => array(
+            ],
+            'container.moresettings.speed' => [
                 'MinifyCard',
                 'DevelopmentModeCard',
                 'BrowserCacheTTLCard',
-            ),
-        ),
+            ],
+        ],
         'locale' => 'en',
         'integrationName' => 'cpanel',
-    );
+    ];
+
+    const BANNED_KEYS = [
+        'isDNSPageEnabled',
+        'useHostAPILogin',
+        'integrationName',
+    ];
 
     /*
      * PATCH /plugin/:id/settings/default_settings
@@ -58,11 +64,15 @@ class PluginActions extends AbstractPluginActions
         $this->getComposerJson();
 
         //Clone the config to manipulate
-        $config = array_merge(array(), self::$CONFIG);
+        $config = array_merge(array(), self::CONFIG);
 
+        //Add version from composer.json to the config
         $config['version'] = $this->composer['version'];
 
-        // Merge and intersect arrays and return responses
+        //This removes all the banned keys from the userConfig so we don't over write them
+        $this->userConfig = array_diff_key($this->userConfig, array_flip(self::BANNED_KEYS));
+
+        //Merge and intersect userConfig with default config and return response
         $response = array_intersect_key($this->userConfig + $config, $config);
 
         return $this->api->createAPISuccessResponse($response);
@@ -74,7 +84,7 @@ class PluginActions extends AbstractPluginActions
             //Need to suppress the File not found error with @
             $userConfigContent = @file_get_contents('./config.json');
 
-            //Need to set an empty array for merge into config
+            //Need to set an empty array for merge into config so it doesnt throw a type error
             $this->userConfig = [];
             //If we did find a config decode it
             if ($userConfigContent) {

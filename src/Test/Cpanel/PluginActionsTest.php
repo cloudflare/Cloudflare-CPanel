@@ -54,7 +54,7 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
         $this->pluginActions->setComposerJson($composer);
         $config = array(
             'success' => true,
-            'result' => pluginActions::$CONFIG,
+            'result' => pluginActions::CONFIG,
             'messages' => array(),
             'errors' => array(),
         );
@@ -92,5 +92,24 @@ class PluginActionsTest extends \PHPUnit_Framework_TestCase
 
         $response = $this->pluginActions->getConfig();
         $this->assertArrayNotHasKey('something', $response);
+    }
+
+    public function testGetConfigIgnoresBannedKeys()
+    {
+
+        $userConfig = [
+            'isDNSPageEnabled' => false,
+            'useHostAPILogin' => false,
+            'integrationName' => 'myName',
+        ];
+        $this->pluginActions->setUserConfig($userConfig);
+        $this->mockPluginAPI->method('createAPISuccessResponse')->will($this->returnCallback(function ($config) {
+            return $config;
+        }));
+
+        $response = $this->pluginActions->getConfig();
+        $this->assertTrue($response['isDNSPageEnabled']);
+        $this->assertTrue($response['useHostAPILogin']);
+        $this->assertEquals($response['integrationName'], 'cpanel');
     }
 }
