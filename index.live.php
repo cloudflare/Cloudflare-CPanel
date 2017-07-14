@@ -22,7 +22,7 @@ if ($uniqueId) {
         $response = $response['response'];
         $dataStore->createUserDataStore($response['user_api_key'], $response['cloudflare_email'], $response['unique_id'], $response['user_key']);
     } else {
-        $logger->error("Failed to convert the YAML file for user '".$cpanelAPI->getUserId()."'");
+        $logger->error("Failed to convert the YAML file for user '" . $cpanelAPI->getUserId() . "'");
     }
 }
 
@@ -37,7 +37,7 @@ $stylesheetsAndMetaTags = '
     <link rel="stylesheet" href="./stylesheets/hacks.css" media="screen,projection" charset="utf-8"/>';
 
 //add our custom styles before the </head> ¯\_(ツ)_/¯
-$cpanelHeader = str_replace('</head>', $stylesheetsAndMetaTags.'</head>', $cpanel->header('Cloudflare'));
+$cpanelHeader = str_replace('</head>', $stylesheetsAndMetaTags . '</head>', $cpanel->header('Cloudflare'));
 echo $cpanelHeader;
 ?>
 <script>

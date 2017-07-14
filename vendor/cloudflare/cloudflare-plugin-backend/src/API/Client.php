@@ -3,6 +3,7 @@
 namespace CF\API;
 
 use Guzzle\Http\Exception\BadResponseException;
+use CF\Integration\IntegrationInterface;
 
 class Client extends AbstractAPIClient
 {
@@ -79,7 +80,7 @@ class Client extends AbstractAPIClient
      */
     public function responseOk($response)
     {
-        return $response['success'] === true;
+        return isset($response['success']) ? $response['success'] : false;
     }
 
     /**

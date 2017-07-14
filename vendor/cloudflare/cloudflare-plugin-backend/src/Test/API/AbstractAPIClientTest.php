@@ -9,6 +9,7 @@ use CF\Integration\DefaultIntegration;
 use CF\Integration\DefaultLogger;
 use CF\Integration\DataStoreInterface;
 use CF\Integration\IntegrationAPIInterface;
+use CF\API\HttpClientInterface;
 use \CF\API\Request;
 use \CF\API\AbstractAPIClient;
 use \CF\Integration\DefaultConfig;
@@ -22,8 +23,6 @@ class AbstractAPIClientTest extends \PHPUnit_Framework_TestCase
     protected $mockDataStore;
     protected $mockLogger;
     protected $mockRequest;
-    protected $mockGuzzleRequest;
-    protected $mockGuzzleResponse;
 
     const TOTAL_PAGES = 3;
     const MOCK_RESPONSE = [
@@ -39,20 +38,9 @@ class AbstractAPIClientTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->mockClient = $this->getMockBuilder(GuzzleHttp\Client::class)
+        $this->mockClient = $this->getMockBuilder(HttpClientInterface::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $this->mockGuzzleRequest = $this->getMockBuilder(RequestInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->mockClient->method('createRequest')->willReturn($this->mockGuzzleRequest);
-
-        $this->mockGuzzleResponse = $this->getMockBuilder(ResponseInterface::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->mockClient->method('send')->willReturn($this->mockGuzzleResponse);
-
         $this->mockConfig = $this->getMockBuilder(DefaultConfig::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -70,27 +58,15 @@ class AbstractAPIClientTest extends \PHPUnit_Framework_TestCase
         $this->mockAbstractAPIClient = $this->getMockBuilder(AbstractAPIClient::class)
             ->setConstructorArgs([$this->mockIntegration])
             ->getMockForAbstractClass();
-        $this->mockAbstractAPIClient->setClient($this->mockClient);
-    }
-
-    public function testSendRequestCallsGuzzleSend()
-    {
-          $this->mockGuzzleResponse->method('json')->willReturn(true);
-          $this->mockClient->expects($this->once())->method('send');
-
-          $this->mockAbstractAPIClient->sendRequest($this->mockRequest);
-    }
-
-    public function testGetGuzzleRequestReturnsGuzzleRequest()
-    {
-        $this->assertInstanceOf(RequestInterface::class, $this->mockAbstractAPIClient->getGuzzleRequest($this->mockRequest));
+        $this->mockAbstractAPIClient->setHttpClient($this->mockClient);
     }
 
     public function testGetPaginatedResultsRequestsAllPages()
     {
         $this->mockRequest->method('getMethod')->willReturn('GET');
-        $this->mockGuzzleResponse->method('json')->willReturn(self::MOCK_RESPONSE);
-        $this->mockClient->expects($this->exactly((self::TOTAL_PAGES - 1)))->method('send');
+        $this->mockClient->expects($this->exactly((self::TOTAL_PAGES - 1)))->method('send')->willReturn([
+          'result' => []
+        ]);
         $this->mockAbstractAPIClient->getPaginatedResults($this->mockRequest, self::MOCK_RESPONSE);
     }
 
@@ -137,5 +113,11 @@ class AbstractAPIClientTest extends \PHPUnit_Framework_TestCase
         $this->mockRequest->method('getUrl')->willReturn('http://api.cloudflare.com/client/v4/zones');
         $this->mockAbstractAPIClient->method('getEndpoint')->willReturn('https://api.cloudflare.com/host-gw.html');
         $this->assertFalse($this->mockAbstractAPIClient->shouldRouteRequest($this->mockRequest));
+    }
+
+    public function testSendAndLogCallsLogger()
+    {
+        $this->mockLogger->expects($this->once())->method('error');
+        $this->mockAbstractAPIClient->sendAndLog($this->mockRequest);
     }
 }
