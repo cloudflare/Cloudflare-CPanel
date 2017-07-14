@@ -33,6 +33,7 @@ class PluginActions extends AbstractPluginActions
                 'SecurityLevelCard',
                 'ChallengePassageCard',
                 'BrowserIntegrityCheckCard',
+                'SSLCard',
             ],
             'container.moresettings.speed' => [
                 'MinifyCard',
