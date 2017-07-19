@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.0](#7.0.0) - 2017-07-19
+## Fixed
+- Fixed a bug where unicode zones were not displaying active [#148](https://github.com/cloudflare/Cloudflare-CPanel/pull/148)
+
+### Changed
+- Changed cp to overwrite files in cloudflare.install.sh  [#144](https://github.com/cloudflare/CloudFlare-CPanel/pull/144)
+- Removed config.js.sample and replaced it with config.json.sample  [#150](https://github.com/cloudflare/CloudFlare-CPanel/pull/150)
+
+### Added
+- Added SSL Settings card to moresettings/security [#149](https://github.com/cloudflare/Cloudflare-CPanel/pull/149)
+- Added new getConfig implementation that gets config.json.sample [#150](https://github.com/cloudflare/Cloudflare-CPanel/pull/150)
+- [Frontend] Added a new splash page [#131](https://github.com/cloudflare/cloudflare-plugin-frontend/pull/131)
+
 ## [6.2.0](#6.2.0) - 2017-04-25
 ## Fixed
 - Fixed install bug in CloudLinux [#140](https://github.com/cloudflare/Cloudflare-CPanel/pull/140)
