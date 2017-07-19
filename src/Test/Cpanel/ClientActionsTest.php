@@ -3,6 +3,7 @@
 namespace CF\Cpanel\Test;
 
 use CF\Cpanel\ClientActions;
+use CF\Cpanel\CpanelDNSRecord;
 use CF\Integration\DefaultIntegration;
 
 class ClientActionsTest extends \PHPUnit_Framework_TestCase
@@ -259,24 +260,33 @@ class ClientActionsTest extends \PHPUnit_Framework_TestCase
           ]
         ];
 
+        $recordName = 'b3b90cfedd89a3e487d3e383c56c4267';
+        $recordTarget = '6979be7e4cfc9e5c603e31df7efac9cc60fee82d.comodoca.com';
+
         $mockResponse = [
           'result' => [
             [
               'certificate_status' => 'active',
               'verification_type' => 'cname',
               'verification_info' => [
-                'record_name' => 'b3b90cfedd89a3e487d3e383c56c4267.' . $domain,
-                'record_target' => '6979be7e4cfc9e5c603e31df7efac9cc60fee82d.comodoca.com'
+                'record_name' => $recordName . '.' . $domain,
+                'record_target' => $recordTarget
               ]
             ]
           ]
         ];
 
+        $expectedDNSRecord = new CpanelDNSRecord();
+        $expectedDNSRecord->setType('CNAME');
+        $expectedDNSRecord->setName($recordName);
+        $expectedDNSRecord->setContent($recordTarget);
+        $expectedDNSRecord->setTtl(14400);
+
         $this->mockClientAPI->method('callAPI')->willReturn($mockResponse);
         $this->mockClientAPI->method('responseOk')->willReturn(true);
         $this->mockCpanelAPI->method('getDNSRecords')->willReturn([]);
-        $this->mockCpanelAPI->expects($this->once())->method('addDNSRecord');
-        
+        $this->mockCpanelAPI->expects($this->once())->method('addDNSRecord')->with($domain, $expectedDNSRecord);
+
         $this->clientActions->addSSLVerficiationDNSRecordForCName($zoneList);
     }
 }
