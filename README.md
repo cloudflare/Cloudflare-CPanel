@@ -30,7 +30,7 @@ in the mean time follow these steps:
 ## Full Zone Provisioning
 
 The plugin now supports Full Zone Provisioning but it is disabled by default.  If you would like to enable
-it for your customers simple edit `config.js` so that `"featureManagerIsFullZoneProvisioningEnabled": true,`
+it for your customers simple edit `config.json` so that `"featureManagerIsFullZoneProvisioningEnabled": true,`
 
 ### Uninstalling the cPanel Plugin
 
