@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [7.0.1](#7.0.1) - 2018-02-20
+## Fixed
+- PI-1236 Fix install issue for new users [#159](https://github.com/cloudflare/Cloudflare-CPanel/pull/159)
+
+### Removed
+- PI-528: Remove v5 install script [#157](https://github.com/cloudflare/Cloudflare-CPanel/pull/157)
+
 ## [7.0.0](#7.0.0) - 2017-07-19
 ## Fixed
 - Fixed a bug where unicode zones were not displaying active [#148](https://github.com/cloudflare/Cloudflare-CPanel/pull/148)
