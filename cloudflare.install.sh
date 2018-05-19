@@ -171,7 +171,7 @@ install -d $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 
 install $SOURCE_DIR/proxy.live.php $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 install $SOURCE_DIR/index.live.php $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
-install $SOURCE_DIR/compiled.js $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
+install $SOURCE_DIR/compiled.min.js $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 install $SOURCE_DIR/config.json.sample $INSTALL_DIR/base/frontend/paper_lantern/cloudflare
 
 # composer.json is used by cloudflare.update.sh to determine the current version number
