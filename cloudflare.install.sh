@@ -226,7 +226,7 @@ install $SOURCE_DIR/cloudflare_update.sh $INSTALL_DIR/bin
 # Create CPanel hook to update plugin after Cpanel Update
 CF_ON_UPGRADE=`grep -F "cloudflare_update" /scripts/postupcp`
 if [ "$CF_ON_UPGRADE" == "" ]; then
-    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh force" >> /scripts/postupcp
+    echo "sh /usr/local/cpanel/bin/cloudflare_update.sh -f" >> /scripts/postupcp
 fi
 
 # Create cron job to automatically update plugin
