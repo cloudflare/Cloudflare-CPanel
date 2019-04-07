@@ -13,7 +13,7 @@ usage() {
     echo "                     CloudFlare to obtain one before proceeding."
     echo "     -n ORG_NAME   - The name of your organization."
     echo "     -f LOCAL_FILE - By default the latest version of the cPanel plugin is"
-    echo "                     downloaded from Github and installed. If the optional -f flag"
+    echo "                     downloaded from GitHub and installed. If the optional -f flag"
     echo "                     is given the install is done from a local file path."
     echo "                     The local file should be called CloudFlare-CPanel-1.2.3.tar.gz where 1.2.3 is"
     echo "                     the version number."
