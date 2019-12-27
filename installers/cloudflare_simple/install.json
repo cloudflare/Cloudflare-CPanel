@@ -6,6 +6,7 @@
         "order" : 1,
         "type" : "link",
         "id" : "cloudflare",
-        "uri" : "cloudflare/index.live.php"
+        "uri" : "cloudflare/index.live.php",
+        "implements" : "Cloudflare_Home"
     }
 ]
