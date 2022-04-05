@@ -112,7 +112,8 @@ if [ "$LOCAL_FILE_PATH" = "" ]; then
     fi
 
     # Download and extract
-    DOWNLOAD_URL="https://github.com/cloudflare/CloudFlare-CPanel/archive/v$LATEST_VERSION.tar.gz"
+    #DOWNLOAD_URL="https://github.com/cloudflare/CloudFlare-CPanel/archive/v$LATEST_VERSION.tar.gz"
+    DOWNLOAD_URL="https://github.com/cloudflare/CloudFlare-CPanel/archive/refs/tags/v$LATEST_VERSION.tar.gz"
 
     if [ "$VERBOSE" = true ]; then
         echo "curl -sL $DOWNLOAD_URL | tar xfz -"
