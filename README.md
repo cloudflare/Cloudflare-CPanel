@@ -1,3 +1,5 @@
+## :warning: Notice: This plugin has been deprecated and is no longer being maintained. Our hosting partner program that was used in tandem with this plugin has also been deprecated. For those interested in partnering with Cloudflare see https://www.cloudflare.com/partners/
+
 [![Build Status](https://travis-ci.org/cloudflare/Cloudflare-CPanel.svg?branch=master)](https://travis-ci.org/cloudflare/Cloudflare-CPanel)
 ## Cloudflare cPanel Quick Installation Instructions
 
